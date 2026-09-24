@@ -113,3 +113,73 @@ Work Log:
 Stage Summary:
 - Real Orbyt brand (pixel runner, Flat Ember) fully live and browser-verified: rendering, interactivity, responsive, no overflow, no console errors.
 - REMAINING: the ORBYT-COMPLETE-BRAND-WEB-SYSTEM.md file never reached the server — fonts (currently provisional Inter/Space Grotesk/Geist Mono), copy details, and any exact spec values await the user pasting the MD content as chat text.
+
+---
+Task ID: 10
+Agent: main (Z.ai Code)
+Task: Pivot from brand-guidelines showcase → official ORBYT agency website (positioning + conversion site). Foundation: theme, metadata, content layer, asset cleanup. (The ORBYT-COMPLETE-BRAND-WEB-SYSTEM.md file STILL never reached disk — filesystem search negative. The full inline brief from the user (23 sections) + real logo assets are the operative spec.)
+
+Work Log:
+- Verified ORBYT-COMPLETE-BRAND-WEB-SYSTEM.md absent from the entire filesystem again; proceeded on the user's inline brief: BLACK + VIVID ORANGE direction, quiet interface, strategic orange, anti-AI-slop rules, honest copy (no fake clients/metrics/testimonials).
+- Rewrote globals.css → theme "Ink & Ember" (dark, single theme in :root): background Ink #0E0E0D, foreground Paper #FAF7F2, card #161615, primary Orbyt Orange #FD5A01, primary-foreground logo-ink #1B1B1A (5.4:1 AA on orange), muted-fg #A8A296, hairline border rgba(paper,0.14), radius 0.5rem (hard-edged). NEW extended token --graphite (#1B1B1A) + --blueprint-line. Utilities: REPLACED .text-gradient-brand/.glow-primary with hard-offset shadows .shadow-pixel-orange/-paper/-ink (5px) + .bg-blueprint (56px structural grid). Keyframes: kept marquee/blink/step-run; REMOVED float/pulse-glow (anti-slop: no floating, no glow). Reduced-motion guard updated to the 3 remaining animations.
+- layout.tsx metadata → official site: "ORBYT — Digital systems built for growth" + SEO keywords per brief §17 (AI automation agency, AI agents, business automation, tracking and analytics, etc.). Fonts unchanged: Space Grotesk display / Inter body / Geist Mono labels.
+- Created src/content/orbyt.ts — ALL site copy as typed data (content ≠ presentation): NAV_LINKS, HERO ("Build the system behind your growth."), PROBLEM (6 fragmentation items), SERVICES (5 pillars: AI & Automation / Web & Digital / Growth & Marketing / Data & Tracking / Digital Systems — each with what/why/builds/connects/outcome), CHAIN_NODES (Ad Campaign→…→Conversion), PROCESS_STEPS (Discover/Design/Build/Connect/Measure/Improve), SYSTEM_BLUEPRINTS (3 honest system shapes, explicitly no invented case studies), PRINCIPLES (6 from brief §6), INSIGHTS (4 editorial positions, no fake dates/authors), CONTACT (form copy + "what happens next"), CTA_STRIP, FOOTER.
+- Deleted celestial leftovers: public/orbyt-mark.svg, public/images/orbyt-hero.png (kept orbyt-logo.png 1189×1323 opaque orange tile + orbyt-mark.png 256px favicon).
+- Route constraint honored: environment only exposes `/` — IA implemented as anchor-nav sections on one page, each section maps 1:1 to a future route (#services #process #systems #why #insights #contact).
+
+Stage Summary:
+- Foundation ready for the official site build: Ink & Ember tokens, hard-edged utilities, content layer complete, metadata/SEO live.
+- Next: Task 11-a (frontend components + page.tsx) and Task 11-b (Prisma ContactSubmission + POST /api/contact) in parallel, then Task 12 (browser verification).
+
+---
+Task ID: 11-b
+Agent: general-purpose
+Task: Prisma ContactSubmission model + POST /api/contact
+
+Work Log:
+- Added `ContactSubmission` model to prisma/schema.prisma (id cuid @id, name, email, message, createdAt @default(now)) — existing User/Post models untouched.
+- `bun run db:push` → success: "🚀 Your database is now in sync with your Prisma schema. Done in 11ms" + "✔ Generated Prisma Client (v6.19.2) to ./node_modules/@prisma/client" (client auto-regenerated; SQLite at file:/home/z/my-project/db/custom.db).
+- Created src/app/api/contact/route.ts: export async function POST — contract comment header (POST /api/contact {name,email,message} → 201 {ok:true,id} | 400 {error} | 429 {error} | 500 {error}); zod schema (name trim 2–120, email trim .email() max 200, message trim 10–4000; zod 4.3.5); in-memory module-scope rate limit Map keyed by first IP of x-forwarded-for (fallback 'unknown'), max 5 per 10 min with expired-entry sweep; safe JSON parse → 400 {error:'Invalid JSON'}; validation failure → 400 with first zod issue message; persist via db.contactSubmission.create (only validated fields; id/createdAt server-generated, never client-trusted); success 201 {ok:true,id}; unexpected DB errors console.error'd server-side and returned as generic 500 {error:'Internal error'} (no detail leakage).
+- Order note: rate limit is checked BEFORE parse/validate (cheap early rejection), so every request counts toward the 5/10-min budget.
+- bun run lint → clean (exit 0, 0 errors/warnings). File confirmed at src/app/api/contact/route.ts.
+- curl smoke tests against dev server :3000:
+  - Valid payload → HTTP 201 {"ok":true,"id":"cmuezqeyv0000rbx9a9o4jbp7"} (row persisted; verified 6 rows total via Prisma findMany — smoke + rate-test rows left in place, harmless).
+  - Invalid payload → HTTP 400 {"error":"Too small: expected string to have >=2 characters"}.
+  - Malformed JSON → HTTP 400 {"error":"Invalid JSON"}.
+  - 6 requests with X-Forwarded-For: 198.51.100.77 → 5×201 then HTTP 429 {"error":"Too many requests. Try again later."} — rate limiter verified.
+- HEADS-UP for Task 12: the 'unknown' rate bucket (direct localhost posts carry no x-forwarded-for) is near its 5/10-min cap from these tests. If a browser form test returns 429, it's the limiter, not a bug — wait for window reset or touch the route file (HMR resets the module Map).
+
+Stage Summary:
+- POST /api/contact is live and fully verified: 201/400/429 paths tested end-to-end against the running dev server; ContactSubmission persisted to SQLite; no error details leaked to clients.
+- No files touched outside prisma/schema.prisma, src/app/api/contact/route.ts, and worklog.md (page.tsx / components / content / globals.css / layout.tsx untouched per constraint).
+- Ready for Task 12 browser verification of the contact form wiring.
+
+---
+Task ID: 11-a
+Agent: frontend-styling-expert
+Task: Build official ORBYT site frontend — components + page.tsx
+
+Work Log:
+- Read worklog (Task 10 foundation), src/content/orbyt.ts (full copy), globals.css (Ink & Ember tokens; verified ONLY .shadow-pixel-orange/-paper/-ink, .bg-blueprint, animate-marquee/blink/step-run exist), and audited src/components/ui (button asChild/variants, sheet, input, textarea, label) + @/hooks/use-toast (exports `toast`) before writing a line.
+- Replaced the 1586-line brand-guidelines page.tsx with a thin composition root: 'use client', root wrapper `min-h-screen flex flex-col bg-background text-foreground`, Header + <main className="flex-1"> with 9 sections in brief order + <Footer/> (mt-auto sticky-footer). Zero copy in page.tsx — everything renders src/content/orbyt.ts.
+- New primitives in src/components/orbyt/: reveal.tsx (Reveal/FadeUp — whileInView once, margin -80px, y 20–24px, duration 0.55 easeOut, useReducedMotion renders static div/li, `as="li"` support for process <ol>); marquee.tsx (overflow-hidden min-w-0 max-w-full wrapper, w-max track duplicated exactly twice, translateX(-50%), duplicate aria-hidden, --marquee-duration prop, reduced-motion drops the animation class); section.tsx (shared shell: aria-labelledby + scroll-mt-20 + py-20 md:py-28 + max-w-6xl container, mono orange eyebrow, font-display title + optional text-primary titleAccent on its own line, optional lede, `header` override prop used by Contact); emphasize.tsx (colors ONE existing word — "system" in hero H1, "connects" in the positioning statement — no copy edits).
+- header.tsx: sticky top-0 z-50 bg-background/85 backdrop-blur hairline-bottom, h-16 constant (no scroll jump); /orbyt-mark.png 28px in rounded-sm overflow-hidden wrapper (PNGs are opaque to the corners); md+ nav = mono uppercase text-xs tracking-[0.18em] h-11 links (44px targets); orange "Start a project" Button asChild → #contact (hidden <sm); mobile Sheet (right) with 44px links that close on navigate + full-width CTA, sr-only Title/Description (no Radix console warnings).
+- hero.tsx (#top): relative overflow-hidden bg-blueprint; min-h-[calc(100svh-4rem)] flex items-center; lg:grid-cols-12 (explicit grid-cols-1 base) — 7-col copy (mono eyebrow, H1 text-5xl→7xl leading-[1.02] with FLAT orange "system", sub, h-12 CTAs) / 5-col logo tile: /orbyt-logo.png 1189×1323 priority next/image in rounded-md border overflow-hidden wrapper with .shadow-pixel-orange on a parent div (clip-path would clip the shadow), ONE 22px clipped top-right corner via clip-path polygon, mono caption "BUILD · CONNECT · GROW". Closes with the full-bleed pipeline marquee strip (border-y, py-4, 40s): items in text-foreground/70 joined by orange ArrowRight.
+- problem.tsx: 6 fragments in md:grid-cols-2 (explicit grid-cols-1), dashed border-t rows (broken connections) with F-01…F-06 mono orange indexes, grid border-b closes both columns; positioning statement in a bg-card border panel with .shadow-pixel-orange, positionAccent on its own line with orange "connects".
+- services.tsx: 5 services as editorial ROWS (border-t, hover:bg-accent/30, lg:grid-cols-12: index / title+what+WHY— / builds list with hard 6px orange square markers / CONNECTS+divider+OUTCOME meta column); THE ORBYT CHAIN diagram in bordered bg-card/50 panel: flex-wrap chips joined by orange arrows, final CONVERSION chip = bg-primary text-primary-foreground (the only orange chip).
+- process.tsx: mobile = vertical rail (border-l + absolute 10px orange square dots); xl:grid-cols-6 with absolute hairline horizontal connector behind dots (dots static, xl:mb-4); lg:grid-cols-3 keeps per-column rails + row-gap via pb; each step: mono number, uppercase font-display name, what, mono "→ OUTPUT:" (orange arrow) line; Reveal as="li" staggered.
+- systems.tsx: 3 blueprint panels (explicit grid-cols-1 md:grid-cols-3), hover:.shadow-pixel-orange; mono SYSTEM / 0n, title, "for" line, hairline dividers, square-marker components list, MEASURED label + ink mono chips (no orange — budget spent elsewhere).
+- why.tsx: 6 principles (P-01…P-06 mono orange, border-t rows, grid border-b) + about block with border-l-2 border-primary and TECHNOLOGY + MARKETING + OPERATIONS mono chips joined by orange plus signs.
+- insights.tsx: 4 statement rows md:grid-cols-12 (1 index / 6 title group-hover:text-primary / 5 stance); NO links/dates/read-time per honesty rule.
+- cta-strip.tsx: full-bleed bg-primary text-primary-foreground band (py-5), 24s marquee of BUILD/CONNECT/GROW in font-display font-bold text-2xl md:text-3xl with → separators at /70 — the site's loudest moment, 2nd of exactly 2 marquees (grep-verified count).
+- contact.tsx: Section shell with header={null}; lg:grid-cols-2 — left: eyebrow/title (h2 id=contact-heading)/sub + "What happens next" numbered panel (divide-y, mono orange 1/2/3); right: bg-card rounded-md p-6 md:p-8 form (mono uppercase labels, htmlFor-bound, h-11 inputs, noValidate + inline mono text-destructive errors "Required"/"Enter a valid email" with aria-invalid/aria-describedby); POST JSON to RELATIVE '/api/contact' {name,email,message}; idle→submitting (disabled + Loader2 animate-spin + CONTACT.form.submitting)→success (panel swaps to "STATUS: RECEIVED" + orange square + CONTACT.form.success + ghost "Send another message" reset)→error (non-2xx/throw → toast via @/hooks/use-toast destructive + inline CONTACT.form.error); aria-live="polite" wraps the whole status region.
+- footer.tsx: mt-auto, border-t, md:grid-cols-3 (mark+wordmark+philosophy / nav incl. "Start a project" as h-9 mono links / tag + orange "Onward."); bottom row pt-6 pb-[max(env(safe-area-inset-bottom),1.5rem)] with FOOTER.legal + "Built as one system.".
+- Anti-overflow hardening per past pitfalls: EVERY responsive grid has explicit grid-cols-1 base; both marquee parents (hero, cta-strip) are relative overflow-hidden; Marquee wrapper min-w-0 max-w-full; no absolute decor outside clipped sections.
+- Verified: bun run lint → clean (0 errors/warnings); `bunx tsc --noEmit` → zero errors under src/ (remaining hits are pre-existing examples/ + skills/ scaffolding outside the app); curl GET / → 200 (86.6KB HTML); dev.log "✓ Compiled", GET / 200, no runtime errors; grep-confirmed in rendered HTML: "Build the <span class=text-primary>system</span>", "Start a project", "CONVERSION" chip, "It leaks between them", chain nodes (AD CAMPAIGN…), process steps (IMPROVE), "What happens next", "Onward.", "Built as one system."; all anchor ids (top/problem/services/process/systems/why/insights/contact + hero-heading) present; 0 references to orbyt-mark.svg / orbyt-hero.png / text-gradient-brand / glow-primary / animate-float / animate-pulse-glow / animate-orbit.
+- Contrast: every orange surface (primary Buttons, CTA strip, CONVERSION chip, STATUS marker accents on ink) uses text-primary-foreground #1b1b1a (5.4:1 AA) — white-on-orange appears nowhere.
+
+Stage Summary:
+- Official ORBYT agency site is live on /: Header → Hero (#top) → Problem (#problem) → Services (#services) → Process (#process) → Systems (#systems) → Why (#why) → Insights (#insights) → CTA strip → Contact (#contact) → Footer, all copy sourced from src/content/orbyt.ts with zero invented clients/stats/testimonials.
+- 15 new files: 4 primitives + header/hero/problem/services/process/systems/why/insights/cta-strip/contact/footer + rewritten page.tsx (~90 lines).
+- Ink & Ember discipline held: orange only on CTAs, emphasis words, eyebrows, markers/active chips, and the one full-bleed CTA strip; hard edges + hard offset shadows + blueprint grid + mono labels carry the texture; motion = 2 CSS marquees + restrained whileInView reveals, all gated by useReducedMotion.
+- Ready for Task 11-b (Prisma ContactSubmission + POST /api/contact — the form already POSTs the exact contract) and Task 12 (browser verification).

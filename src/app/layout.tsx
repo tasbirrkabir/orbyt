@@ -19,27 +19,31 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Orbyt — Brand System",
+  title: "ORBYT — Digital systems built for growth",
   description:
-    "Orbyt brand system: bold flat color, pixel precision, and relentless forward motion. Living style guide with colors, type, logo, and components.",
+    "ORBYT builds the connected system behind growth — AI & automation, web & digital experiences, performance marketing, tracking & data. Strategy, build, connect, measure, improve.",
   keywords: [
-    "Orbyt",
-    "brand system",
-    "design system",
-    "style guide",
-    "Next.js",
-    "Tailwind CSS",
-    "shadcn/ui",
+    "AI automation agency",
+    "AI agents",
+    "business automation",
+    "web development",
+    "digital systems",
+    "growth systems",
+    "performance marketing",
+    "conversion optimization",
+    "tracking and analytics",
+    "AI consulting",
+    "digital transformation",
   ],
-  authors: [{ name: "Orbyt Studio" }],
+  authors: [{ name: "ORBYT" }],
   icons: {
     icon: "/orbyt-mark.png",
   },
   openGraph: {
-    title: "Orbyt — Brand System",
+    title: "ORBYT — Digital systems built for growth",
     description:
-      "Bold flat color, pixel precision, and relentless forward motion.",
-    siteName: "Orbyt",
+      "Build the system behind your growth. AI, web, automation, marketing, tracking — connected.",
+    siteName: "ORBYT",
     type: "website",
   },
 };
