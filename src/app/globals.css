@@ -48,6 +48,11 @@
   --animate-marquee: marquee var(--marquee-duration, 28s) linear infinite;
   --animate-blink: blink 1.2s steps(2, start) infinite;
   --animate-step-run: step-run 1.4s steps(3, end) infinite;
+  --animate-orbit: orbit var(--orbit-duration, 24s) linear infinite;
+  --animate-orbit-reverse: orbit-reverse var(--orbit-duration, 24s) linear infinite;
+  --animate-twinkle: twinkle var(--twinkle-duration, 3.6s) ease-in-out infinite;
+  --animate-pulse-glow: pulse-glow var(--pulse-duration, 5s) ease-in-out infinite;
+  --animate-float: float var(--float-duration, 7s) ease-in-out infinite;
 }
 
 /* ── Orbyt motion keyframes ─────────────────────────────── */
@@ -63,15 +68,37 @@
   from { transform: translateX(0); }
   to   { transform: translateX(-10px); }
 }
+/* Orbit: element travels a circular path; pair with an
+   orbit-reverse child holding the counter-rotation. */
+@keyframes orbit {
+  from { transform: rotate(0deg) translateX(var(--orbit-radius, 120px)) rotate(0deg); }
+  to   { transform: rotate(360deg) translateX(var(--orbit-radius, 120px)) rotate(-360deg); }
+}
+@keyframes orbit-reverse {
+  from { transform: rotate(0deg) translateX(calc(var(--orbit-radius, 120px) * -1)) rotate(0deg); }
+  to   { transform: rotate(-360deg) translateX(calc(var(--orbit-radius, 120px) * -1)) rotate(360deg); }
+}
+@keyframes twinkle {
+  0%, 100% { opacity: 0.15; transform: scale(0.85); }
+  50%      { opacity: 0.9;  transform: scale(1); }
+}
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.35; transform: scale(1); }
+  50%      { opacity: 0.7;  transform: scale(1.06); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
 
 /* ── Orbyt · Theme: "Ink & Ember" ──────────────────────────
-   The logo is loud — the interface is quiet.
+   The logo is loud: the interface is quiet.
    BLACK (ink) + ELECTRIC/VIVID ORANGE (#FD5A01, from the mark).
    Orange is spent strategically: CTAs, emphasis, key moments. */
 :root {
   --radius: 0.5rem;
 
-  /* Core surfaces — near-black warm ink */
+  /* Core surfaces: near-black warm ink */
   --background: #0e0e0d;            /* Ink */
   --foreground: #faf7f2;            /* Paper */
   --card: #161615;
@@ -79,9 +106,9 @@
   --popover: #161615;
   --popover-foreground: #faf7f2;
 
-  /* Brand accent — the logo's orange, used with intent */
+  /* Brand accent: the logo's orange, used with intent */
   --primary: #fd5a01;               /* Orbyt Orange */
-  --primary-foreground: #1b1b1a;    /* Logo ink on orange — 5.4:1 AA, as in the mark */
+  --primary-foreground: #1b1b1a;    /* Logo ink on orange: 5.4:1 AA, as in the mark */
   --secondary: #1e1e1c;
   --secondary-foreground: #faf7f2;
   --muted: #1a1a19;
@@ -91,11 +118,11 @@
   --destructive: #ff5d5d;
 
   /* Extended brand palette */
-  --graphite: #1b1b1a;              /* the mark's ink — text on orange surfaces */
+  --graphite: #1b1b1a;              /* the mark's ink: text on orange surfaces */
   --ember-deep: #b44401;
   --ember-tint: #ff8a3d;
 
-  /* Lines & focus — hairline structure */
+  /* Lines & focus: hairline structure */
   --border: rgba(250, 247, 242, 0.14);
   --input: rgba(250, 247, 242, 0.18);
   --ring: #fd5a01;
@@ -135,7 +162,7 @@
   }
 }
 
-/* Custom scrollbar — quiet ink, orange on hover */
+/* Custom scrollbar: quiet ink, orange on hover */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -156,7 +183,7 @@
 }
 
 @layer utilities {
-  /* Hard offset shadows — the logo's hard-edged language */
+  /* Hard offset shadows: the logo's hard-edged language */
   .shadow-pixel-orange {
     box-shadow: 5px 5px 0 0 #fd5a01;
   }
@@ -166,7 +193,7 @@
   .shadow-pixel-ink {
     box-shadow: 5px 5px 0 0 #1b1b1a;
   }
-  /* Blueprint grid — geometric structure, barely there */
+  /* Blueprint grid: geometric structure, barely there */
   .bg-blueprint {
     background-image:
       linear-gradient(to right, var(--blueprint-line) 1px, transparent 1px),
@@ -182,7 +209,12 @@
   }
   .animate-marquee,
   .animate-blink,
-  .animate-step-run {
+  .animate-step-run,
+  .animate-orbit,
+  .animate-orbit-reverse,
+  .animate-twinkle,
+  .animate-pulse-glow,
+  .animate-float {
     animation: none !important;
   }
 }

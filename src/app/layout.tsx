@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Space_Grotesk, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
+import { Providers } from "@/components/providers";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -19,9 +20,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ORBYT — Digital systems built for growth",
+  title: "ORBYT: Digital systems built for growth",
   description:
-    "ORBYT builds the connected system behind growth — AI & automation, web & digital experiences, performance marketing, tracking & data. Strategy, build, connect, measure, improve.",
+    "ORBYT builds the connected system behind growth: AI & automation, web & digital experiences, performance marketing, tracking & data. Strategy, build, connect, measure, improve.",
   keywords: [
     "AI automation agency",
     "AI agents",
@@ -40,9 +41,9 @@ export const metadata: Metadata = {
     icon: "/orbyt-mark.png",
   },
   openGraph: {
-    title: "ORBYT — Digital systems built for growth",
+    title: "ORBYT: Digital systems built for growth",
     description:
-      "Build the system behind your growth. AI, web, automation, marketing, tracking — connected.",
+      "Build the system behind your growth. AI, web, automation, marketing, tracking, connected.",
     siteName: "ORBYT",
     type: "website",
   },
@@ -58,8 +59,10 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${spaceGrotesk.variable} ${geistMono.variable} antialiased bg-background text-foreground font-sans`}
       >
-        {children}
-        <Toaster />
+        <Providers>
+          {children}
+          <Toaster />
+        </Providers>
       </body>
     </html>
   );

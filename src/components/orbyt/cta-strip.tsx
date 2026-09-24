@@ -4,7 +4,7 @@ import { CTA_STRIP } from "@/content/orbyt";
 import { Marquee } from "./marquee";
 
 /**
- * The one full-bleed orange band — the site's loudest moment
+ * The one full-bleed orange band: the site's loudest moment
  * and the second of exactly two allowed marquees.
  */
 export function CtaStrip() {

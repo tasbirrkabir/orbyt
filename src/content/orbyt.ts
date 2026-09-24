@@ -1,30 +1,33 @@
 /**
- * ORBYT — single source of truth for site copy.
- * Content is separated from presentation (src/components/orbyt/*).
- *
- * Rules enforced here:
- * - No invented clients, statistics, testimonials, awards or case studies.
- * - No empty phrases ("unlock your potential", "cutting-edge").
- * - Short sentences. Strong nouns. Strong verbs.
+ * ORBYT site copy. Voice rules:
+ * - Talk to one reader ("you"). Name what they actually feel.
+ * - Concrete over abstract. Specific beats impressive.
+ * - Short sentences, varied rhythm, zero hype, zero em-dashes.
+ * - Nothing invented: no clients, no numbers, no testimonials.
  */
 
 export const NAV_LINKS = [
-  { label: "Services", href: "#services" },
-  { label: "Process", href: "#process" },
-  { label: "Systems", href: "#systems" },
-  { label: "Why ORBYT", href: "#why" },
-  { label: "Insights", href: "#insights" },
+  { label: "Services", href: "/services" },
+  { label: "Process", href: "/process" },
+  { label: "Work", href: "/work" },
+  { label: "About", href: "/about" },
+  { label: "Insights", href: "/insights" },
 ] as const;
 
-/* ── Hero ─────────────────────────────────────────────── */
+export const SITE = {
+  wordmark: "ORBYT",
+  tagline: "Digital systems built for growth",
+  cta: { label: "Start a project", href: "/contact" },
+  secondaryCta: { label: "See how we work", href: "/process" },
+} as const;
+
+/* ── Home ─────────────────────────────────────────────── */
 
 export const HERO = {
   eyebrow: "AI · WEB · AUTOMATION · GROWTH",
   titleA: "Build the system",
   titleB: "behind your growth.",
-  sub: "ORBYT connects AI, web, marketing, tracking and automation into one working system — so growth stops leaking through the gaps.",
-  primaryCta: { label: "Start a project", href: "#contact" },
-  secondaryCta: { label: "See how we work", href: "#process" },
+  sub: "Your website, your ads, your data, your tools. They should pull in the same direction. ORBYT wires them into one system, so growth stops leaking through the gaps.",
   marquee: [
     "WEBSITE",
     "TRACKING",
@@ -36,57 +39,66 @@ export const HERO = {
   ],
 } as const;
 
-/* ── 01 · Problem ─────────────────────────────────────── */
+export const HOME_TRUST = {
+  // The one honest promise we can make before any project starts.
+  items: [
+    { k: "STRATEGY FIRST", v: "Nothing gets built before the system is mapped." },
+    { k: "MEASURED", v: "Tracking ships with the work, not after it." },
+    { k: "CONNECTED", v: "Everything we build talks to what you already run." },
+  ],
+} as const;
 
 export const PROBLEM = {
-  eyebrow: "01 — THE PROBLEM",
+  eyebrow: "THE PROBLEM",
   title: "Growth doesn't leak from one tool.",
   titleAccent: "It leaks between them.",
-  lede: "Most businesses don't have a marketing problem or a tech problem. They have a connection problem.",
+  lede: "You've probably felt it. Things work, individually. Together, they don't. And nobody owns the space in between.",
   items: [
     {
       fragment: "Website in one place.",
       detail:
-        "Built by one vendor, changed by another. Nobody owns how it converts.",
+        "Built by one person, patched by another. Months later, nobody can say why it converts the way it does.",
     },
     {
       fragment: "Ads in another.",
       detail:
-        "Campaigns spend, clicks arrive. What happens after the click is someone else's problem.",
+        "Budget goes out, clicks come in. What happens after the click is someone else's job, which means it's nobody's job.",
     },
     {
-      fragment: "Analytics broken.",
+      fragment: "Analytics you can't trust.",
       detail:
-        "Half the events fire, half don't. Decisions get made on guesses.",
+        "Some events fire, some don't. Reports look healthy, gut says otherwise. Decisions drift toward guesses.",
     },
     {
-      fragment: "Leads handled manually.",
+      fragment: "Leads handled by memory.",
       detail:
-        "A form fills. Someone gets a notification. Sometimes someone follows up.",
+        "A form comes in, a notification pings, a busy person means to reply. The ones that slip away never tell you.",
     },
     {
-      fragment: "AI disconnected.",
+      fragment: "AI bought, not placed.",
       detail:
-        "A chatbot here, a prompt there. No workflow actually changed.",
+        "A chatbot here, a subscription there. Everyone's talking about AI. Few workflows actually changed.",
     },
     {
-      fragment: "Operations on repeat.",
+      fragment: "The same Tuesday, every week.",
       detail:
-        "The same manual steps every week — growing with the business.",
+        "Copy-paste, re-export, update the sheet. The work grows with the business, and so does the busywork.",
     },
   ],
-  position: "None of these are tool problems. They're system problems.",
+  position: "None of these are tool problems. They're connection problems.",
   positionAccent: "ORBYT builds the layer that connects them.",
 } as const;
 
-/* ── 02 · Services / Capabilities ─────────────────────── */
+/* ── Services ─────────────────────────────────────────── */
 
 export interface Service {
   index: string;
-  id: string;
+  slug: string;
   title: string;
+  short: string;
   what: string;
   why: string;
+  signs: string[];
   builds: string[];
   connects: string;
   outcome: string;
@@ -95,55 +107,87 @@ export interface Service {
 export const SERVICES: Service[] = [
   {
     index: "01",
-    id: "ai-automation",
+    slug: "ai-automation",
     title: "AI & Automation",
-    what: "Practical AI inside real workflows — agents, integrations and internal tools that remove repetitive work.",
-    why: "Most teams don't have an AI problem. They have workflow problems that AI happens to solve.",
+    short:
+      "Practical AI inside real workflows. Agents, integrations and internal tools that take repetitive work off your team's plate.",
+    what: "We find the work your team does twice, automate it carefully, and place AI where it genuinely helps. Support replies, lead qualification, reporting, handoffs. If a workflow doesn't need AI, we say so.",
+    why: "Because the goal was never 'use AI'. The goal is a team that spends its week on work that matters.",
+    signs: [
+      "Your team drowns in small repeated tasks",
+      "Replies to leads depend on who's free",
+      "Someone maintains a spreadsheet that runs the business",
+      "You've bought AI tools nobody opened twice",
+    ],
     builds: [
       "AI agents for support, ops and lead qualification",
-      "Workflow automation across your existing tools",
-      "Internal tools and intelligent dashboards",
-      "AI integrations into the software you already run",
+      "Workflow automation across the tools you already use",
+      "Internal tools and dashboards for your ops team",
+      "AI integrations into existing software",
     ],
     connects: "CRM · website · lead flow · notifications · reporting",
-    outcome: "Hours returned per week. Response times. Share of the workflow that runs itself.",
+    outcome: "Hours returned per week. Faster response times. The share of the workflow that runs without anyone touching it.",
   },
   {
     index: "02",
-    id: "web-digital",
+    slug: "web-digital",
     title: "Web & Digital Experiences",
-    what: "Websites, landing pages and web applications built to convert — not just to exist.",
-    why: "Your website is the one system every campaign, every lead and every customer passes through.",
+    short:
+      "Websites, landing pages and web applications built to convert, not just to exist.",
+    what: "We build the pages your business runs on: fast, clear, and wired to everything behind them. Every screen answers one question for the visitor: what should I do next?",
+    why: "Your website is the one system every campaign, every lead and every customer passes through. It deserves more care than a brochure.",
+    signs: [
+      "Traffic is fine, sign-ups aren't",
+      "The site takes longer to change than to complain about",
+      "You can't tell which pages earn their keep",
+      "Mobile feels like an afterthought",
+    ],
     builds: [
       "Conversion-focused websites and landing page systems",
       "eCommerce and web applications",
-      "Performance budgets — speed as a feature",
+      "Performance work, because speed is a feature",
       "UX implementation that supports the next click",
     ],
     connects: "Tracking · ads · CRM · automation",
-    outcome: "Conversion rate. Load time. Qualified leads — not raw traffic.",
+    outcome: "Conversion rate. Load time. Qualified leads, not raw traffic.",
   },
   {
     index: "03",
-    id: "growth-marketing",
+    slug: "growth-marketing",
     title: "Growth & Marketing",
-    what: "Acquisition built as infrastructure: campaigns wired to pages, data and follow-up.",
-    why: "Ads rarely fail on their own. They fail when landing, tracking and follow-up aren't part of the same system.",
+    short:
+      "Acquisition built as infrastructure: campaigns wired to pages, data and follow-up.",
+    what: "We run performance marketing as part of a system, not as a separate invoice. Campaigns, creative, landing pages and follow-up designed to work together, so spend turns into pipeline you can see.",
+    why: "Ads rarely fail on their own. They fail when the landing page, the tracking and the follow-up were never part of the plan.",
+    signs: [
+      "Ad spend grows, results don't",
+      "You can't say what a lead actually costs",
+      "Campaigns point at pages nobody optimized",
+      "Reporting is a deck, not a system",
+    ],
     builds: [
-      "Performance campaigns — Meta and beyond",
+      "Performance campaigns, Meta and beyond",
       "Creative and campaign strategy",
       "Conversion optimization programs",
-      "Campaign infrastructure: naming, feeds, structure",
+      "Campaign infrastructure: structure, naming, feeds",
     ],
     connects: "Landing pages · tracking stack · CRM · automation",
-    outcome: "CAC. ROAS. Qualified pipeline — visible end to end.",
+    outcome: "CAC. ROAS. A pipeline you can trace end to end.",
   },
   {
     index: "04",
-    id: "data-tracking",
+    slug: "data-tracking",
     title: "Data & Tracking",
-    what: "Measurement you can act on — events, attribution and reporting that hold up under scrutiny.",
+    short:
+      "Measurement you can act on: events, attribution and reporting that hold up under scrutiny.",
+    what: "We instrument your funnel properly. Clean events, server-side conversions where they matter, dashboards your team actually opens. When the numbers are trustworthy, decisions get faster.",
     why: "Without clean data, every other decision is a guess wearing a dashboard.",
+    signs: [
+      "Two tools report different numbers for the same thing",
+      "You're not sure the pixel is firing",
+      "Attribution is a mystery everyone avoids",
+      "Reports exist, but nobody changes course because of them",
+    ],
     builds: [
       "GA4 and Google Tag Manager setup",
       "Meta Pixel and Conversions API",
@@ -151,26 +195,33 @@ export const SERVICES: Service[] = [
       "Reporting dashboards people actually use",
     ],
     connects: "Website · ads · CRM · reporting",
-    outcome: "Data quality. Decision speed. A CAC number you can trust.",
+    outcome: "Data quality. Decision speed. A CAC number you can defend in a meeting.",
   },
   {
     index: "05",
-    id: "digital-systems",
+    slug: "digital-systems",
     title: "Digital Systems",
-    what: "The connective layer: lead management, onboarding, notifications, reporting — the business running as one machine.",
-    why: "This is where the other four meet. Without it, everything stays disconnected.",
+    short:
+      "The connective layer: lead management, onboarding, notifications, reporting. The business running as one machine.",
+    what: "This is where the other four meet. We design and build the layer that routes leads, triggers follow-ups, keeps records clean and shows you the state of the business on one screen.",
+    why: "Every disconnected tool adds a gap someone has to bridge by hand. This layer closes the gaps.",
+    signs: [
+      "Leads live in three places and die in all of them",
+      "Onboarding a client means remembering the steps",
+      "Nobody knows the current status without asking someone",
+      "Growth means hiring someone to do the copying",
+    ],
     builds: [
       "Lead management and CRM workflows",
       "Client onboarding systems",
       "Notification and escalation flows",
       "Operational automation and reporting",
     ],
-    connects: "Everything — this is the connection.",
+    connects: "Everything. This is the connection.",
     outcome: "Speed-to-lead. Cycle time. Manual steps removed.",
   },
 ];
 
-/* The ORBYT chain — how the pieces actually connect */
 export const CHAIN_NODES = [
   "AD CAMPAIGN",
   "LANDING PAGE",
@@ -183,71 +234,75 @@ export const CHAIN_NODES = [
 ] as const;
 
 export const SERVICES_SECTION = {
-  eyebrow: "02 — CAPABILITIES",
+  eyebrow: "CAPABILITIES",
   title: "We don't sell services.",
   titleAccent: "We build the system they live in.",
-  lede: "Five capability groups, one job: identify the bottleneck, design the system, build it, connect it, improve it.",
+  lede: "Five capability groups, one job: find the bottleneck, design the system, build it, connect it, improve it.",
   chainCaption: "One system. Every step measured, every step connected.",
+  detailCta: { label: "Explore services", href: "/services" },
 } as const;
 
-/* ── 03 · Process ─────────────────────────────────────── */
+/* ── Process ──────────────────────────────────────────── */
 
 export const PROCESS_STEPS = [
   {
     step: "01",
     name: "DISCOVER",
-    what: "Map the system as it actually runs — tools, data, workflows, friction.",
-    output: "System map and bottleneck list.",
+    what: "We map your system as it actually runs today. Tools, data, workflows, workarounds, the spreadsheet that quietly runs everything.",
+    output: "A system map and a short list of bottlenecks, in plain language.",
   },
   {
     step: "02",
     name: "DESIGN",
-    what: "Design the target system: what gets built, what gets connected, what gets measured.",
-    output: "Blueprint and priorities.",
+    what: "We design the target system together. What gets built, what gets connected, what gets measured, and what we deliberately leave alone.",
+    output: "A blueprint with priorities you can argue with.",
   },
   {
     step: "03",
     name: "BUILD",
-    what: "Ship it — pages, integrations, agents, tracking. Working software, not decks.",
-    output: "Live components.",
+    what: "We ship working software: pages, integrations, agents, tracking. You see progress weekly, not a reveal at the end.",
+    output: "Live components in your business, not a deck.",
   },
   {
     step: "04",
     name: "CONNECT",
-    what: "Wire everything together. Data flows both ways and tools stop being islands.",
-    output: "Integrated pipeline.",
+    what: "We wire everything together so data flows both ways. This is the step most projects skip, and the reason most projects disappoint.",
+    output: "An integrated pipeline, end to end.",
   },
   {
     step: "05",
     name: "MEASURE",
-    what: "Instrument the system — events, dashboards, attribution from day one.",
-    output: "Live measurement.",
+    what: "We instrument the system from day one: events, dashboards, attribution. If it isn't measured, it isn't finished.",
+    output: "Live measurement you can trust.",
   },
   {
     step: "06",
     name: "IMPROVE",
-    what: "Review, remove friction, tighten conversion. The system compounds.",
-    output: "Iteration loop.",
+    what: "We review what the data says, remove the next bottleneck, tighten the next step. Systems compound when someone keeps tending them.",
+    output: "An iteration loop that outlives the project.",
   },
 ] as const;
 
 export const PROCESS_SECTION = {
-  eyebrow: "03 — PROCESS",
+  eyebrow: "PROCESS",
   title: "How ORBYT works.",
-  lede: "The same loop every time — because a system is never finished, only improving.",
+  lede: "The same loop every time, because a system is never finished. It's only improving.",
+  detailCta: { label: "See the full process", href: "/process" },
 } as const;
 
-/* ── 04 · Systems (honest work section) ───────────────── */
+/* ── Work / Systems ───────────────────────────────────── */
 
 export const SYSTEM_BLUEPRINTS = [
   {
     id: "acquisition",
     title: "The acquisition system",
     for: "For teams spending on ads with nothing wired behind them.",
+    story:
+      "Budget goes out, clicks come in, and the space after the click is a guessing game. We wire the whole path: page, events, server-side conversions, lead routing, follow-up.",
     components: [
       "Landing page system",
-      "GA4 + GTM event architecture",
-      "Meta Pixel + Conversions API",
+      "GA4 and GTM event architecture",
+      "Meta Pixel and Conversions API",
       "Lead routing and automated follow-up",
     ],
     measured: ["Conversion rate", "Cost per qualified lead", "Speed-to-lead"],
@@ -256,11 +311,13 @@ export const SYSTEM_BLUEPRINTS = [
     id: "ai-ops",
     title: "The AI operations layer",
     for: "For teams losing their week to repetitive manual work.",
+    story:
+      "The same tasks eat the same hours every week. We map the workflow, automate the steps that deserve it, and place AI agents where they genuinely help, always with a human escalation path.",
     components: [
       "Workflow audit and automation map",
       "AI agents with human escalation paths",
       "Integrations across existing tools",
-      "Internal tool for the ops team",
+      "An internal tool your ops team actually likes",
     ],
     measured: ["Hours returned", "Response time", "Error rate"],
   },
@@ -268,45 +325,48 @@ export const SYSTEM_BLUEPRINTS = [
     id: "connected-web",
     title: "The connected website",
     for: "For teams whose website is a brochure, not infrastructure.",
+    story:
+      "The site looks fine and does nothing measurable. We rebuild it as part of the system: conversion-focused pages, events wired to the CRM, automation triggers, reporting the team reads weekly.",
     components: [
       "Rebuild with a conversion focus",
       "Full event tracking wired to the CRM",
       "Automation triggers on key actions",
-      "Reporting the team reads weekly",
+      "Reporting the team actually reads",
     ],
     measured: ["Conversion rate", "Lead quality", "Time-to-publish"],
   },
 ] as const;
 
 export const SYSTEMS_SECTION = {
-  eyebrow: "04 — SELECTED SYSTEMS",
+  eyebrow: "SELECTED SYSTEMS",
   title: "What we build.",
-  lede: "No invented case studies. No stockpiled logos. Client work gets published with permission — until then, here's the shape of the systems.",
+  lede: "We don't publish invented case studies, and we don't stockpile logos. Client work appears here with permission. Until then, these are the shapes of the systems, described honestly.",
   measuredLabel: "Measured",
+  detailCta: { label: "See systems in detail", href: "/work" },
 } as const;
 
-/* ── 05 · Why ORBYT (principles + about) ──────────────── */
+/* ── Why ORBYT ────────────────────────────────────────── */
 
 export const PRINCIPLES = [
   {
     title: "Systems over disconnected tasks.",
     detail:
-      "A website that doesn't talk to your CRM is a PDF with a URL. We own how the pieces fit.",
+      "A website that doesn't talk to your CRM is a PDF with a URL. We take responsibility for how the pieces fit.",
   },
   {
     title: "Strategy before execution.",
     detail:
-      "We map the system before we build. Slower for a week. Faster forever.",
+      "We map before we build. It feels slower for a week. It's faster forever.",
   },
   {
     title: "Measurement from day one.",
     detail:
-      "If it isn't measured, it isn't shipped. Tracking is part of the build, not an afterthought.",
+      "Tracking is part of the build, not a phase two. If it isn't measured, it isn't shipped.",
   },
   {
     title: "Automation where it matters.",
     detail:
-      "We automate the steps that steal your team's week — not everything with a pulse.",
+      "We automate the steps that steal your team's week, and we leave the rest alone. Not everything with a pulse needs a bot.",
   },
   {
     title: "Design that supports conversion.",
@@ -316,75 +376,69 @@ export const PRINCIPLES = [
   {
     title: "Technology that serves the business.",
     detail:
-      "Boring, reliable tools over impressive ones. The outcome is the feature.",
+      "We choose boring, reliable tools over impressive ones. The outcome is the feature.",
   },
 ] as const;
 
 export const WHY_SECTION = {
-  eyebrow: "05 — WHY ORBYT",
+  eyebrow: "WHY ORBYT",
   title: "A partner, not a vendor.",
-  lede: "Six principles we don't negotiate on.",
+  lede: "Six principles we don't negotiate on, even when it would be easier to.",
   about:
-    "ORBYT works at the intersection of technology, marketing and operations — the partner that owns how the pieces fit together, not another vendor holding a single piece.",
+    "ORBYT works at the intersection of technology, marketing and operations. Not another vendor holding a single piece, but the partner who owns how the pieces fit together.",
+  detailCta: { label: "More about ORBYT", href: "/about" },
 } as const;
 
-/* ── 06 · Insights / Thinking ─────────────────────────── */
-
-export const INSIGHTS = [
-  {
-    title: "Most “AI strategies” are workflow problems.",
-    stance:
-      "Before asking what AI can do, map what the business actually does. The bottleneck is usually a process, not a model.",
-  },
-  {
-    title: "Your tracking is probably lying to you.",
-    stance:
-      "Duplicate events, missing Conversions API, attribution gaps. Most ad accounts optimize against bad data — confidently.",
-  },
-  {
-    title: "A landing page is a system, not a page.",
-    stance:
-      "It inherits your ads, your tracking, your CRM, your follow-up. Treat it alone and it underperforms alone.",
-  },
-  {
-    title: "Disconnected tools are a silent tax.",
-    stance:
-      "Nobody budgets the hours lost moving data between tools that should already be connected. It's the most expensive line item nobody sees.",
-  },
-] as const;
+/* ── Insights ─────────────────────────────────────────── */
 
 export const INSIGHTS_SECTION = {
-  eyebrow: "06 — THINKING",
+  eyebrow: "THINKING",
   title: "How we think.",
-  lede: "Positions we argue from, not content for content's sake.",
+  lede: "Positions we argue from, written for operators. Not content for content's sake.",
+  detailCta: { label: "Read the insights", href: "/insights" },
 } as const;
 
-/* ── 07 · Contact ─────────────────────────────────────── */
+/* ── Contact ──────────────────────────────────────────── */
 
 export const CONTACT = {
-  eyebrow: "07 — START A PROJECT",
+  eyebrow: "START A PROJECT",
   title: "Have a business problem worth solving?",
-  sub: "Tell us what's slowing growth down. We'll tell you what we'd build, connect or measure first.",
+  sub: "Tell us what's slowing growth down. We'll tell you what we'd build, connect or measure first, and we'll be honest if the answer is 'nothing yet'.",
+  topics: [
+    "AI & automation",
+    "Website",
+    "Marketing",
+    "Tracking & data",
+    "Systems",
+    "Something else",
+  ] as const,
+  next: {
+    title: "What happens next",
+    steps: [
+      "You describe the problem. Specific beats polite.",
+      "We reply with an honest read, including if we're not the right fit.",
+      "If it makes sense: a short call, then a system map.",
+    ],
+  },
   form: {
     nameLabel: "Name",
     namePlaceholder: "Who are we talking to?",
     emailLabel: "Email",
     emailPlaceholder: "you@company.com",
+    topicLabel: "What is this about?",
     messageLabel: "What's slowing growth down?",
     messagePlaceholder:
-      "The more specific, the better. Tools, symptoms, what you've tried.",
+      "The more specific, the better. Tools, symptoms, what you've already tried.",
     submit: "Start the conversation",
-    submitting: "Sending…",
-    success: "Received. You'll hear from us — a real reply, not an autoresponder.",
-    error: "Something broke on our end. Try again, or email us directly.",
-  },
-  next: {
-    title: "What happens next",
-    steps: [
-      "You describe the problem. Specifically beats politely.",
-      "We reply with an honest read — including if we're not the right fit.",
-      "If it makes sense: a short call, then a system map.",
-    ],
+    submitting: "Sending",
+    successTitle: "Received.",
+    success: "A real person will read this and reply. Not an autoresponder.",
+    again: "Send another message",
+    error: "Something broke on our end. Try again in a minute.",
+    required: "This field is required",
+    emailInvalid: "That email doesn't look right",
+    messageShort: "Give us a little more to work with",
+    reviewTitle: "Quick check before it sends",
   },
 } as const;
 
@@ -395,6 +449,23 @@ export const CTA_STRIP = ["BUILD", "CONNECT", "GROW"] as const;
 export const FOOTER = {
   philosophy: "Build better. Connect everything. Move forward.",
   onward: "Onward.",
-  legal: "© 2025 ORBYT — Digital growth systems",
+  legal: "© 2025 ORBYT. Digital growth systems.",
   tag: "BUILD · CONNECT · GROW",
+  legalLinks: [
+    { label: "Privacy", href: "/legal/privacy" },
+    { label: "Terms", href: "/legal/terms" },
+  ],
+  accountLinks: [
+    { label: "Log in", href: "/login" },
+    { label: "Dashboard", href: "/dashboard" },
+  ],
+} as const;
+
+/* ── 404 ──────────────────────────────────────────────── */
+
+export const NOT_FOUND = {
+  code: "404",
+  title: "This page drifted out of orbit.",
+  body: "The link is broken or the page moved. The system map below still works.",
+  cta: { label: "Back to the homepage", href: "/" },
 } as const;

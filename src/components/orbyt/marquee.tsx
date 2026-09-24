@@ -5,7 +5,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 type MarqueeProps = {
-  /** Content of ONE half — it is rendered exactly twice for the seamless loop. */
+  /** Content of ONE half: it is rendered exactly twice for the seamless loop. */
   children: ReactNode;
   /** Duration of one full loop, in seconds. */
   duration?: number;

@@ -77,7 +77,7 @@ export function Contact() {
   return (
     <Section id="contact" header={null}>
       <div className="grid grid-cols-1 gap-12 lg:grid-cols-2">
-        {/* Left — pitch + what happens next */}
+        {/* Left: pitch + what happens next */}
         <div>
           <p className="font-mono text-xs uppercase tracking-[0.18em] text-primary">
             {CONTACT.eyebrow}
@@ -112,7 +112,7 @@ export function Contact() {
           </div>
         </div>
 
-        {/* Right — form / success state */}
+        {/* Right: form / success state */}
         <Reveal delay={0.1}>
           <div
             aria-live="polite"

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 /**
- * Presentation helper — wraps the first occurrence of `word` in a span.
+ * Presentation helper: wraps the first occurrence of `word` in a span.
  * The copy itself always comes from src/content/orbyt.ts; this only
  * colors one existing word (e.g. "system", "connects") in orange.
  */

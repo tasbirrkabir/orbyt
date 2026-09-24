@@ -8,7 +8,7 @@ type RevealProps = {
   className?: string;
   /** Stagger delay in seconds. Keep subtle (≤ 0.2s). */
   delay?: number;
-  /** Entrance y-offset in px. Small by design (16–24). */
+  /** Entrance y-offset in px. Small by design (16 to 24). */
   y?: number;
   /** Render as a list item when used inside <ol>/<ul>. */
   as?: "div" | "li";

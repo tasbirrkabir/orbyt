@@ -183,3 +183,100 @@ Stage Summary:
 - 15 new files: 4 primitives + header/hero/problem/services/process/systems/why/insights/cta-strip/contact/footer + rewritten page.tsx (~90 lines).
 - Ink & Ember discipline held: orange only on CTAs, emphasis words, eyebrows, markers/active chips, and the one full-bleed CTA strip; hard edges + hard offset shadows + blueprint grid + mono labels carry the texture; motion = 2 CSS marquees + restrained whileInView reveals, all gated by useReducedMotion.
 - Ready for Task 11-b (Prisma ContactSubmission + POST /api/contact — the form already POSTs the exact contract) and Task 12 (browser verification).
+
+---
+Task ID: 13 + 13b
+Agent: main (Z.ai Code)
+Task: User pivot v2: multipage detailed site, restored animations, logo animations, legal pages, humanized copy (ZERO em-dashes), login + onboarding + contact flows, extraordinary UI.
+
+Work Log:
+- globals.css: restored full animation system as CSS vars/keyframes: orbit + orbit-reverse (--orbit-radius tunable), twinkle, pulse-glow, float, alongside marquee/blink/step-run. Reduced-motion guard extended to all 8.
+- prisma/schema.prisma v2: User + passwordHash (nullable) + relations (submissions, onboardingProfile); NEW OnboardingProfile (company/industry/stage/challengesJson/tools/goal/completedAt; challengesJson string because sqlite primitives cannot be lists); ContactSubmission + topic? + userId? -> User (SetNull). bun run db:push OK (Prisma Client v6.19.2 generated).
+- .env: added NEXTAUTH_SECRET (openssl rand) + NEXTAUTH_URL=http://localhost:3000.
+- COPY REWRITE (Task 13b) with hard rule: ZERO em/en dashes anywhere, humanized psychologically (second person, names real feelings, concrete scenes, admissions build trust, varied rhythm, no hype):
+  - src/content/orbyt.ts rewritten: NAV_LINKS now REAL ROUTES (/services /process /work /about /insights), SITE, HERO, HOME_TRUST, PROBLEM (6 items), SERVICES (5 pillars, now with slug/short/what/why/signs/builds/connects/outcome), CHAIN_NODES, SERVICES_SECTION, PROCESS_STEPS, PROCESS_SECTION, SYSTEM_BLUEPRINTS (+ story), SYSTEMS_SECTION, PRINCIPLES, WHY_SECTION, INSIGHTS_SECTION, CONTACT (topics, 3-step flow microcopy, success/error), CTA_STRIP, FOOTER (+legalLinks, accountLinks), NOT_FOUND.
+  - NEW src/content/flows.ts: AUTH (login/register), ONBOARDING (4 steps: You / The friction / The goal / Review, industries, stages, 6 friction options), DASHBOARD (profile/messages/next cards, greeting), PROTECTED.
+  - NEW src/content/insights.ts: 4 FULL essays (structured EssayBlocks: p/h2/quote/list, minutes, dek, slugs; operator voice, zero dashes, nothing fabricated).
+  - NEW src/content/legal.ts: Privacy + Terms, plain human language, nothing invented (no reg numbers/addresses/jurisdictions; project work governed by individual agreement).
+- Breaking-change note: old components importing INSIGHTS/old shapes from '@/content/orbyt' now break until Task 14-a rewrites all consumers.
+
+Stage Summary:
+- Content layer v2 complete (dash-free, humanized). DB + env ready for auth. Animations available again.
+- Next: 14-a (public multipage + animation/logo system), 14-b (auth backend), 14-c (flow pages) in parallel, then 15 (E2E).
+
+---
+Task ID: 14-a
+Agent: frontend-styling-expert (recovered by main; agent's final report lost to a task timeout, artifacts verified on disk)
+Task: Multipage public site + restored animations + logo animation system.
+
+Work Log (verified artifacts):
+- ROUTES LIVE (all 200): / , /services , /process , /work , /about , /insights , /insights/[slug] (4 essays) , /legal/privacy , /legal/terms , not-found.tsx (404). Each route = server page.tsx (metadata) + client view in src/components/orbyt/views/ (home-view, services-view, process-view, work-view, about-view, insights-view, essay-view, legal-view, process-timeline).
+- Shared: header.tsx (sticky, blur, real-route nav, scroll-progress.tsx orange scaleX bar), footer.tsx (nav + accountLinks + legalLinks), page-hero.tsx (interior hero band), template.tsx (route entrance transition 0.35s), site-shell.tsx, chain-diagram.tsx, cross-field.tsx (twinkle blueprint crosses), cta-strip.tsx.
+- LOGO ANIMATION SYSTEM: animated-mark.tsx = /orbyt-mark.png + orbiting satellite squares (animate-orbit + animate-orbit-reverse, --orbit-radius) + optional pulse halo. Home hero: large mark w/ satellites + halo, /orbyt-logo.png tile with shadow-pixel-orange + animate-float + clipped corner, 6 twinkle crosses. Header: small mark w/ 1 slow satellite. Footer: static small mark.
+- Em-dash sweep of src/ completed to ZERO hits (content, metadata, comments). Arrows/middots retained.
+- Animations gated by useReducedMotion; CSS guard covers all 8 keyframes.
+
+Stage Summary:
+- Public multipage site live and art-directed; home keeps 2 marquees; detail lives on subpages. /contact route intentionally not built by this task (14-c).
+
+---
+Task ID: 14-b
+Agent: general-purpose (recovered by main; final report lost to task timeout, artifacts verified on disk)
+Task: Auth + flow backend.
+
+Work Log (verified artifacts):
+- src/lib/password.ts: scrypt hash/verify (node:crypto, timingSafeEqual, format s2:salt:hash).
+- src/lib/auth.ts: NextAuth v4 authOptions (CredentialsProvider w/ lowercase email lookup + scrypt verify, JWT sessions, session.user.id, pages.signIn=/login).
+- API: /api/auth/[...nextauth] (GET+POST handler), /api/auth/register (zod, 409 on duplicate, scrypt hash, 201 {ok,id}), /api/onboarding (getServerSession-protected, challenges array -> challengesJson, upsert + completedAt), /api/me (protected; user + onboardingProfile + last 20 submissions, sanitized).
+- /api/contact upgraded: topic (capped) + session userId attach, guest allowed, rate limit preserved.
+- Verified via curl: /api/me 401 unauthenticated, /api/auth/providers 200. DB: schema v2 pushed earlier.
+
+Stage Summary:
+- Auth + flow backend complete and contract-stable for 14-c:
+  POST /api/auth/register {name,email,password} -> 201|400|409|500
+  NextAuth credentials at /api/auth/[...nextauth] (signIn('credentials',{redirect:false}))
+  POST /api/onboarding {company,industry,stage,challenges[],tools?,goal,focus?} -> 200|401
+  GET /api/me -> 200 {user,profile,submissions}|401
+  POST /api/contact {name,email,topic?,message} -> 201|400|429|500
+
+---
+Task ID: 14-c
+Agent: frontend-styling-expert
+Task: Flow pages: /login (auth toggle + brand rail), /onboarding (protected 4-step wizard), /dashboard (protected 3 cards), /contact (3-step guided flow) + SessionProvider wiring.
+
+Work Log:
+- src/components/providers.tsx NEW ('use client'): SessionProvider (refetchOnWindowFocus=false); src/app/layout.tsx edited minimally: {children} + <Toaster/> wrapped in <Providers>, nothing else touched.
+- src/app/login/page.tsx NEW (client): one card, login/register toggle honoring ?mode=register and ?next= (useSearchParams wrapped in Suspense). Register: POST /api/auth/register then signIn('credentials',{redirect:false}); success -> router.push(next ?? /onboarding) + welcomeNew toast; 409 -> AUTH.register.emailTaken inline. Login: signIn direct -> /dashboard; ok:false -> AUTH.login.invalid (non-CredentialsSignin -> AUTH.login.error). Inline validation (name/email regex/8-char password) with AUTH strings, password show/hide (Eye/EyeOff, aria-pressed, aria-label), Enter submits via form onSubmit. lg brand rail: /orbyt-logo.png tile (rounded-md, shadow-pixel-orange, 22px clipped corner), tagline composed from HERO.titleA + titleB, FOOTER.tag mono. Card stays max-w-md, centered on mobile.
+- src/app/onboarding/page.tsx NEW (client): session gate (loading -> mono spinner + PROTECTED.redirecting; unauthenticated -> needLogin card linking /login?next=/onboarding and /login?mode=register, no auto-redirect loops). Wizard: 4 steps from ONBOARDING.progressLabels, framer-motion animated bg-primary progress bar + "STEP 1 / 4 : YOU" mono label. Step 1 company Input + industry/stage shadcn Selects; step 2 six challenge Checkboxes (rounded-none hard squares, orange border/fill when checked) + tools Textarea + hint; step 3 goal Textarea + focus Input; step 4 review dl with Edit jumps + Badge chips; Back/Next with inline ONBOARDING.errors; state preserved; POST /api/onboarding -> success panel (successTitle/success + toDashboard) + toast; 401 during save -> needLogin card. GET /api/me prefill for returning users -> submit label becomes "Save changes".
+- src/app/dashboard/page.tsx NEW (client): same gate; GET /api/me with one auto-retry; 3 cards (bg-card border, hover:shadow-pixel-orange): profile (definition rows, challenges as secondary Badges, tools notSet fallback, empty state -> emptyCta /onboarding, edit -> /onboarding), messages (topic outline Badge, 140-char preview, date-fns "MMM d, yyyy", empty -> emptyCta /contact), next (3 numbered steps + CTA /contact). Header: hour-based DASHBOARD.greeting + name, DASHBOARD.sub, signedInAs mono email, outline signOut({callbackUrl:'/'}). animate-pulse skeleton cards while loading.
+- src/app/contact/page.tsx NEW (client): reuses PageHero (CONTACT.eyebrow/title/sub). 3-step flow: sticky left column (step indicator 1 You / 2 The problem / 3 Review, completed = Check, forward clicks disabled) + CONTACT.next panel; right column form card with framer-motion progress bar, "STEP 1 / 3 : YOU" label. Step 1 name+email (required + regex); step 2 single-select topic chips (orange bg-primary when active) + message Textarea (min 10 chars); step 3 review summary with Edit jumps; submit -> POST /api/contact (topic optional, session user prefills step 1); submitting state (Loader2 + submitting); success panel (successTitle font-display, success, mono "STATUS: RECEIVED", again resets to step 1); error -> toast + inline CONTACT.form.error. Enter advances (form onKeyDown, textarea excluded so Enter makes new lines).
+- Header: FOOTER.accountLinks added to desktop nav as small mono links (h-11 targets, hidden below md; mobile Sheet already had them).
+- Per-route metadata via 4 tiny server layouts (client pages cannot export metadata): "Log in / Onboarding / Dashboard / Start a project · ORBYT".
+- Verification: bun run lint clean; npx tsc --noEmit clean for src/ (pre-existing errors only in examples/ + skills/, untouched by tasks 13/14); curl 200 for all four routes; rg "—|–" src/ -> zero hits; dev.log tail: all four compiled + 200, no errors.
+
+Deviations:
+- "Back"/"Next"/"Edit"/"Save changes"/step names "You, The problem, Review"/mono "ERROR" and "STATUS: RECEIVED" labels are task-specified controls not present in the content files; everything else is verbatim from flows.ts / orbyt.ts.
+- Dashboard profile card has no "First focus" row: /api/me profile does not return focus (not persisted server-side, see 14-b note).
+- Dashboard /api/me hard-failure state reuses CONTACT.form.error (no generic error string exists in content) after one silent retry.
+
+Stage Summary:
+- All four flow pages live and contract-wired to the live auth backend; providers mounted app-wide; account links in header/footer. Next: 15 (E2E verification of full register -> onboarding -> contact -> dashboard loop).
+
+---
+Task ID: 15
+Agent: main (Z.ai Code)
+Task: Full E2E verification of multipage ORBYT site (public pages, auth loop, contact flow, legal, mobile).
+
+Work Log:
+- ROUTES: /, /services, /process, /work, /about, /insights, /insights/[slug] (x2 tested), /legal/privacy, /legal/terms, /login (+?mode=register), /onboarding, /dashboard, /contact all 200; /nonexistent-page -> branded 404. bun run lint clean; tsc --noEmit clean for src/.
+- AUTH LOOP (browser-verified, real data): register (Nadia Operator) -> auto signIn -> redirect /onboarding; 4-step wizard (company/industry/stage selects, 2 challenges checked, tools, 90-day goal + focus, review) -> "Workspace ready."; dashboard shows greeting by name, signed-in email, profile card with ALL persisted fields. Log out -> callbackUrl / ; log back in -> /dashboard restored.
+- Radix quirk handled during testing: Select options need click-to-open (native select cmd ignored).
+- CONTACT FLOW: 3 steps (YOU prefilled from session -> topic chips + message -> review) -> "STATUS: RECEIVED". DB row verified: topic="Systems", userId attached to session user.
+- DASHBOARD: messages card lists the submitted conversation; profile edit path via /onboarding prefill (Save changes).
+- MOBILE 375x812: scrollWidth 375 = no overflow; Sheet menu renders all nav + ACCOUNT (Log in/Dashboard) + CTA; hero intentionally stacked, full-width 48px CTAs.
+- ANIMATIONS CONFIRMED IN DOM: .animate-orbit (satellites), .animate-float (logo tile), 6x .animate-twinkle crosses, scroll-progress scaleX bar, process timeline orange progress line, 2 marquees.
+- CONSOLE/dev.log: clean (only Fast Refresh info); zero page errors; footer sticky behavior verified previously, layout unchanged.
+- Dash sweep: rg "—|–" src/ => ZERO hits (metadata, content, comments all clean).
+
+Stage Summary:
+- VERIFIED COMPLETE: ORBYT official site is a detailed multipage product: 6 public pages + 4 essays + 2 legal pages + 404, full auth (register/login/logout), 4-step onboarding with persistence, 3-step contact flow writing to DB with user attribution, dashboard workspace. Ink & Ember brand system with restored animation set + logo animation system (AnimatedMark orbiting satellites, float, twinkle, pulse halo), zero AI-slop patterns, zero em-dashes, honest copy throughout.
