@@ -4,21 +4,24 @@ import * as React from 'react';
 import Image from 'next/image';
 import { motion, useReducedMotion } from 'framer-motion';
 import {
-  ArrowDown,
+  Activity,
+  ArrowRight,
+  ArrowUp,
+  Ban,
+  Blocks,
+  Check,
   Download,
-  Flame,
+  Grid3x3,
+  HeartPulse,
   Menu,
-  Moon,
-  Orbit,
-  Rocket,
+  MoveHorizontal,
+  Palette,
   Ruler,
-  Satellite,
-  ShieldCheck,
-  Sparkles,
+  Square,
   Timer,
-  Type as TypeIcon,
-  Waves,
-  X,
+  Trophy,
+  Users,
+  Zap,
 } from 'lucide-react';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -26,7 +29,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -62,318 +64,311 @@ const NAV_LINKS = [
   { label: 'Components', href: '#components' },
 ] as const;
 
-const KIT_TOAST = {
-  title: 'Brand kit requested',
-  description: 'orbyt-brand-kit-v1.0 — tokens, marks, and type specimens are queued for delivery.',
-} as const;
-
-const ASSETS_TOAST = {
-  title: 'Preparing assets',
-  description:
-    'orbyt-brand-kit-v1.0.zip — logos, tokens & type specimens. Demo build: the download is stubbed.',
-} as const;
-
-const PRINCIPLES = [
+const FOUNDATIONS = [
   {
-    icon: Orbit,
-    title: 'Orbital geometry',
-    copy: 'Layouts, loaders, and micro-interactions move along arcs. Circles and ellipses are the native shapes of the system.',
+    icon: Grid3x3,
+    title: 'Pixel precision',
+    body: 'Everything snaps to the grid. Chunky pixels, square edges, no blur, no fudge.',
+    token: 'grid/8px',
   },
   {
-    icon: Flame,
-    title: 'Ember warmth',
-    copy: 'One incandescent accent carries the brand. Ember is spent deliberately — on CTAs, focus, and moments of ignition.',
+    icon: Palette,
+    title: 'Flat & fearless color',
+    body: 'One loud orange on honest neutrals. Flat blocks and hard shadows do the work — no decorative gradients.',
+    token: 'fill/flat',
   },
   {
-    icon: TypeIcon,
-    title: 'Precise type',
-    copy: 'Space Grotesk sets direction, Inter sets detail. A fixed scale keeps every voice at the right altitude.',
+    icon: Zap,
+    title: 'Forward motion',
+    body: 'If it does not move the eye forward, cut it. Speed lines over scenery, always.',
+    token: 'vel/max',
   },
   {
-    icon: Moon,
-    title: 'Deep space canvas',
-    copy: 'Void and Nebula surfaces give light somewhere to land. Contrast stays generous; darkness is never muddy.',
+    icon: Blocks,
+    title: 'Systematic play',
+    body: 'Strict tokens, room to jam. Learn the rules first, then find the rhythm.',
+    token: 'sys/play',
   },
 ] as const;
 
 const SWATCHES = [
-  { name: 'Void', hex: '#0B0A08', role: 'Canvas' },
-  { name: 'Nebula', hex: '#14120D', role: 'Surface' },
-  { name: 'Ash', hex: '#211D15', role: 'Elevated surface' },
-  { name: 'Starlight', hex: '#F2EEE6', role: 'Primary text' },
-  { name: 'Ember', hex: '#FF7A1A', role: 'Primary accent' },
-  { name: 'Flare', hex: '#FFB25C', role: 'Highlight' },
-  { name: 'Gold', hex: '#E8C468', role: 'Detail · data' },
-  { name: 'Sage', hex: '#9BAF7E', role: 'Positive · support' },
-  { name: 'Terra', hex: '#D96C4F', role: 'Warm secondary' },
+  { name: 'Orbyt Orange', hex: '#FD5A01', role: 'Primary — energy, action, key moments', light: false },
+  { name: 'Charcoal', hex: '#1B1B1A', role: 'Ink — type, the runner, hard shadows', light: true },
+  { name: 'Paper', hex: '#FAF7F2', role: 'Canvas — the page itself', light: true },
+  { name: 'White', hex: '#FFFFFF', role: 'Surface — cards and panels', light: true },
+  { name: 'Sand', hex: '#F1EBE1', role: 'Secondary — quiet fills and wells', light: true },
+  { name: 'Ember Tint', hex: '#FF8A3D', role: 'Support — gradients, hover heat', light: true },
+  { name: 'Ember Deep', hex: '#B44401', role: 'Support — pressed states, gradients', light: true },
+  { name: 'Blush', hex: '#FFE3D1', role: 'Accent tint — soft highlights', light: true },
+  { name: 'Smoke', hex: '#EFEADF', role: 'Neutral fill — code, tokens, dividers', light: true },
+  { name: 'Ash', hex: '#6B6862', role: 'Muted — secondary text only', light: true },
 ] as const;
 
 const USAGE_RATIO = [
-  { name: 'Void', detail: 'canvas', pct: 60, hex: '#0B0A08' },
-  { name: 'Nebula / Ash', detail: 'surfaces', pct: 25, hex: '#14120D' },
-  { name: 'Starlight', detail: 'text', pct: 10, hex: '#F2EEE6' },
-  { name: 'Ember', detail: 'accents', pct: 5, hex: '#FF7A1A' },
+  { label: 'Paper', pct: 60, hex: '#FAF7F2', text: '#1B1B1A' },
+  { label: 'White', pct: 20, hex: '#FFFFFF', text: '#1B1B1A' },
+  { label: 'Charcoal', pct: 12, hex: '#1B1B1A', text: '#FAF7F2' },
+  { label: 'Orbyt Orange', pct: 8, hex: '#FD5A01', text: '#1B1B1A' },
+] as const;
+
+const TYPE_FAMILIES = [
+  {
+    name: 'Space Grotesk',
+    role: 'Display',
+    glyph: 'Aa',
+    className: 'font-display',
+    note: 'Headlines and big statements — geometric, sporty, a little retro.',
+  },
+  {
+    name: 'Inter',
+    role: 'Text',
+    glyph: 'Aa',
+    className: 'font-sans',
+    note: 'UI and long-form copy — neutral, legible, never in the way.',
+  },
+  {
+    name: 'Geist Mono',
+    role: 'Mono',
+    glyph: '01',
+    className: 'font-mono',
+    note: 'Eyebrows, labels, tokens and stats — the digital heartbeat.',
+  },
 ] as const;
 
 const TYPE_SCALE = [
   {
-    token: 'display / 64',
-    className: 'font-display text-[clamp(2.75rem,7vw,4rem)] leading-none tracking-tight',
-    sample: 'Precision in orbit',
+    token: 'display.xl',
+    sample: 'Run forward',
+    className: 'font-display text-5xl md:text-7xl font-bold tracking-tight',
   },
   {
-    token: 'h1 / 48',
-    className: 'font-display text-[clamp(2.25rem,5.5vw,3rem)] leading-tight tracking-tight',
-    sample: 'Precision in orbit',
+    token: 'display.l',
+    sample: 'Built to move',
+    className: 'font-display text-4xl md:text-6xl font-bold tracking-tight',
   },
   {
-    token: 'h2 / 36',
-    className: 'font-display text-[clamp(1.75rem,4.5vw,2.25rem)] leading-tight tracking-tight',
-    sample: 'Precision in orbit',
+    token: 'heading.1',
+    sample: 'Pixel precision at pace',
+    className: 'font-display text-3xl md:text-5xl font-bold tracking-tight',
   },
   {
-    token: 'h3 / 28',
-    className: 'font-display text-[clamp(1.5rem,3.5vw,1.75rem)] leading-snug',
-    sample: 'Precision in orbit',
+    token: 'heading.2',
+    sample: 'The system in practice',
+    className: 'font-display text-2xl md:text-4xl font-semibold tracking-tight',
   },
   {
-    token: 'body / 16',
-    className: 'font-sans text-base leading-relaxed',
-    sample: 'Orbyt pairs exact geometry with the warmth of ember light.',
+    token: 'heading.3',
+    sample: 'Flat & fearless color',
+    className: 'font-display text-xl md:text-2xl font-semibold',
   },
   {
-    token: 'caption / 13',
-    className: 'font-sans text-[13px] text-muted-foreground',
-    sample: 'Metadata and supporting detail, always secondary.',
+    token: 'body.l',
+    sample: 'Orbyt runs on pixel precision and relentless forward motion.',
+    className: 'text-lg',
   },
   {
-    token: 'mono / 14',
-    className: 'font-mono text-sm text-flare',
-    sample: 'orbital.duration = 30s',
+    token: 'body',
+    sample: 'Every surface inherits the same tokens — no per-component theming.',
+    className: 'text-base',
+  },
+  {
+    token: 'label',
+    sample: 'BRAND GUIDELINES · V1.0',
+    className:
+      'font-mono text-xs font-semibold uppercase tracking-[0.25em] text-muted-foreground',
   },
 ] as const;
 
 const LOGO_TILES = [
-  { bg: '#0B0A08', color: '#F2EEE6', label: 'On Void — primary' },
-  { bg: '#14120D', color: '#F2EEE6', label: 'On Nebula — surfaces' },
-  { bg: '#F2EEE6', color: '#1A0E04', label: 'On Starlight — print' },
-  { bg: '#FF7A1A', color: '#1A0E04', label: 'On Ember — campaigns' },
+  {
+    ground: 'Paper',
+    tileClass: 'bg-[#FAF7F2] border border-border',
+    caption: 'on paper — the default canvas',
+    captionClass: 'text-muted-foreground',
+  },
+  {
+    ground: 'White',
+    tileClass: 'bg-white border border-border',
+    caption: 'on white — cards and surfaces',
+    captionClass: 'text-muted-foreground',
+  },
+  {
+    ground: 'Charcoal',
+    tileClass: 'bg-[#1B1B1A]',
+    caption: 'on charcoal — full inversion',
+    captionClass: 'text-[#FAF7F2]/70',
+  },
+  {
+    ground: 'Orange',
+    tileClass: 'bg-[#FD5A01]',
+    caption: 'on orange — canvas on canvas',
+    captionClass: 'text-[#1B1B1A]/80',
+  },
 ] as const;
 
-const LOGO_DONT = [
-  'Never rotate or tilt the ring — it holds its −18° inclination.',
-  'Never recolor the planet — the ember gradient is fixed.',
-  'Never add outlines, shadows, or glows beyond the system itself.',
+const NEVER_RULES = [
+  {
+    token: 'never/outline',
+    title: 'Never outline the runner',
+    body: 'No strokes, no glows, no outer shadows on the artwork itself. The mark ships flat.',
+  },
+  {
+    token: 'never/stretch',
+    title: 'Never stretch it',
+    body: 'Scale uniformly only. Skewed pixels read as a limp, not a run.',
+  },
+  {
+    token: 'never/recolor',
+    title: 'Never recolor the canvas',
+    body: 'The orange is #FD5A01 — no themes, no seasonal editions, no exceptions.',
+  },
 ] as const;
 
 const MOTION_PRINCIPLES = [
   {
-    icon: Orbit,
-    title: 'Orbital, never linear',
-    copy: 'Elements travel arcs and closed loops. Nothing teleports; everything keeps its path.',
+    icon: MoveHorizontal,
+    token: 'animate-marquee',
+    title: 'Marquee',
+    body: 'Continuous flow. The brand never stops moving — loops must be seamless.',
   },
   {
-    icon: Timer,
-    title: 'Two clocks',
-    copy: 'Interface answers in 300ms. Celestial bodies take 30s — the system breathes on both scales.',
+    icon: Square,
+    token: 'animate-blink',
+    title: 'Blink',
+    body: 'Pixel heartbeat. Stepped and digital — a cursor, not a fade.',
   },
   {
-    icon: Waves,
-    title: 'Ease in-out only',
-    copy: 'Accelerate gently, settle gently. No bounce, no overshoot — motion obeys gravity, not springs.',
+    icon: ArrowUp,
+    token: 'animate-float',
+    title: 'Float',
+    body: 'Light lift. Small elements drift, big ones stay planted.',
   },
 ] as const;
 
-const TELEMETRY = [
-  { label: 'Delta-v', value: '0.42 km/s' },
-  { label: 'Signal', value: '98.7%' },
-  { label: 'Core temp', value: '1,920 K' },
+const TODAY_STATS = [
+  { label: 'Distance', value: '7.42', unit: 'km', icon: Activity },
+  { label: 'Pace', value: '4:38', unit: '/km', icon: Timer },
+  { label: 'Heart rate', value: '152', unit: 'bpm', icon: HeartPulse },
 ] as const;
 
-const CREW = [
+const HISTORY_ROWS = [
+  { day: 'Today', name: 'Tempo — river loop', km: '7.42' },
+  { day: 'Yesterday', name: 'Easy — recovery jog', km: '5.10' },
+  { day: 'Saturday', name: 'Long run — bridge 10K', km: '12.85' },
+  { day: 'Friday', name: 'Intervals — 8 × 400m', km: '6.30' },
+] as const;
+
+const TEAMS_ROWS = [
+  { rank: '01', name: 'Kite Collective', km: '284.6' },
+  { rank: '02', name: 'Pixel Pacers', km: '261.2' },
+  { rank: '03', name: 'Ember Run Club', km: '249.8' },
+] as const;
+
+const SPEED_ROWS = [
   {
-    initials: 'AK',
-    name: 'A. Kestrel',
-    role: 'Flight lead',
-    status: 'On duty',
-    tone: 'bg-primary/15 text-flare',
+    mode: 'step' as const,
+    duration: '1.4s',
+    height: 'h-1.5',
+    bars: ['w-10 bg-foreground/25', 'w-28 bg-primary', 'w-12 bg-foreground/15', 'w-24 bg-foreground'],
   },
   {
-    initials: 'JS',
-    name: 'J. Solaris',
-    role: 'Comms',
-    status: 'On duty',
-    tone: 'bg-gold/15 text-gold',
+    mode: 'marquee' as const,
+    duration: '11s',
+    height: 'h-2.5',
+    bars: ['w-14 bg-foreground', 'w-24 bg-primary', 'w-8 bg-foreground/20', 'w-16 bg-ember-tint'],
   },
   {
-    initials: 'MV',
-    name: 'M. Vela',
-    role: 'Payload',
-    status: 'Rest',
-    tone: 'bg-sage/15 text-sage',
+    mode: 'marquee' as const,
+    duration: '17s',
+    height: 'h-2',
+    bars: ['w-12 bg-foreground/25', 'w-28 bg-ember-deep', 'w-10 bg-foreground/15', 'w-20 bg-foreground'],
   },
-] as const;
-
-const STATION_AVATARS = [
-  { initials: 'AK', tone: 'bg-primary/20 text-flare' },
-  { initials: 'JS', tone: 'bg-gold/20 text-gold' },
-  { initials: '+4', tone: 'bg-sage/20 text-sage' },
-] as const;
-
-const ORBIT_RINGS = [
-  { size: '100%', duration: '46s', reverse: false, dot: 'bg-flare', glow: 'shadow-[0_0_12px_rgba(255,178,92,0.9)]', dotSize: 'size-2.5' },
-  { size: '73%', duration: '30s', reverse: true, dot: 'bg-gold', glow: 'shadow-[0_0_10px_rgba(232,196,104,0.9)]', dotSize: 'size-2' },
-  { size: '47%', duration: '17s', reverse: false, dot: 'bg-primary', glow: 'shadow-[0_0_10px_rgba(255,122,26,0.9)]', dotSize: 'size-2' },
-] as const;
-
-const STARS = [
-  { top: '6%', left: '20%', size: 'size-1', delay: '0s' },
-  { top: '14%', left: '70%', size: 'size-1.5', delay: '0.8s' },
-  { top: '32%', left: '92%', size: 'size-1', delay: '1.6s' },
-  { top: '68%', left: '6%', size: 'size-1.5', delay: '0.4s' },
-  { top: '88%', left: '38%', size: 'size-1', delay: '2.1s' },
-  { top: '80%', left: '84%', size: 'size-1.5', delay: '1.2s' },
-  { top: '44%', left: '3%', size: 'size-1', delay: '2.6s' },
-  { top: '52%', left: '97%', size: 'size-1', delay: '0.2s' },
 ] as const;
 
 /* ────────────────────────────────────────────────────────────
-   Helpers
+   Shared primitives
 ──────────────────────────────────────────────────────────── */
 
-function orbitStyle(duration: string): React.CSSProperties {
-  return { '--orbit-duration': duration } as React.CSSProperties;
+function useReduced() {
+  return useReducedMotion() === true;
 }
 
-/** Inline brand mark — same geometry as /orbyt-mark.svg; ring + satellite use currentColor. */
-function OrbytMark({ className }: { className?: string }) {
-  const uid = React.useId().replace(/[^a-zA-Z0-9-]/g, '');
-  const gradientId = `orbyt-planet-${uid}`;
-  return (
-    <svg
-      viewBox="0 0 64 64"
-      fill="none"
-      className={className}
-      aria-hidden="true"
-      focusable="false"
-    >
-      <defs>
-        <radialGradient id={gradientId} cx="36%" cy="30%" r="85%">
-          <stop offset="0%" stopColor="#FFD9A8" />
-          <stop offset="38%" stopColor="#FFB25C" />
-          <stop offset="72%" stopColor="#FF7A1A" />
-          <stop offset="100%" stopColor="#B34200" />
-        </radialGradient>
-      </defs>
-      <g transform="rotate(-18 32 32)">
-        <ellipse
-          cx="32"
-          cy="32"
-          rx="30"
-          ry="12"
-          stroke="currentColor"
-          strokeOpacity="0.5"
-          strokeWidth="2.5"
-        />
-        <circle cx="59.2" cy="26.9" r="3" fill="currentColor" />
-      </g>
-      <circle cx="32" cy="32" r="13" fill={`url(#${gradientId})`} />
-      <ellipse
-        cx="27.5"
-        cy="26.5"
-        rx="4.6"
-        ry="2.6"
-        transform="rotate(-28 27.5 26.5)"
-        fill="#FFF6E8"
-        opacity="0.45"
-      />
-      <g transform="rotate(-18 32 32)">
-        <path
-          d="M 2 32 A 30 12 0 0 1 62 32"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-        />
-      </g>
-    </svg>
-  );
-}
-
-/** On-load, staggered fade-up (hero). */
 function FadeUp({
+  children,
   delay = 0,
   className,
-  children,
+  y = 24,
 }: {
+  children: React.ReactNode;
   delay?: number;
   className?: string;
-  children: React.ReactNode;
+  y?: number;
 }) {
-  const reduced = useReducedMotion();
+  const reduced = useReduced();
   return (
     <motion.div
       className={className}
-      initial={reduced ? { opacity: 0 } : { opacity: 0, y: 24 }}
+      initial={reduced ? false : { opacity: 0, y }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.7, delay, ease: 'easeOut' }}
+      transition={{ duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] }}
     >
       {children}
     </motion.div>
   );
 }
 
-/** Scroll-into-view fade-up; plays once. */
 function Reveal({
+  children,
   delay = 0,
   className,
-  children,
 }: {
+  children: React.ReactNode;
   delay?: number;
   className?: string;
-  children: React.ReactNode;
 }) {
-  const reduced = useReducedMotion();
+  const reduced = useReduced();
   return (
     <motion.div
       className={className}
-      initial={reduced ? { opacity: 0 } : { opacity: 0, y: 18 }}
+      initial={reduced ? false : { opacity: 0, y: 28 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-64px' }}
-      transition={{ duration: 0.6, delay, ease: 'easeOut' }}
+      viewport={{ once: true, margin: '-60px' }}
+      transition={{ duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] }}
     >
       {children}
     </motion.div>
   );
 }
 
-/** Consistent section shell: numbered mono eyebrow + display heading + muted lede. */
 function Section({
   id,
+  index,
   eyebrow,
   title,
-  description,
+  lede,
   children,
 }: {
   id: string;
+  index: string;
   eyebrow: string;
   title: React.ReactNode;
-  description: string;
+  lede: string;
   children: React.ReactNode;
 }) {
   return (
-    <section id={id} aria-labelledby={`${id}-heading`} className="scroll-mt-20 py-20 md:py-28">
-      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+    <section id={id} aria-labelledby={`${id}-title`} className="scroll-mt-24 py-20 md:py-28">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <Reveal>
-          <p className="font-mono text-xs uppercase tracking-[0.28em] text-flare">{eyebrow}</p>
+          <p className="font-mono text-xs font-semibold uppercase tracking-[0.3em] text-primary">
+            {index} · {eyebrow}
+          </p>
           <h2
-            id={`${id}-heading`}
-            className="mt-3 font-display text-3xl font-medium tracking-tight sm:text-4xl"
+            id={`${id}-title`}
+            className="mt-3 font-display text-3xl font-bold tracking-tight md:text-5xl"
           >
             {title}
           </h2>
-          <p className="mt-3 max-w-2xl text-base leading-relaxed text-muted-foreground">
-            {description}
-          </p>
+          <p className="mt-3 max-w-2xl text-base text-muted-foreground md:text-lg">{lede}</p>
         </Reveal>
         <div className="mt-10 md:mt-14">{children}</div>
       </div>
@@ -381,106 +376,104 @@ function Section({
   );
 }
 
-/* ────────────────────────────────────────────────────────────
-   Orbital system (hero visual)
-──────────────────────────────────────────────────────────── */
-
-function OrbitalSystem({ className }: { className?: string }) {
-  const reduced = useReducedMotion();
+/** Seamless marquee: content rendered twice, track translates -50%. */
+function MarqueeTrack({
+  duration,
+  children,
+  step = false,
+  className,
+}: {
+  duration: string;
+  children: React.ReactNode;
+  step?: boolean;
+  className?: string;
+}) {
+  const reduced = useReduced();
   return (
-    <div className={cn('relative aspect-square w-full', className)} aria-hidden="true">
-      {STARS.map((star, i) => (
-        <span
-          key={i}
-          className={cn(
-            'absolute rounded-full bg-[#FFF6E8]/70',
-            star.size,
-            !reduced && 'animate-twinkle'
-          )}
-          style={{ top: star.top, left: star.left, animationDelay: star.delay }}
-        />
-      ))}
-
-      {ORBIT_RINGS.map((ring, i) => (
-        <div
-          key={i}
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-          style={{ width: ring.size, height: ring.size }}
-        >
-          <div
-            className={cn(
-              'absolute inset-0 rounded-full border border-foreground/10',
-              !reduced && (ring.reverse ? 'animate-orbit-reverse' : 'animate-orbit')
-            )}
-            style={orbitStyle(ring.duration)}
-          >
-            <span
-              className={cn(
-                'absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 rounded-full',
-                ring.dot,
-                ring.dotSize,
-                ring.glow
-              )}
-            />
-          </div>
-        </div>
-      ))}
-
+    <div className={cn('min-w-0 max-w-full overflow-hidden', className)} aria-hidden="true">
       <div
         className={cn(
-          'absolute left-1/2 top-1/2 size-24 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/25 blur-2xl md:size-28',
-          !reduced && 'animate-pulse-glow'
+          'flex w-max items-center',
+          !reduced && (step ? 'animate-step-run' : 'animate-marquee')
         )}
-      />
-      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-        <OrbytMark className="size-20 text-foreground drop-shadow-[0_0_18px_rgba(255,122,26,0.5)] md:size-24" />
-      </div>
-
-      <div className="absolute -right-2 top-10 hidden animate-float rounded-md border border-border bg-card/80 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground backdrop-blur lg:block">
-        30s · celestial
-      </div>
-      <div
-        className="absolute -left-2 bottom-12 hidden animate-float rounded-md border border-border bg-card/80 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground backdrop-blur lg:block"
-        style={{ animationDelay: '1.6s' }}
+        style={{ '--marquee-duration': duration } as React.CSSProperties}
       >
-        300ms · interface
+        {[0, 1].map((half) => (
+          <div key={half} className="flex shrink-0 items-center">
+            {children}
+          </div>
+        ))}
       </div>
     </div>
   );
+}
+
+function SpeedRow({
+  duration,
+  bars,
+  height,
+  mode,
+}: {
+  duration: string;
+  bars: readonly string[];
+  height: string;
+  mode: 'marquee' | 'step';
+}) {
+  return (
+    <MarqueeTrack duration={duration} step={mode === 'step'}>
+      {Array.from({ length: 5 }).map((_, group) => (
+        <div key={group} className="flex items-center gap-3 pr-3">
+          {bars.map((bar, i) => (
+            <span key={i} className={cn('shrink-0 rounded-full', height, bar)} />
+          ))}
+        </div>
+      ))}
+    </MarqueeTrack>
+  );
+}
+
+function notify(title: string, description: string) {
+  toast({ title, description });
 }
 
 /* ────────────────────────────────────────────────────────────
    Header
 ──────────────────────────────────────────────────────────── */
 
-function SiteHeader() {
+function Header() {
   const [open, setOpen] = React.useState(false);
-  const handleKit = () => toast(KIT_TOAST);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/80 bg-background/70 backdrop-blur-md">
-      <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-50 border-b bg-background/90 backdrop-blur">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <a
           href="#top"
-          className="flex min-h-[44px] items-center gap-2.5 rounded-lg"
+          className="flex min-h-11 items-center gap-2.5 rounded-lg pr-2"
           aria-label="Orbyt — back to top"
         >
-          <OrbytMark className="size-7 text-foreground" />
-          <span className="font-display text-lg font-medium lowercase tracking-tight">orbyt</span>
+          <Image
+            src="/orbyt-mark.png"
+            alt="Orbyt logo — charcoal pixel runner on flat orange"
+            width={256}
+            height={285}
+            priority
+            className="h-[34px] w-auto rounded-md"
+          />
+          <span className="font-display text-xl font-bold lowercase tracking-tight">orbyt</span>
           <Badge
             variant="secondary"
-            className="ml-1 hidden font-mono text-[10px] uppercase tracking-wider sm:inline-flex"
+            className="hidden font-mono text-[10px] font-semibold uppercase tracking-[0.16em] md:inline-flex"
           >
             Brand System v1.0
           </Badge>
         </a>
 
-        <nav aria-label="Primary" className="hidden items-center md:flex">
+        <nav aria-label="Sections" className="hidden items-center gap-1 lg:flex">
           {NAV_LINKS.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              className="flex h-11 items-center rounded-md px-3 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              className="flex h-11 items-center rounded-md px-3 text-sm font-medium text-foreground/80 transition-colors hover:bg-muted hover:text-foreground"
             >
               {link.label}
             </a>
@@ -488,7 +481,15 @@ function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Button size="lg" className="hidden h-11 px-5 sm:inline-flex" onClick={handleKit}>
+          <Button
+            className="hidden h-11 px-5 sm:inline-flex"
+            onClick={() =>
+              notify(
+                'Brand kit requested',
+                'Logo, tokens and wallpapers are packed and ready. Check your downloads.'
+              )
+            }
+          >
             Get the kit
           </Button>
 
@@ -497,43 +498,57 @@ function SiteHeader() {
               <Button
                 variant="outline"
                 size="icon"
-                className="size-11 md:hidden"
-                aria-label="Open navigation menu"
+                className="size-11 lg:hidden"
+                aria-label="Open menu"
               >
-                <Menu className="size-5" aria-hidden="true" />
+                <Menu className="size-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-72 border-border bg-background/95 backdrop-blur-xl">
+            <SheetContent side="right" className="w-80">
               <SheetHeader>
-                <SheetTitle className="flex items-center gap-2 font-display lowercase">
-                  <OrbytMark className="size-5 text-foreground" />
-                  orbyt
+                <SheetTitle className="flex items-center gap-2.5">
+                  <Image
+                    src="/orbyt-mark.png"
+                    alt=""
+                    width={256}
+                    height={285}
+                    className="h-8 w-auto rounded-md"
+                  />
+                  <span className="font-display text-lg font-bold lowercase tracking-tight">
+                    orbyt
+                  </span>
                 </SheetTitle>
-                <SheetDescription className="sr-only">
-                  Orbyt brand system navigation
+                <SheetDescription className="font-mono text-xs uppercase tracking-[0.2em]">
+                  Brand System v1.0
                 </SheetDescription>
               </SheetHeader>
-              <nav aria-label="Mobile" className="flex flex-col gap-1">
+              <nav aria-label="Mobile sections" className="flex flex-col gap-1 px-4">
                 {NAV_LINKS.map((link) => (
                   <a
                     key={link.href}
                     href={link.href}
                     onClick={() => setOpen(false)}
-                    className="flex min-h-[44px] items-center rounded-lg px-3 font-display text-base text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                    className="flex h-11 items-center rounded-lg px-3 text-base font-medium transition-colors hover:bg-muted"
                   >
                     {link.label}
                   </a>
                 ))}
+                <Button
+                  className="mt-4 h-12 w-full"
+                  onClick={() => {
+                    setOpen(false);
+                    notify(
+                      'Brand kit requested',
+                      'Logo, tokens and wallpapers are packed and ready. Check your downloads.'
+                    );
+                  }}
+                >
+                  Get the kit
+                </Button>
+                <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
+                  Flat Ember · Paper #FAF7F2 · Orange #FD5A01
+                </p>
               </nav>
-              <Button
-                className="mt-4 h-11 w-full"
-                onClick={() => {
-                  setOpen(false);
-                  handleKit();
-                }}
-              >
-                Get the kit
-              </Button>
             </SheetContent>
           </Sheet>
         </div>
@@ -547,217 +562,385 @@ function SiteHeader() {
 ──────────────────────────────────────────────────────────── */
 
 function Hero() {
-  return (
-    <section
-      aria-labelledby="hero-heading"
-      className="relative flex min-h-[92svh] items-center overflow-hidden"
-    >
-      <div className="absolute inset-0" aria-hidden="true">
-        <Image
-          src="/images/orbyt-hero.png"
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover opacity-[0.55]"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/35 to-background" />
-        <div className="absolute inset-0 bg-[radial-gradient(75%_60%_at_50%_42%,transparent_0%,rgba(11,10,8,0.55)_100%)]" />
-      </div>
+  const reduced = useReduced();
 
-      <div className="relative mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-8 px-4 pb-20 pt-24 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:gap-6 lg:pb-14 lg:pt-14 lg:px-8">
-        <div className="relative z-10 max-w-2xl">
+  return (
+    <section aria-labelledby="hero-title" className="relative flex min-h-[92svh] flex-col overflow-hidden">
+      <div className="mx-auto grid w-full max-w-6xl flex-1 items-center gap-12 px-4 py-16 sm:px-6 md:py-20 lg:grid-cols-2 lg:gap-10 lg:px-8">
+        {/* Copy */}
+        <div className="max-w-xl">
           <FadeUp>
-            <Badge
-              variant="outline"
-              className="border-flare/30 bg-primary/5 px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.22em] text-flare"
-            >
-              <Sparkles className="size-3" aria-hidden="true" />
+            <p className="flex items-center gap-3 font-mono text-xs font-semibold uppercase tracking-[0.3em] text-primary">
               Brand Guidelines · v1.0
-            </Badge>
+              <span
+                aria-hidden="true"
+                className={cn('inline-block h-3.5 w-1.5 rounded-[2px] bg-primary', !reduced && 'animate-blink')}
+              />
+            </p>
           </FadeUp>
 
           <FadeUp delay={0.08}>
             <h1
-              id="hero-heading"
-              className="mt-6 font-display text-5xl font-medium leading-[1.04] tracking-tight sm:text-6xl lg:text-7xl"
+              id="hero-title"
+              className="mt-5 font-display text-6xl font-bold leading-[0.95] tracking-tight sm:text-7xl xl:text-8xl"
             >
-              One brand in <span className="text-gradient-brand">orbit</span>.
+              Run <span className="text-primary">forward.</span>
+              <span
+                aria-hidden="true"
+                className={cn(
+                  'ml-3 inline-block h-[0.62em] w-[0.16em] translate-y-[0.05em] rounded-[3px] bg-primary',
+                  !reduced && 'animate-blink'
+                )}
+              />
             </h1>
           </FadeUp>
 
           <FadeUp delay={0.16}>
-            <p className="mt-6 max-w-prose text-base leading-relaxed text-muted-foreground sm:text-lg">
-              Orbyt is a design language of precise typography, orbital geometry, and ember
-              warmth — built for products that move with quiet confidence.
+            <p className="mt-6 text-lg text-muted-foreground md:text-xl">
+              A brand built on pixel precision and relentless forward motion — one flat orange
+              canvas, one charcoal runner, zero fluff.
             </p>
           </FadeUp>
 
           <FadeUp delay={0.24}>
-            <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Button asChild size="lg" className="h-12 px-7 text-base">
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <Button asChild size="lg" className="h-12 px-6 text-base">
                 <a href="#color">
                   Explore the system
-                  <ArrowDown className="size-4" aria-hidden="true" />
+                  <ArrowRight className="ml-1 size-4" />
                 </a>
               </Button>
               <Button
                 variant="outline"
                 size="lg"
-                className="h-12 px-7 text-base"
-                onClick={() => toast(ASSETS_TOAST)}
+                className="h-12 px-6 text-base"
+                onClick={() =>
+                  notify(
+                    'Asset pack queued',
+                    'The official logo, tokens and wallpapers will download shortly.'
+                  )
+                }
               >
-                <Download className="size-4" aria-hidden="true" />
+                <Download className="mr-1 size-4" />
                 Download assets
               </Button>
             </div>
           </FadeUp>
+
+          <FadeUp delay={0.32}>
+            <p className="mt-8 font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">
+              canvas #FD5A01 · ink #1B1B1A · grid 8px · runner ×1
+            </p>
+          </FadeUp>
         </div>
 
-        <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center opacity-40 lg:relative lg:inset-auto lg:z-auto lg:justify-end lg:opacity-100">
-          <OrbitalSystem className="w-full max-w-[320px] sm:max-w-[400px] lg:max-w-[540px]" />
-        </div>
+        {/* Poster composition: logo tile + speed lines */}
+        <FadeUp delay={0.15} className="relative">
+          <div className="relative mx-auto w-full max-w-md lg:max-w-lg">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-y-8 -mx-4 flex flex-col justify-between gap-4 sm:-mx-8"
+            >
+              {SPEED_ROWS.map((row, i) => (
+                <SpeedRow
+                  key={i}
+                  duration={row.duration}
+                  bars={row.bars}
+                  height={row.height}
+                  mode={row.mode}
+                />
+              ))}
+            </div>
+
+            <motion.div
+              initial={reduced ? false : { opacity: 0, scale: 0.92 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              className="relative z-10 mx-auto w-56 sm:w-64 md:w-80"
+            >
+              <div className={cn(!reduced && 'animate-float')}>
+                <div className="shadow-pixel overflow-hidden rounded-2xl">
+                  <Image
+                    src="/orbyt-logo.png"
+                    alt="Official Orbyt logo — charcoal pixel-art runner with speed lines on a flat orange canvas"
+                    width={1189}
+                    height={1323}
+                    priority
+                    sizes="(min-width: 768px) 320px, 224px"
+                    className="h-auto w-full"
+                  />
+                </div>
+              </div>
+            </motion.div>
+
+            <div
+              className={cn(
+                'absolute left-0 top-6 z-20 rounded-lg border bg-card px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground shadow-sm',
+                !reduced && 'animate-float'
+              )}
+              style={{ animationDelay: '-2.5s' }}
+            >
+              canvas #fd5a01
+            </div>
+            <div
+              className={cn(
+                'absolute bottom-10 right-0 z-20 rounded-lg bg-foreground px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-background shadow-pixel-orange',
+                !reduced && 'animate-float'
+              )}
+              style={{ animationDelay: '-4.5s' }}
+            >
+              ink #1b1b1a
+            </div>
+          </div>
+        </FadeUp>
+      </div>
+
+      {/* Orange marquee strip */}
+      <div className="border-y border-foreground/15 bg-primary">
+        <MarqueeTrack duration="24s" className="py-3">
+          {Array.from({ length: 12 }).map((_, i) => (
+            <span
+              key={i}
+              className="whitespace-nowrap px-4 font-mono text-sm font-bold uppercase tracking-[0.3em] text-[#1B1B1A]"
+            >
+              Run · Build · Repeat ·
+            </span>
+          ))}
+        </MarqueeTrack>
       </div>
     </section>
   );
 }
 
 /* ────────────────────────────────────────────────────────────
-   Sections
+   01 · Foundations
 ──────────────────────────────────────────────────────────── */
 
-function FoundationsSection() {
+function Foundations() {
   return (
     <Section
       id="foundations"
-      eyebrow="01 · Foundations"
-      title={
-        <>
-          Four principles, one <span className="text-gradient-brand">gravity</span>
-        </>
-      }
-      description="Every Orbyt surface obeys the same physics: geometry orbits, warmth radiates, type stays precise, and darkness holds it all together."
+      index="01"
+      eyebrow="Foundations"
+      title="Four rules of the run."
+      lede="Every Orbyt surface follows the same four principles — the rest is repetition."
     >
-      <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {PRINCIPLES.map((principle, i) => (
-          <li key={principle.title} className="h-full">
-            <Reveal delay={i * 0.06} className="h-full">
-              <Card className="h-full">
-                <CardContent className="flex h-full flex-col gap-3">
-                  <span className="flex size-10 items-center justify-center rounded-lg border border-primary/25 bg-primary/10 text-flare">
-                    <principle.icon className="size-5" aria-hidden="true" />
-                  </span>
-                  <h3 className="font-display text-base font-medium">{principle.title}</h3>
-                  <p className="text-sm leading-relaxed text-muted-foreground">{principle.copy}</p>
-                </CardContent>
-              </Card>
-            </Reveal>
-          </li>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
+        {FOUNDATIONS.map((item, i) => (
+          <Reveal key={item.title} delay={i * 0.08}>
+            <Card className="h-full transition-transform hover:-translate-y-1 hover:shadow-pixel">
+              <CardHeader>
+                <div className="mb-2 flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <item.icon className="size-5" aria-hidden="true" />
+                </div>
+                <CardTitle className="font-display text-lg">{item.title}</CardTitle>
+                <CardDescription className="text-sm leading-relaxed">{item.body}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                  {item.token}
+                </p>
+              </CardContent>
+            </Card>
+          </Reveal>
         ))}
-      </ul>
+      </div>
     </Section>
   );
 }
+
+/* ────────────────────────────────────────────────────────────
+   02 · Color
+──────────────────────────────────────────────────────────── */
 
 function ColorSection() {
   return (
     <Section
       id="color"
-      eyebrow="02 · Color"
-      title={
-        <>
-          The <span className="text-gradient-brand">Ember</span> spectrum
-        </>
-      }
-      description="A warm core burning inside a deep, near-black canvas. Dark neutrals do the quiet work; a single ember and its satellites carry the signal."
+      index="02"
+      eyebrow="The palette"
+      title="The Flat Ember spectrum."
+      lede="Ten colors, one job: make the orange impossible to miss."
     >
-      <Reveal>
-        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
-          {SWATCHES.map((swatch) => (
-            <li
-              key={swatch.name}
-              className="rounded-xl border border-border bg-card p-3 sm:p-4"
-            >
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-5">
+        {SWATCHES.map((swatch, i) => (
+          <Reveal key={swatch.hex} delay={(i % 5) * 0.06}>
+            <div className="h-full overflow-hidden rounded-xl border bg-card transition-transform hover:-translate-y-1 hover:shadow-pixel-orange">
               <div
-                className="h-24 rounded-lg border border-foreground/10 sm:h-28"
+                className={cn('h-24 w-full', swatch.light && 'border-b border-border/60')}
                 style={{ backgroundColor: swatch.hex }}
+                aria-hidden="true"
               />
-              <div className="mt-3 flex items-baseline justify-between gap-2">
-                <p className="font-display text-sm font-medium">{swatch.name}</p>
-                <p className="font-mono text-[11px] uppercase text-muted-foreground">
-                  {swatch.hex}
+              <div className="p-4">
+                <p className="font-display text-sm font-bold">{swatch.name}</p>
+                <p className="mt-0.5 font-mono text-xs text-muted-foreground">{swatch.hex}</p>
+                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{swatch.role}</p>
+              </div>
+            </div>
+          </Reveal>
+        ))}
+      </div>
+
+      <div className="mt-12 grid grid-cols-1 gap-6 lg:grid-cols-[1.4fr_1fr]">
+        {/* Usage ratio */}
+        <Reveal>
+          <Card className="h-full">
+            <CardHeader>
+              <CardTitle className="font-display text-xl">Usage ratio</CardTitle>
+              <CardDescription>
+                Mostly quiet, occasionally loud. Orange is seasoning, not sauce.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <div
+                className="flex h-14 w-full overflow-hidden rounded-xl border"
+                role="img"
+                aria-label="Usage ratio: Paper 60 percent, White 20 percent, Charcoal 12 percent, Orbyt Orange 8 percent"
+              >
+                {USAGE_RATIO.map((seg) => (
+                  <div
+                    key={seg.label}
+                    className="flex items-center justify-center border-l border-foreground/10 first:border-l-0"
+                    style={{ backgroundColor: seg.hex, color: seg.text, width: `${seg.pct}%` }}
+                  >
+                    <span className="hidden font-mono text-xs font-bold md:inline">
+                      {seg.pct}%
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div className="flex flex-wrap gap-x-5 gap-y-2">
+                {USAGE_RATIO.map((seg) => (
+                  <span key={seg.label} className="flex items-center gap-2 text-sm">
+                    <span
+                      className="size-3.5 rounded-[4px] border border-foreground/10"
+                      style={{ backgroundColor: seg.hex }}
+                      aria-hidden="true"
+                    />
+                    <span className="font-medium">{seg.label}</span>
+                    <span className="font-mono text-xs text-muted-foreground">{seg.pct}%</span>
+                  </span>
+                ))}
+              </div>
+              <p className="rounded-lg bg-smoke px-4 py-3 font-mono text-xs leading-relaxed">
+                orange — 8% · <span className="font-bold text-ember-deep">5–10%: spend it loud.</span>{' '}
+                never more, never less.
+              </p>
+            </CardContent>
+          </Card>
+        </Reveal>
+
+        {/* Accessibility */}
+        <Reveal delay={0.1}>
+          <Card className="h-full">
+            <CardHeader>
+              <CardTitle className="font-display text-xl">Accessibility</CardTitle>
+              <CardDescription>Checked pairs — the rules are short on purpose.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-start gap-3 rounded-lg border p-3">
+                <Check className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" />
+                <p className="text-sm">
+                  <span className="font-semibold">Charcoal on Paper — 16.1:1</span>
+                  <span className="block text-muted-foreground">AAA. Body text everywhere.</span>
                 </p>
               </div>
-              <p className="mt-0.5 text-xs text-muted-foreground">{swatch.role}</p>
-            </li>
-          ))}
-        </ul>
-      </Reveal>
-
-      <Reveal delay={0.05}>
-        <div className="mt-12">
-          <div className="flex items-baseline justify-between gap-4">
-            <h3 className="font-display text-lg font-medium">Usage ratio</h3>
-            <p className="font-mono text-xs text-muted-foreground">60 / 25 / 10 / 5</p>
-          </div>
-          <div
-            className="mt-4 flex h-12 w-full overflow-hidden rounded-full border border-border"
-            role="img"
-            aria-label="Color usage ratio: Void 60 percent, Nebula and Ash 25 percent, Starlight 10 percent, Ember 5 percent"
-          >
-            {USAGE_RATIO.map((ratio, i) => (
-              <div
-                key={ratio.name}
-                className={cn(
-                  'flex items-center justify-center',
-                  i < USAGE_RATIO.length - 1 && 'border-r border-background/40'
-                )}
-                style={{ width: `${ratio.pct}%`, backgroundColor: ratio.hex }}
-              >
-                {ratio.pct >= 10 && (
-                  <span
-                    className={cn(
-                      'font-mono text-xs',
-                      ratio.hex === '#F2EEE6' ? 'text-[#1A0E04]' : 'text-foreground/80'
-                    )}
-                  >
-                    {ratio.pct}%
+              <div className="flex items-start gap-3 rounded-lg border p-3">
+                <Check className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" />
+                <p className="text-sm">
+                  <span className="font-semibold">Charcoal on Orange — 5.4:1</span>
+                  <span className="block text-muted-foreground">
+                    AA at every size — keep it bold for poster energy, like the mark.
                   </span>
-                )}
+                </p>
               </div>
-            ))}
-          </div>
-          <ul className="mt-4 flex flex-wrap gap-x-6 gap-y-2">
-            {USAGE_RATIO.map((ratio) => (
-              <li key={ratio.name} className="flex items-center gap-2">
-                <span
-                  className="size-2.5 rounded-full border border-foreground/10"
-                  style={{ backgroundColor: ratio.hex }}
-                  aria-hidden="true"
-                />
-                <span className="font-mono text-xs text-muted-foreground">
-                  {ratio.pct}% {ratio.name} — {ratio.detail}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </Reveal>
+              <div className="flex items-start gap-3 rounded-lg border p-3">
+                <Ban className="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden="true" />
+                <p className="text-sm">
+                  <span className="font-semibold">White on Orange — 3.2:1</span>
+                  <span className="block text-muted-foreground">
+                    Fails AA. Never white body text on orange — always Charcoal.
+                  </span>
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </Reveal>
+      </div>
+    </Section>
+  );
+}
 
-      <Reveal delay={0.05}>
-        <Card className="mt-12">
-          <CardContent className="flex items-start gap-4">
-            <span className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-lg border border-primary/25 bg-primary/10 text-flare">
-              <ShieldCheck className="size-5" aria-hidden="true" />
-            </span>
-            <div>
-              <h3 className="font-display text-lg font-medium">Accessibility notes</h3>
-              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                Ember (#FF7A1A) on Void clears WCAG AA for large text and UI accents; Starlight on
-                Void clears AAA for body copy. Never set body copy below 16px in muted tones —
-                reserve muted text for metadata and captions, and keep interactive states on Ember,
-                never on Gold or Sage.
+/* ────────────────────────────────────────────────────────────
+   03 · Type
+──────────────────────────────────────────────────────────── */
+
+function TypeSection() {
+  return (
+    <Section
+      id="type"
+      index="03"
+      eyebrow="Typography"
+      title={
+        <>
+          Type that keeps <span className="text-gradient-brand">pace.</span>
+        </>
+      }
+      lede="A provisional three-font pairing — Space Grotesk shouts, Inter works, Geist Mono counts. Final spec pending."
+    >
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-3">
+        {TYPE_FAMILIES.map((family, i) => (
+          <Reveal key={family.name} delay={i * 0.08}>
+            <Card className="h-full">
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <span className={cn('text-7xl font-bold tracking-tight', family.className)}>
+                    {family.glyph}
+                  </span>
+                  <Badge variant="secondary" className="font-mono text-[10px] uppercase tracking-[0.18em]">
+                    {family.role}
+                  </Badge>
+                </div>
+                <CardTitle className="font-display text-lg">{family.name}</CardTitle>
+                <CardDescription className="text-sm leading-relaxed">{family.note}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className={cn('text-sm text-muted-foreground', family.className)}>
+                  The quick brown fox runs 26.2 miles.
+                </p>
+              </CardContent>
+            </Card>
+          </Reveal>
+        ))}
+      </div>
+
+      <Reveal delay={0.1}>
+        <Card className="mt-6">
+          <CardHeader>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <CardTitle className="font-display text-xl">Fluid type scale</CardTitle>
+              <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                type.scale -- fixed steps · provisional
               </p>
+            </div>
+            <CardDescription>
+              Eight tokens cover every surface. Sizes are clamped and fluid — swap pending the
+              official type spec.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div>
+              {TYPE_SCALE.map((row, i) => (
+                <div key={row.token}>
+                  {i > 0 && <Separator />}
+                  <div className="flex flex-col gap-1 py-4 md:flex-row md:items-baseline md:gap-8">
+                    <span className="w-32 shrink-0 font-mono text-xs font-semibold text-primary">
+                      {row.token}
+                    </span>
+                    <span className={cn('break-words', row.className)}>{row.sample}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
@@ -766,101 +949,21 @@ function ColorSection() {
   );
 }
 
-function TypeSection() {
+/* ────────────────────────────────────────────────────────────
+   04 · Logo
+──────────────────────────────────────────────────────────── */
+
+function LogoMark({ className }: { className?: string }) {
   return (
-    <Section
-      id="type"
-      eyebrow="03 · Typography"
-      title={
-        <>
-          Precision in <span className="text-gradient-brand">orbit</span>
-        </>
-      }
-      description="Two voices and one instrument panel: Space Grotesk leads, Inter explains, Geist Mono measures. A fixed seven-step scale keeps every altitude consistent."
-    >
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <Reveal className="h-full">
-          <Card className="h-full">
-            <CardHeader>
-              <CardTitle className="font-display text-xl">Space Grotesk</CardTitle>
-              <CardDescription>Display · headlines & numerals</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="font-display text-7xl leading-none tracking-tight">Aa</p>
-              <p className="mt-5 break-words font-display text-sm leading-relaxed tracking-wide text-muted-foreground">
-                ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 0123456789 (&?!@)
-              </p>
-              <Separator className="my-4" />
-              <p className="text-sm text-muted-foreground">
-                Set tight and tall for headlines. Pairs with Starlight at 48–64px.
-              </p>
-            </CardContent>
-          </Card>
-        </Reveal>
-
-        <Reveal delay={0.06} className="h-full">
-          <Card className="h-full">
-            <CardHeader>
-              <CardTitle className="font-display text-xl">Inter</CardTitle>
-              <CardDescription>Text · body & interface</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="font-sans text-7xl leading-none tracking-tight">Aa</p>
-              <p className="mt-5 break-words font-sans text-sm leading-relaxed text-muted-foreground">
-                ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 0123456789 (&?!@)
-              </p>
-              <Separator className="my-4" />
-              <p className="text-sm text-muted-foreground">
-                Optimized for screens at 16px and up. Never below 13px, even for captions.
-              </p>
-            </CardContent>
-          </Card>
-        </Reveal>
-
-        <Reveal delay={0.12} className="h-full">
-          <Card className="h-full">
-            <CardHeader>
-              <CardTitle className="font-display text-xl">Geist Mono</CardTitle>
-              <CardDescription>Mono · labels, code & tokens</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="font-mono text-6xl leading-none">Aa</p>
-              <p className="mt-5 break-words font-mono text-sm leading-relaxed text-muted-foreground">
-                {'ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789 {<>=}'}
-              </p>
-              <Separator className="my-4" />
-              <p className="text-sm text-muted-foreground">
-                Always uppercase for eyebrows and telemetry. Values render in Flare.
-              </p>
-            </CardContent>
-          </Card>
-        </Reveal>
-      </div>
-
-      <Reveal delay={0.05}>
-        <div className="mt-12">
-          <div className="flex items-baseline justify-between gap-4">
-            <h3 className="font-display text-lg font-medium">Type scale</h3>
-            <p className="font-mono text-xs text-muted-foreground">7 steps · fluid down, fixed up</p>
-          </div>
-          <Card className="mt-4">
-            <CardContent>
-              {TYPE_SCALE.map((row, i) => (
-                <React.Fragment key={row.token}>
-                  {i > 0 && <Separator />}
-                  <div className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-1 py-5">
-                    <p className={cn('min-w-0 break-words', row.className)}>{row.sample}</p>
-                    <span className="ml-auto shrink-0 font-mono text-xs text-muted-foreground">
-                      {row.token}
-                    </span>
-                  </div>
-                </React.Fragment>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
-      </Reveal>
-    </Section>
+    <div className={cn('w-32 overflow-hidden rounded-xl md:w-40', className)}>
+      <Image
+        src="/orbyt-logo.png"
+        alt="Orbyt logo — charcoal pixel-art runner on flat orange"
+        width={1189}
+        height={1323}
+        className="h-auto w-full"
+      />
+    </div>
   );
 }
 
@@ -868,79 +971,263 @@ function LogoSection() {
   return (
     <Section
       id="logo"
-      eyebrow="04 · Logo"
-      title={
-        <>
-          A world and its <span className="text-gradient-brand">orbit</span>
-        </>
-      }
-      description="The mark is an ember planet held by a single inclined ring. The ring inherits its surroundings; the planet never changes."
+      index="04"
+      eyebrow="The mark"
+      title="The Runner."
+      lede="One charcoal pixel runner, three speed lines, one flat orange canvas. Nothing else ships."
     >
-      <Reveal>
-        <ul className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {LOGO_TILES.map((tile) => (
-            <li key={tile.label}>
-              <figure>
-                <div
-                  className="flex aspect-square items-center justify-center rounded-xl border border-border"
-                  style={{ backgroundColor: tile.bg, color: tile.color }}
-                >
-                  <OrbytMark className="h-[42%] w-[42%]" />
-                </div>
-                <figcaption className="mt-2 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-                  {tile.label}
-                </figcaption>
-              </figure>
-            </li>
-          ))}
-        </ul>
-      </Reveal>
+      {/* Placement tiles */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
+        {LOGO_TILES.map((tile, i) => (
+          <Reveal key={tile.ground} delay={(i % 2) * 0.08}>
+            <div
+              className={cn(
+                'flex aspect-[4/3] flex-col items-center justify-center gap-6 rounded-2xl p-8',
+                tile.tileClass
+              )}
+            >
+              <LogoMark />
+              <p
+                className={cn(
+                  'font-mono text-[11px] uppercase tracking-[0.25em]',
+                  tile.captionClass
+                )}
+              >
+                {tile.caption}
+              </p>
+            </div>
+          </Reveal>
+        ))}
+      </div>
 
-      <div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-2">
-        <Reveal delay={0.05} className="h-full">
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
+        {/* Pixel anatomy */}
+        <Reveal>
           <Card className="h-full">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 font-display text-lg">
-                <Ruler className="size-4 text-flare" aria-hidden="true" />
-                Clear space & size
-              </CardTitle>
-              <CardDescription>Give the mark room to orbit.</CardDescription>
+              <CardTitle className="font-display text-xl">Pixel anatomy</CardTitle>
+              <CardDescription>Three parts. That is the whole mark.</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="flex flex-col items-center gap-6 sm:flex-row">
-                <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-flare/40 bg-background/40 p-6">
-                  <OrbytMark className="size-14 text-foreground" />
-                  <p className="font-mono text-[10px] uppercase tracking-widest text-flare">
-                    clear space = 1 r
+            <CardContent className="space-y-5">
+              <div className="flex items-center gap-4">
+                <div className="grid w-14 shrink-0 grid-cols-3 gap-[2px]" aria-hidden="true">
+                  {Array.from({ length: 9 }).map((_, cell) => (
+                    <span
+                      key={cell}
+                      className={cn(
+                        'h-3.5 w-3.5 rounded-[2px]',
+                        [2, 4, 5, 6, 8].includes(cell) ? 'bg-foreground' : 'bg-transparent'
+                      )}
+                    />
+                  ))}
+                </div>
+                <div>
+                  <p className="font-mono text-xs font-bold uppercase tracking-[0.2em]">runner</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    The hero. Drawn on a strict pixel grid — edges stay square.
                   </p>
                 </div>
-                <ul className="flex-1 space-y-2.5 text-sm leading-relaxed text-muted-foreground">
-                  <li>Keep clear space equal to the planet radius (1× r) on all sides.</li>
-                  <li>Minimum digital size: 24px. Minimum print size: 8mm.</li>
-                  <li>On tinted grounds, only the ring recolors — via currentColor.</li>
-                </ul>
+              </div>
+              <Separator />
+              <div className="flex items-center gap-4">
+                <div className="flex w-14 shrink-0 flex-col gap-1.5" aria-hidden="true">
+                  <span className="h-1.5 w-8 rounded-full bg-foreground" />
+                  <span className="h-1.5 w-12 rounded-full bg-foreground" />
+                  <span className="h-1.5 w-10 rounded-full bg-foreground" />
+                </div>
+                <div>
+                  <p className="font-mono text-xs font-bold uppercase tracking-[0.2em]">
+                    speed_lines
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Three trailing blocks. Always horizontal, always behind.
+                  </p>
+                </div>
+              </div>
+              <Separator />
+              <div className="flex items-center gap-4">
+                <span className="h-10 w-14 shrink-0 rounded-lg bg-[#FD5A01]" aria-hidden="true" />
+                <div>
+                  <p className="font-mono text-xs font-bold uppercase tracking-[0.2em]">canvas</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    One flat field of Orbyt Orange #FD5A01. The stage — not a decoration.
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
         </Reveal>
 
-        <Reveal delay={0.1} className="h-full">
+        {/* Clear space & min size */}
+        <Reveal delay={0.1}>
           <Card className="h-full">
             <CardHeader>
-              <CardTitle className="font-display text-lg">Never</CardTitle>
-              <CardDescription>Three rules keep the orbit stable.</CardDescription>
+              <CardTitle className="flex items-center gap-2 font-display text-xl">
+                <Ruler className="size-4 text-primary" aria-hidden="true" />
+                Clear space & min size
+              </CardTitle>
+              <CardDescription>
+                Keep one pixel-block of clear space on every side. Minimum size: 32px digital,
+                12mm print.
+              </CardDescription>
             </CardHeader>
-            <CardContent>
-              <ul className="space-y-3">
-                {LOGO_DONT.map((rule) => (
-                  <li key={rule} className="flex items-start gap-3">
-                    <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-destructive/15 text-destructive">
-                      <X className="size-3" aria-hidden="true" />
-                    </span>
-                    <span className="text-sm leading-relaxed text-muted-foreground">{rule}</span>
-                  </li>
-                ))}
-              </ul>
+            <CardContent className="space-y-6">
+              <div className="flex justify-center rounded-xl bg-smoke p-6">
+                <div className="rounded-xl border-2 border-dashed border-primary/70 p-4">
+                  <LogoMark className="w-20" />
+                </div>
+              </div>
+              <div className="flex items-end justify-center gap-8">
+                <div className="flex flex-col items-center gap-2">
+                  <LogoMark className="w-8" />
+                  <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                    32px — min
+                  </span>
+                </div>
+                <div className="flex flex-col items-center gap-2">
+                  <LogoMark className="w-16" />
+                  <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                    64px — comfy
+                  </span>
+                </div>
+                <div className="flex flex-col items-center gap-2">
+                  <LogoMark className="w-28" />
+                  <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                    hero — loud
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </Reveal>
+      </div>
+
+      {/* Never rules */}
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-6">
+        {NEVER_RULES.map((rule, i) => (
+          <Reveal key={rule.token} delay={i * 0.08}>
+            <div className="flex h-full flex-col gap-3 rounded-xl border bg-card p-5">
+              <div className="flex items-center justify-between">
+                <Ban className="size-5 text-destructive" aria-hidden="true" />
+                <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                  {rule.token}
+                </span>
+              </div>
+              <p className="font-display font-bold">{rule.title}</p>
+              <p className="text-sm leading-relaxed text-muted-foreground">{rule.body}</p>
+            </div>
+          </Reveal>
+        ))}
+      </div>
+    </Section>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────
+   05 · Motion
+──────────────────────────────────────────────────────────── */
+
+function MotionSection() {
+  const reduced = useReduced();
+
+  return (
+    <Section
+      id="motion"
+      index="05"
+      eyebrow="Motion"
+      title="Motion is the message."
+      lede="Three moves, all mechanical, all flat — the marquee flows, the cursor blinks, the mark floats."
+    >
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_1.2fr]">
+        <div className="space-y-4">
+          {MOTION_PRINCIPLES.map((item, i) => (
+            <Reveal key={item.token} delay={i * 0.08}>
+              <div className="flex items-start gap-4 rounded-xl border bg-card p-5">
+                <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-foreground text-background">
+                  <item.icon className="size-5" aria-hidden="true" />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <p className="font-display font-bold">{item.title}</p>
+                    <code className="rounded bg-smoke px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+                      {item.token}
+                    </code>
+                  </div>
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{item.body}</p>
+                </div>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+
+        <Reveal delay={0.1}>
+          <Card className="h-full">
+            <CardHeader>
+              <CardTitle className="font-display text-xl">Live demo</CardTitle>
+              <CardDescription>The same three tokens, running right now.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* marquee */}
+              <div className="space-y-2">
+                <div className="rounded-lg border bg-secondary py-2.5">
+                  <MarqueeTrack duration="14s">
+                    {Array.from({ length: 8 }).map((_, i) => (
+                      <span
+                        key={i}
+                        className="whitespace-nowrap px-4 font-mono text-xs font-bold uppercase tracking-[0.25em]"
+                      >
+                        forward · always ·
+                      </span>
+                    ))}
+                  </MarqueeTrack>
+                </div>
+                <p className="text-right font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                  animate-marquee · --marquee-duration: 14s
+                </p>
+              </div>
+
+              <Separator />
+
+              {/* blink */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-3 rounded-lg border bg-secondary px-4 py-3">
+                  <span className="font-mono text-sm font-bold uppercase tracking-[0.2em]">
+                    run&gt;&gt;&gt;
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      'inline-block h-6 w-3 rounded-[3px] bg-primary',
+                      !reduced && 'animate-blink'
+                    )}
+                  />
+                  <span className="ml-auto font-mono text-xs text-muted-foreground">
+                    loading pace…
+                  </span>
+                </div>
+                <p className="text-right font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                  animate-blink · steps(2, start)
+                </p>
+              </div>
+
+              <Separator />
+
+              {/* float */}
+              <div className="space-y-2">
+                <div className="flex h-20 items-center justify-center rounded-lg border bg-secondary">
+                  <Badge
+                    className={cn(
+                      'px-4 py-1.5 font-mono text-xs uppercase tracking-[0.2em] shadow-pixel-orange',
+                      !reduced && 'animate-float'
+                    )}
+                  >
+                    in motion
+                  </Badge>
+                </div>
+                <p className="text-right font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                  animate-float · 7s ease-in-out
+                </p>
+              </div>
             </CardContent>
           </Card>
         </Reveal>
@@ -949,80 +1236,247 @@ function LogoSection() {
   );
 }
 
-function MotionSection() {
+/* ────────────────────────────────────────────────────────────
+   06 · Components
+──────────────────────────────────────────────────────────── */
+
+function StatCard({
+  label,
+  value,
+  unit,
+  icon: Icon,
+}: {
+  label: string;
+  value: string;
+  unit: string;
+  icon: React.ComponentType<{ className?: string }>;
+}) {
   return (
-    <Section
-      id="motion"
-      eyebrow="05 · Motion"
-      title={
-        <>
-          Everything <span className="text-gradient-brand">orbits</span>
-        </>
-      }
-      description="Motion is the brand made visible: continuous loops, gentle easing, and two clocks running at once — one for people, one for planets."
-    >
-      <div className="grid items-center gap-10 lg:grid-cols-2">
-        <ul className="space-y-6">
-          {MOTION_PRINCIPLES.map((principle, i) => (
-            <li key={principle.title}>
-              <Reveal delay={i * 0.06}>
-                <div className="flex items-start gap-4">
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-primary/25 bg-primary/10 text-flare">
-                    <principle.icon className="size-5" aria-hidden="true" />
-                  </span>
-                  <div>
-                    <h3 className="font-display text-base font-medium">{principle.title}</h3>
-                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                      {principle.copy}
-                    </p>
-                  </div>
-                </div>
-              </Reveal>
-            </li>
-          ))}
-        </ul>
-
-        <Reveal delay={0.08}>
-          <Card className="border-gradient-brand">
-            <CardHeader>
-              <CardTitle className="font-display text-lg">Motion tokens in action</CardTitle>
-              <CardDescription>Three loops from the Orbyt motion set, running live.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-8 sm:grid-cols-3 sm:items-center">
-                <div className="flex flex-col items-center gap-3">
-                  <div className="relative size-32" aria-hidden="true">
-                    <div className="absolute inset-0 rounded-full border border-foreground/15" />
-                    <div className="absolute inset-0 animate-orbit" style={orbitStyle('12s')}>
-                      <span className="absolute left-1/2 top-0 size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-flare shadow-[0_0_12px_rgba(255,178,92,0.9)]" />
-                    </div>
-                    <span className="absolute left-1/2 top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary glow-primary" />
-                  </div>
-                  <p className="font-mono text-[11px] text-muted-foreground">animate-orbit · 12s</p>
-                </div>
-
-                <div className="flex flex-col items-center gap-3">
-                  <div className="animate-float rounded-lg border border-border bg-secondary px-4 py-2.5 font-mono text-xs text-secondary-foreground">
-                    float · 7s
-                  </div>
-                  <p className="font-mono text-[11px] text-muted-foreground">animate-float · 7s</p>
-                </div>
-
-                <div className="flex flex-col items-center gap-3">
-                  <span
-                    className="size-5 animate-pulse-glow rounded-full bg-primary glow-primary"
-                    aria-hidden="true"
-                  />
-                  <p className="font-mono text-[11px] text-muted-foreground">
-                    animate-pulse-glow · 5s
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Reveal>
+    <div className="rounded-xl border p-3 md:p-4">
+      <div className="flex items-center gap-1.5 text-muted-foreground">
+        <Icon className="size-3.5" aria-hidden="true" />
+        <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em]">
+          {label}
+        </span>
       </div>
-    </Section>
+      <p className="mt-2 font-mono text-xl font-bold tracking-tight md:text-2xl">
+        {value}
+        <span className="ml-1 text-[10px] font-medium text-muted-foreground">{unit}</span>
+      </p>
+    </div>
+  );
+}
+
+function RunTracker() {
+  return (
+    <Card className="h-full">
+      <CardHeader>
+        <CardTitle className="font-display text-xl">Orbyt Run Tracker</CardTitle>
+        <CardDescription>
+          Real shadcn/ui parts wearing the Flat Ember tokens — no per-component theming, ever.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <form
+          className="flex flex-col gap-2 sm:flex-row"
+          onSubmit={(e) => {
+            e.preventDefault();
+            notify(
+              'Run logged',
+              '7.42 km at 4:38 /km — streak extended to 12 days.'
+            );
+          }}
+        >
+          <Label htmlFor="run-input" className="sr-only">
+            Log a run
+          </Label>
+          <Input
+            id="run-input"
+            placeholder="Log today's run — e.g. 7.42 km easy"
+            className="h-11 flex-1"
+          />
+          <Button type="submit" className="h-11 px-5">
+            Log it
+          </Button>
+        </form>
+
+        <div className="flex flex-wrap gap-2">
+          <Badge>PR</Badge>
+          <Badge variant="secondary" className="font-mono text-[11px] tracking-wider">
+            PACE 4:38/KM
+          </Badge>
+          <Badge variant="outline" className="font-mono text-[11px] tracking-wider">
+            RECOVERY
+          </Badge>
+          <Badge variant="destructive" className="font-mono text-[11px] tracking-wider">
+            REDLINE
+          </Badge>
+        </div>
+
+        <Tabs defaultValue="today">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="today" className="h-10">
+              Today
+            </TabsTrigger>
+            <TabsTrigger value="history" className="h-10">
+              History
+            </TabsTrigger>
+            <TabsTrigger value="teams" className="h-10">
+              Teams
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="today" className="mt-4 space-y-4">
+            <div className="grid grid-cols-3 gap-3">
+              {TODAY_STATS.map((stat) => (
+                <StatCard
+                  key={stat.label}
+                  label={stat.label}
+                  value={stat.value}
+                  unit={stat.unit}
+                  icon={stat.icon}
+                />
+              ))}
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="font-medium">Weekly goal</span>
+                <span className="font-mono text-xs text-muted-foreground">42 / 60 km</span>
+              </div>
+              <Progress value={68} className="h-2.5" aria-label="Weekly goal 68 percent" />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="history" className="mt-4">
+            <div>
+              {HISTORY_ROWS.map((row, i) => (
+                <div key={row.name}>
+                  {i > 0 && <Separator />}
+                  <div className="flex items-center justify-between gap-4 py-3">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">{row.name}</p>
+                      <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                        {row.day}
+                      </p>
+                    </div>
+                    <span className="shrink-0 font-mono text-sm font-bold">{row.km} km</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="teams" className="mt-4 space-y-4">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Users className="size-4" aria-hidden="true" />
+              4 crews on the board this week
+            </div>
+            <div>
+              {TEAMS_ROWS.map((team, i) => (
+                <div key={team.rank}>
+                  {i > 0 && <Separator />}
+                  <div className="flex items-center gap-3 py-3">
+                    <span className="font-mono text-sm font-bold text-primary">{team.rank}</span>
+                    <span className="flex-1 truncate text-sm font-medium">{team.name}</span>
+                    <Trophy
+                      className={cn('size-4', i === 0 ? 'text-primary' : 'text-muted-foreground/40')}
+                      aria-hidden="true"
+                    />
+                    <span className="font-mono text-sm font-bold">{team.km} km</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        <div className="flex items-center justify-between gap-4 rounded-xl border p-4">
+          <div className="flex items-center gap-3">
+            <div className="flex -space-x-2.5">
+              {['KT', 'PX', 'ER'].map((initials) => (
+                <Avatar key={initials} className="size-8 ring-2 ring-card">
+                  <AvatarFallback className="bg-secondary font-mono text-[10px] font-bold">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+              ))}
+            </div>
+            <div>
+              <Label htmlFor="share-live" className="text-sm font-medium">
+                Share live with crew
+              </Label>
+              <p className="text-xs text-muted-foreground">Pace and heart rate, in real time.</p>
+            </div>
+          </div>
+          <Switch id="share-live" defaultChecked aria-label="Share live with crew" />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function PartsShowcase() {
+  return (
+    <div className="flex h-full flex-col gap-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="font-display text-xl">Buttons</CardTitle>
+          <CardDescription>One orange, five support acts.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <div className="flex flex-wrap gap-3">
+            <Button>Log a run</Button>
+            <Button variant="secondary">Pace splits</Button>
+            <Button variant="outline">
+              <Download className="mr-1 size-4" />
+              Download GPX
+            </Button>
+            <Button variant="ghost">Skip</Button>
+            <Button variant="destructive">Discard</Button>
+            <Button variant="link">View history</Button>
+          </div>
+          <Separator />
+          <div className="flex flex-wrap items-center gap-3">
+            <Button size="sm" className="h-9">
+              Small
+            </Button>
+            <Button size="lg" className="h-12 px-7">
+              Large
+            </Button>
+            <Button size="icon" className="size-11" aria-label="Continue">
+              <ArrowRight className="size-4" />
+            </Button>
+            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+              h-9 · h-10 · h-12
+            </span>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="flex-1">
+        <CardHeader>
+          <CardTitle className="font-display text-xl">Badges & tokens</CardTitle>
+          <CardDescription>Labels stay mono. Numbers stay mono. Always.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <div className="flex flex-wrap gap-2">
+            <Badge>Default</Badge>
+            <Badge variant="secondary">Secondary</Badge>
+            <Badge variant="destructive">Destructive</Badge>
+            <Badge variant="outline" className="font-mono text-[11px] tracking-wider">
+              OUTLINE
+            </Badge>
+          </div>
+          <div className="rounded-xl bg-smoke p-4 font-mono text-xs leading-relaxed text-foreground/80">
+            <p>--primary: #FD5A01;</p>
+            <p>--primary-foreground: #1B1B1A;</p>
+            <p>--radius: 0.75rem;</p>
+            <p>--font-display: &apos;Space Grotesk&apos;;</p>
+            <p>--shadow-pixel: 6px 6px 0 #1B1B1A;</p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 
@@ -1030,218 +1484,17 @@ function ComponentsSection() {
   return (
     <Section
       id="components"
-      eyebrow="06 · Components"
-      title={
-        <>
-          The system in <span className="text-gradient-brand">practice</span>
-        </>
-      }
-      description="Every primitive inherits the token set automatically — no per-component theming. What follows is a slice of a real product surface, plus the control inventory."
+      index="06"
+      eyebrow="System"
+      title="The system in practice."
+      lede="A working product panel — every control below inherits the same tokens you just met."
     >
-      <div className="grid items-start gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-[1.15fr_1fr]">
         <Reveal>
-          <Card className="border-gradient-brand">
-            <CardHeader>
-              <CardTitle className="font-display text-lg">Orbyt Mission Control</CardTitle>
-              <CardDescription>Systems nominal · all stations reporting</CardDescription>
-              <CardAction>
-                <Badge className="gap-1.5">
-                  <span
-                    className="size-1.5 animate-pulse rounded-full bg-primary-foreground/80"
-                    aria-hidden="true"
-                  />
-                  Live
-                </Badge>
-              </CardAction>
-            </CardHeader>
-            <CardContent className="space-y-5">
-              <form
-                className="flex gap-2"
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  toast({
-                    title: 'Telemetry scan queued',
-                    description: 'Demo action — no spacecraft were contacted.',
-                  });
-                }}
-              >
-                <Input
-                  className="h-10 min-w-0 flex-1"
-                  placeholder="Search telemetry…"
-                  aria-label="Search telemetry"
-                />
-                <Button type="submit" className="h-10">
-                  Scan
-                </Button>
-              </form>
-
-              <Separator />
-
-              <div className="flex flex-wrap gap-2">
-                <Badge>Nominal</Badge>
-                <Badge variant="secondary">Standby</Badge>
-                <Badge variant="outline">Uplink</Badge>
-                <Badge variant="outline" className="border-gold/40 bg-gold/10 text-gold">
-                  Caution
-                </Badge>
-              </div>
-
-              <Tabs defaultValue="overview">
-                <TabsList>
-                  <TabsTrigger value="overview">Overview</TabsTrigger>
-                  <TabsTrigger value="telemetry">Telemetry</TabsTrigger>
-                  <TabsTrigger value="crew">Crew</TabsTrigger>
-                </TabsList>
-                <TabsContent value="overview" className="pt-2">
-                  <p className="text-sm leading-relaxed text-muted-foreground">
-                    All orbital systems nominal. Station-keeping within tolerance; next correction
-                    burn in 42 minutes.
-                  </p>
-                  <div className="mt-4 space-y-1.5">
-                    <div className="flex items-baseline justify-between font-mono text-xs text-muted-foreground">
-                      <span>Uplink stability</span>
-                      <span>68%</span>
-                    </div>
-                    <Progress value={68} aria-label="Uplink stability: 68 percent" />
-                  </div>
-                </TabsContent>
-                <TabsContent value="telemetry" className="pt-2">
-                  <dl className="grid grid-cols-3 gap-2">
-                    {TELEMETRY.map((stat) => (
-                      <div
-                        key={stat.label}
-                        className="rounded-lg border border-border bg-background/40 px-2 py-3 text-center"
-                      >
-                        <dt className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                          {stat.label}
-                        </dt>
-                        <dd className="mt-1 font-display text-sm font-medium sm:text-base">
-                          {stat.value}
-                        </dd>
-                      </div>
-                    ))}
-                  </dl>
-                </TabsContent>
-                <TabsContent value="crew" className="pt-2">
-                  <ul className="space-y-2.5">
-                    {CREW.map((member) => (
-                      <li key={member.name} className="flex items-center gap-3">
-                        <Avatar className="size-8 border border-border">
-                          <AvatarFallback className={cn('text-[11px] font-medium', member.tone)}>
-                            {member.initials}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium leading-tight">{member.name}</p>
-                          <p className="text-xs text-muted-foreground">{member.role}</p>
-                        </div>
-                        <Badge
-                          variant={member.status === 'Rest' ? 'secondary' : 'outline'}
-                          className="ml-auto font-mono text-[10px] uppercase tracking-wider"
-                        >
-                          {member.status}
-                        </Badge>
-                      </li>
-                    ))}
-                  </ul>
-                </TabsContent>
-              </Tabs>
-
-              <Separator />
-
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex -space-x-2.5">
-                  {STATION_AVATARS.map((avatar) => (
-                    <Avatar key={avatar.initials} className="size-9 ring-2 ring-card">
-                      <AvatarFallback
-                        className={cn('border border-border text-[11px] font-semibold', avatar.tone)}
-                      >
-                        {avatar.initials}
-                      </AvatarFallback>
-                    </Avatar>
-                  ))}
-                </div>
-                <div className="flex items-center gap-3">
-                  <Switch id="auto-uplink" defaultChecked aria-label="Toggle auto uplink" />
-                  <Label htmlFor="auto-uplink" className="text-sm text-muted-foreground">
-                    Auto-uplink
-                  </Label>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <RunTracker />
         </Reveal>
-
-        <Reveal delay={0.08}>
-          <Card>
-            <CardHeader>
-              <CardTitle className="font-display text-lg">Buttons & badges</CardTitle>
-              <CardDescription>Every control inherits the ember token set.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-5">
-              <div className="flex flex-wrap gap-2.5">
-                <Button className="h-10">Primary</Button>
-                <Button variant="secondary" className="h-10">
-                  Secondary
-                </Button>
-                <Button variant="outline" className="h-10">
-                  Outline
-                </Button>
-                <Button variant="ghost" className="h-10">
-                  Ghost
-                </Button>
-                <Button variant="destructive" className="h-10">
-                  Abort
-                </Button>
-                <Button variant="link" className="h-10">
-                  Documentation
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="size-10"
-                  aria-label="Launch sequence"
-                >
-                  <Rocket className="size-4" aria-hidden="true" />
-                </Button>
-              </div>
-
-              <Separator />
-
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge>Ember</Badge>
-                <Badge variant="secondary">Ash</Badge>
-                <Badge variant="outline">Starlight</Badge>
-                <Badge variant="destructive">Alert</Badge>
-                <Badge variant="outline" className="border-flare/40 bg-primary/10 text-flare">
-                  Flare
-                </Badge>
-                <Badge variant="outline" className="border-gold/40 bg-gold/10 text-gold">
-                  Gold
-                </Badge>
-              </div>
-
-              <Separator />
-
-              <Button
-                variant="secondary"
-                className="h-10"
-                onClick={() =>
-                  toast({
-                    title: 'Signal received',
-                    description: 'Control room acknowledges. (Demo toast)',
-                  })
-                }
-              >
-                <Satellite className="size-4" aria-hidden="true" />
-                Ping control room
-              </Button>
-
-              <p className="font-mono text-xs text-muted-foreground">
-                radius: 1rem · focus ring: ember · border: white 10%
-              </p>
-            </CardContent>
-          </Card>
+        <Reveal delay={0.1}>
+          <PartsShowcase />
         </Reveal>
       </div>
     </Section>
@@ -1253,63 +1506,57 @@ function ComponentsSection() {
 ──────────────────────────────────────────────────────────── */
 
 const FOOTER_LINKS = [
-  {
-    label: 'Guidelines',
-    toast: {
-      title: 'Guidelines',
-      description: 'You are reading the living guidelines — scroll on.',
-    },
-  },
-  { label: 'Assets', toast: ASSETS_TOAST },
-  {
-    label: 'License',
-    toast: {
-      title: 'License',
-      description: 'Orbyt v1.0 demo license — remix freely, honor the ember.',
-    },
-  },
+  { label: 'Guidelines PDF', message: 'Coming soon', description: 'The printable guide ships with Orbyt v1.1.' },
+  { label: 'Asset pack', message: 'Coming soon', description: 'Logo, tokens and wallpapers — packed for v1.1.' },
+  { label: 'Changelog', message: 'Coming soon', description: 'Version history lands with the next release.' },
+  { label: 'Contact', message: 'Coming soon', description: 'A crew inbox is on the way. Stay in motion.' },
 ] as const;
 
-function SiteFooter() {
+function Footer() {
   return (
-    <footer className="mt-auto border-t border-border">
-      <div className="mx-auto w-full max-w-6xl px-4 pb-[max(env(safe-area-inset-bottom),2.5rem)] pt-12 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
-          <div>
+    <footer className="mt-auto">
+      <div className="h-1.5 w-full bg-primary" aria-hidden="true" />
+      <div className="mx-auto max-w-6xl px-4 pb-[max(env(safe-area-inset-bottom),2.5rem)] pt-12 sm:px-6 md:pt-16 lg:px-8">
+        <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
+          <div className="max-w-sm">
             <div className="flex items-center gap-2.5">
-              <OrbytMark className="size-6 text-foreground" />
-              <span className="font-display text-lg font-medium lowercase tracking-tight">
-                orbyt
-              </span>
+              <Image
+                src="/orbyt-mark.png"
+                alt="Orbyt logo — charcoal pixel runner on flat orange"
+                width={256}
+                height={285}
+                className="h-9 w-auto rounded-md"
+              />
+              <span className="font-display text-xl font-bold lowercase tracking-tight">orbyt</span>
             </div>
-            <p className="mt-3 max-w-xs text-sm leading-relaxed text-muted-foreground">
-              A stellar design language — crafted in orbit, shipped with warmth.
+            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+              Bold flat color. Pixel precision. Always in motion — that is the whole brand.
             </p>
           </div>
-          <nav aria-label="Footer">
-            <ul className="flex flex-wrap gap-x-4 gap-y-1">
-              {FOOTER_LINKS.map((link) => (
-                <li key={link.label}>
-                  <button
-                    type="button"
-                    onClick={() => toast(link.toast)}
-                    className="flex min-h-[44px] items-center px-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    {link.label}
-                  </button>
-                </li>
-              ))}
-            </ul>
+
+          <nav aria-label="Footer" className="grid grid-cols-2 gap-x-10 gap-y-1 sm:gap-x-16">
+            {FOOTER_LINKS.map((link) => (
+              <button
+                key={link.label}
+                type="button"
+                onClick={() => notify(link.message, link.description)}
+                className="flex h-11 items-center justify-start text-left text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                {link.label}
+              </button>
+            ))}
           </nav>
         </div>
 
         <Separator className="my-8" />
 
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-muted-foreground">
-            © 2025 Orbyt Studio — Crafted in orbit
+          <p className="text-sm text-muted-foreground">
+            © 2025 Orbyt Studio — Always in motion
           </p>
-          <p className="font-mono text-xs text-muted-foreground">Stellar Ember theme v1.0</p>
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">
+            Flat Ember theme v1.0
+          </p>
         </div>
       </div>
     </footer>
@@ -1323,17 +1570,17 @@ function SiteFooter() {
 export default function Home() {
   return (
     <div id="top" className="flex min-h-screen flex-col bg-background text-foreground">
-      <SiteHeader />
+      <Header />
       <main className="flex-1">
         <Hero />
-        <FoundationsSection />
+        <Foundations />
         <ColorSection />
         <TypeSection />
         <LogoSection />
         <MotionSection />
         <ComponentsSection />
       </main>
-      <SiteFooter />
+      <Footer />
     </div>
   );
 }

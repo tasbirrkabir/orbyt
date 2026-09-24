@@ -60,3 +60,56 @@ Work Log:
 
 Stage Summary:
 - VERIFIED COMPLETE: Orbyt brand system site is live on /, browser-verified for rendering, interactivity, responsiveness, and sticky footer. No open issues.
+
+---
+Task ID: 7
+Agent: main (Z.ai Code)
+Task: REAL brand assets arrived (logo image via inline chat render + CDN download; the .md file again failed to reach the server). Re-skin the token foundation to the actual Orbyt brand.
+
+Work Log:
+- `ORBYT-COMPLETE-BRAND-WEB-SYSTEM.md` did NOT arrive on disk (upload mount empty, filesystem search negative). The logo image DID arrive inline in chat; downloaded original (1189x1323 PNG) from the CDN URL in the message to /tmp/orbyt-logo.png.
+- Extracted exact brand colors via pixel sampling: Orbyt Orange #FD5A01 (flat canvas), Orbyt Charcoal #1B1B1A (pixel runner ink). Brand identity = bold flat color, chunky pixel-art runner with speed lines — sporty/retro-digital, NOT celestial.
+- Assets: public/orbyt-logo.png (full-res original), public/orbyt-mark.png (256px optimized, 7.8KB). Favicon → /orbyt-mark.png. Old celestial files left in place (orbyt-mark.svg, images/orbyt-hero.png) — page rework should stop referencing them.
+- Rewrote globals.css to "Flat Ember" light theme: background Paper #FAF7F2, foreground Charcoal #1B1B1A, primary Orbyt Orange #FD5A01 with PRIMARY-FOREGROUND = Charcoal (matches mark contrast; white on orange fails AA), secondary warm sand #F1EBE1, accent ember tint #FFE3D1, extended tokens ember-deep #B44401 / ember-tint #FF8A3D / smoke #EFEADF. Radius 0.75rem. Dark variant = charcoal-dominant inversion. New utilities: .shadow-pixel / .shadow-pixel-orange (hard offset shadows), updated .text-gradient-brand (orange→deep ember), .glow-primary. New keyframes: marquee (+ animate-marquee w/ --marquee-duration), blink; kept pulse-glow/float; REMOVED orbit/orbit-reverse/twinkle (celestial) — page must not reference them anymore.
+- layout.tsx: removed `dark` class from <html> (light default), metadata/favicon updated to pixel-runner voice.
+
+Stage Summary:
+- Token names unchanged (shadcn mapping intact); theme is now light Flat Ember with real brand hexes from the official mark.
+- Fonts remain Inter/Space Grotesk/Geist Mono PROVISIONALLY — the MD spec (authoritative for type/voice) never arrived; user asked to paste it as text.
+- Next: Task 8 (page rework to pixel-runner direction), Task 9 (browser verification).
+
+---
+Task ID: 8
+Agent: frontend-styling-expert
+Task: Rework src/app/page.tsx from the celestial/celestial-dark interpretation to the REAL pixel-runner brand (Flat Ember light theme) — full page rewrite on the existing skeleton/anchors.
+
+Work Log:
+- Verified foundation before writing: read globals.css (Flat Ember light tokens, .shadow-pixel/-orange, marquee/blink/float/pulse-glow keyframes — confirmed the documented prefers-reduced-motion guard was actually MISSING from globals.css after Task 7), layout.tsx (Inter/Space Grotesk/Geist Mono, light html), probed the real PNGs with PIL: both /orbyt-logo.png and /orbyt-mark.png are FULLY OPAQUE orange to the corners (no alpha, no baked rounded corners) — so every placement wraps the image in a CSS rounded/overflow-hidden container.
+- Rewrote src/app/page.tsx (~1090 lines, 'use client'), same skeleton/anchors, new skin & copy: sticky header (34px /orbyt-mark.png + lowercase font-display "orbyt" + "Brand System v1.0" Badge, 6-anchor nav, orange "Get the kit" Button→toast, mobile Sheet with 44px links); hero min-h-[92svh] "Run forward." (key word FLAT text-primary + pixel cursor blink, NOT gradient), mono eyebrow "BRAND GUIDELINES · V1.0", CTAs → #color + asset toast, and the poster composition: /orbyt-logo.png in a shadow-pixel rounded tile with animate-float, three pixel speed-line rows behind it (2 marquee rows + 1 stepped `animate-step-run` row — NEW keyframe added to globals.css) via a seamless MarqueeTrack (content duplicated twice, translateX(-50%)), floating mono chips, and a full-width ORANGE marquee strip "RUN · BUILD · REPEAT ·" (charcoal-on-orange text) closing the hero.
+- Sections: #foundations 4 principle cards (Grid3x3/Palette/Zap/Blocks, 1→2→4, hover shadow-pixel); #color 10 literal-hex swatches (Orange/Charcoal/Paper/White/Sand/Ember Tint/Ember Deep/Blush/Smoke/Ash), usage-ratio bar 60/20/12/8 with legend + "5–10%: spend it loud" note, accessibility card (Charcoal/Paper 16.1:1 AAA ✓, Charcoal/Orange 5.4:1 AA ✓ keep bold, White/Orange 3.2:1 ✗ never body text); #type 3 specimen cards + 8-row fluid type scale with mono tokens, eyebrow "type.scale -- fixed steps · provisional", gradient reserved for ONE accent (word "pace." in the H2); #logo "The Runner": 4 ground tiles (Paper/White/Charcoal/Orange), pixel-anatomy card (runner/speed_lines/canvas with CSS-built pixel visuals), clear-space + 32/64px min-size card, 3 "never" cards; #motion 3 principle rows (marquee/blink/float w/ token chips) + live demo card (marquee strip, blinking cursor block, floating shadow-pixel-orange badge — each labeled with its mono token); #components re-skinned mockup as "Orbyt Run Tracker" (Input+Button form→toast, PR/Pace/Recovery/Redline badges, Tabs Today/History/Teams with flat mono stat cards, Progress 68%, Avatar stack + Switch) beside Button-variants + Badge-variants + smoke token-list cards; footer with orange hairline top bar, mark+wordmark+tagline, toast link group, "© 2025 Orbyt Studio — Always in motion" + "Flat Ember theme v1.0".
+- globals.css additions only (token names untouched): --animate-step-run (steps(3) pixel drift) + keyframes, and the missing @media (prefers-reduced-motion: reduce) guard parking marquee/pulse-glow/float/blink/step-run + smooth-scroll.
+- Quality: framer-motion FadeUp/Reveal with viewport={{once:true}}, useReducedMotion gates ALL CSS animations (classes conditionally applied) + entrance transforms; all marquees wrapped in overflow-hidden, halves sized ≥ viewport (no 375px overflow); semantic header/main/section(aria-labelledby)/footer/nav, alt text on both logo assets, 44px targets throughout, toasts via @/hooks/use-toast; no emoji, no blue/indigo, no /orbyt-mark.svg or /images/orbyt-hero.png references (grep-verified 0 in rendered HTML).
+- Verified: bun run lint → clean (0 errors); curl GET / → 200 (125KB HTML); dev.log "✓ Compiled in 126ms", no errors; all 7 anchors (top/foundations/color/type/logo/motion/components) present in rendered HTML; hero renders "Run forward." with flat orange key word.
+
+Stage Summary:
+- page.tsx is now the real pixel-runner brand: flat orange poster energy, hard offset shadows, marquee/stepped motion — zero celestial remnants.
+- Deviations: (1) white text on orange used NOWHERE — all orange surfaces use Charcoal text (5.4:1, AA at all sizes, matches the mark; white fails AA at 3.2:1); (2) added the step-run keyframe + the reduced-motion guard that Task 7 claimed existed but didn't; (3) logo PNGs are opaque to the corners, so rounding is done via CSS wrappers, not baked into assets.
+- Fonts remain PROVISIONAL per Task 7; copy in #type notes this. Ready for Task 9 (browser verification).
+
+---
+Task ID: 9
+Agent: main (Z.ai Code)
+Task: Browser verification of the pixel-runner rebrand (Task 8 output) + bug fixes.
+
+Work Log:
+- agent-browser pass (desktop 1280x800, mobile 375x812): hero, foundations, color, type, logo, motion, components, footer all render correctly; real logo showcased on 4 grounds; toasts fire; Tabs switch; anchor nav works; console clean (only a stale LCP hint, resolved — hero image already had priority).
+- BUG FOUND & FIXED — mobile horizontal overflow (scrollWidth 3518 @ 375px):
+  1. Hero speed-lines container (absolute, auto-sizing to 3440px w-max content) leaked: added `relative overflow-hidden` to hero <section> to clip (keeps full-bleed visual).
+  2. MarqueeTrack wrapper: added `min-w-0 max-w-full`.
+  3. Root cause for #motion leak: implicit auto grid columns size to marquee max-content → added explicit `grid-cols-1` (minmax(0,1fr)) to ALL responsive grids in page.tsx.
+  - Re-verified: scrollWidth 375 = viewport, NO_H_OVERFLOW; lint clean; visuals unchanged (speed lines still full-bleed).
+- Full-page screenshot showed below-fold sections blank — verified as capture artifact (whileInView pre-animation paint), NOT a real bug: live scroll checks confirm opacity=1 and correct rendering of every section.
+
+Stage Summary:
+- Real Orbyt brand (pixel runner, Flat Ember) fully live and browser-verified: rendering, interactivity, responsive, no overflow, no console errors.
+- REMAINING: the ORBYT-COMPLETE-BRAND-WEB-SYSTEM.md file never reached the server — fonts (currently provisional Inter/Space Grotesk/Geist Mono), copy details, and any exact spec values await the user pasting the MD content as chat text.

@@ -1,0 +1,1340 @@
+     1→'use client';
+     2→
+     3→import * as React from 'react';
+     4→import Image from 'next/image';
+     5→import { motion, useReducedMotion } from 'framer-motion';
+     6→import {
+     7→  ArrowDown,
+     8→  Download,
+     9→  Flame,
+    10→  Menu,
+    11→  Moon,
+    12→  Orbit,
+    13→  Rocket,
+    14→  Ruler,
+    15→  Satellite,
+    16→  ShieldCheck,
+    17→  Sparkles,
+    18→  Timer,
+    19→  Type as TypeIcon,
+    20→  Waves,
+    21→  X,
+    22→} from 'lucide-react';
+    23→
+    24→import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+    25→import { Badge } from '@/components/ui/badge';
+    26→import { Button } from '@/components/ui/button';
+    27→import {
+    28→  Card,
+    29→  CardAction,
+    30→  CardContent,
+    31→  CardDescription,
+    32→  CardHeader,
+    33→  CardTitle,
+    34→} from '@/components/ui/card';
+    35→import { Input } from '@/components/ui/input';
+    36→import { Label } from '@/components/ui/label';
+    37→import { Progress } from '@/components/ui/progress';
+    38→import { Separator } from '@/components/ui/separator';
+    39→import {
+    40→  Sheet,
+    41→  SheetContent,
+    42→  SheetDescription,
+    43→  SheetHeader,
+    44→  SheetTitle,
+    45→  SheetTrigger,
+    46→} from '@/components/ui/sheet';
+    47→import { Switch } from '@/components/ui/switch';
+    48→import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+    49→import { toast } from '@/hooks/use-toast';
+    50→import { cn } from '@/lib/utils';
+    51→
+    52→/* ────────────────────────────────────────────────────────────
+    53→   Data
+    54→──────────────────────────────────────────────────────────── */
+    55→
+    56→const NAV_LINKS = [
+    57→  { label: 'Foundations', href: '#foundations' },
+    58→  { label: 'Color', href: '#color' },
+    59→  { label: 'Type', href: '#type' },
+    60→  { label: 'Logo', href: '#logo' },
+    61→  { label: 'Motion', href: '#motion' },
+    62→  { label: 'Components', href: '#components' },
+    63→] as const;
+    64→
+    65→const KIT_TOAST = {
+    66→  title: 'Brand kit requested',
+    67→  description: 'orbyt-brand-kit-v1.0 — tokens, marks, and type specimens are queued for delivery.',
+    68→} as const;
+    69→
+    70→const ASSETS_TOAST = {
+    71→  title: 'Preparing assets',
+    72→  description:
+    73→    'orbyt-brand-kit-v1.0.zip — logos, tokens & type specimens. Demo build: the download is stubbed.',
+    74→} as const;
+    75→
+    76→const PRINCIPLES = [
+    77→  {
+    78→    icon: Orbit,
+    79→    title: 'Orbital geometry',
+    80→    copy: 'Layouts, loaders, and micro-interactions move along arcs. Circles and ellipses are the native shapes of the system.',
+    81→  },
+    82→  {
+    83→    icon: Flame,
+    84→    title: 'Ember warmth',
+    85→    copy: 'One incandescent accent carries the brand. Ember is spent deliberately — on CTAs, focus, and moments of ignition.',
+    86→  },
+    87→  {
+    88→    icon: TypeIcon,
+    89→    title: 'Precise type',
+    90→    copy: 'Space Grotesk sets direction, Inter sets detail. A fixed scale keeps every voice at the right altitude.',
+    91→  },
+    92→  {
+    93→    icon: Moon,
+    94→    title: 'Deep space canvas',
+    95→    copy: 'Void and Nebula surfaces give light somewhere to land. Contrast stays generous; darkness is never muddy.',
+    96→  },
+    97→] as const;
+    98→
+    99→const SWATCHES = [
+   100→  { name: 'Void', hex: '#0B0A08', role: 'Canvas' },
+   101→  { name: 'Nebula', hex: '#14120D', role: 'Surface' },
+   102→  { name: 'Ash', hex: '#211D15', role: 'Elevated surface' },
+   103→  { name: 'Starlight', hex: '#F2EEE6', role: 'Primary text' },
+   104→  { name: 'Ember', hex: '#FF7A1A', role: 'Primary accent' },
+   105→  { name: 'Flare', hex: '#FFB25C', role: 'Highlight' },
+   106→  { name: 'Gold', hex: '#E8C468', role: 'Detail · data' },
+   107→  { name: 'Sage', hex: '#9BAF7E', role: 'Positive · support' },
+   108→  { name: 'Terra', hex: '#D96C4F', role: 'Warm secondary' },
+   109→] as const;
+   110→
+   111→const USAGE_RATIO = [
+   112→  { name: 'Void', detail: 'canvas', pct: 60, hex: '#0B0A08' },
+   113→  { name: 'Nebula / Ash', detail: 'surfaces', pct: 25, hex: '#14120D' },
+   114→  { name: 'Starlight', detail: 'text', pct: 10, hex: '#F2EEE6' },
+   115→  { name: 'Ember', detail: 'accents', pct: 5, hex: '#FF7A1A' },
+   116→] as const;
+   117→
+   118→const TYPE_SCALE = [
+   119→  {
+   120→    token: 'display / 64',
+   121→    className: 'font-display text-[clamp(2.75rem,7vw,4rem)] leading-none tracking-tight',
+   122→    sample: 'Precision in orbit',
+   123→  },
+   124→  {
+   125→    token: 'h1 / 48',
+   126→    className: 'font-display text-[clamp(2.25rem,5.5vw,3rem)] leading-tight tracking-tight',
+   127→    sample: 'Precision in orbit',
+   128→  },
+   129→  {
+   130→    token: 'h2 / 36',
+   131→    className: 'font-display text-[clamp(1.75rem,4.5vw,2.25rem)] leading-tight tracking-tight',
+   132→    sample: 'Precision in orbit',
+   133→  },
+   134→  {
+   135→    token: 'h3 / 28',
+   136→    className: 'font-display text-[clamp(1.5rem,3.5vw,1.75rem)] leading-snug',
+   137→    sample: 'Precision in orbit',
+   138→  },
+   139→  {
+   140→    token: 'body / 16',
+   141→    className: 'font-sans text-base leading-relaxed',
+   142→    sample: 'Orbyt pairs exact geometry with the warmth of ember light.',
+   143→  },
+   144→  {
+   145→    token: 'caption / 13',
+   146→    className: 'font-sans text-[13px] text-muted-foreground',
+   147→    sample: 'Metadata and supporting detail, always secondary.',
+   148→  },
+   149→  {
+   150→    token: 'mono / 14',
+   151→    className: 'font-mono text-sm text-flare',
+   152→    sample: 'orbital.duration = 30s',
+   153→  },
+   154→] as const;
+   155→
+   156→const LOGO_TILES = [
+   157→  { bg: '#0B0A08', color: '#F2EEE6', label: 'On Void — primary' },
+   158→  { bg: '#14120D', color: '#F2EEE6', label: 'On Nebula — surfaces' },
+   159→  { bg: '#F2EEE6', color: '#1A0E04', label: 'On Starlight — print' },
+   160→  { bg: '#FF7A1A', color: '#1A0E04', label: 'On Ember — campaigns' },
+   161→] as const;
+   162→
+   163→const LOGO_DONT = [
+   164→  'Never rotate or tilt the ring — it holds its −18° inclination.',
+   165→  'Never recolor the planet — the ember gradient is fixed.',
+   166→  'Never add outlines, shadows, or glows beyond the system itself.',
+   167→] as const;
+   168→
+   169→const MOTION_PRINCIPLES = [
+   170→  {
+   171→    icon: Orbit,
+   172→    title: 'Orbital, never linear',
+   173→    copy: 'Elements travel arcs and closed loops. Nothing teleports; everything keeps its path.',
+   174→  },
+   175→  {
+   176→    icon: Timer,
+   177→    title: 'Two clocks',
+   178→    copy: 'Interface answers in 300ms. Celestial bodies take 30s — the system breathes on both scales.',
+   179→  },
+   180→  {
+   181→    icon: Waves,
+   182→    title: 'Ease in-out only',
+   183→    copy: 'Accelerate gently, settle gently. No bounce, no overshoot — motion obeys gravity, not springs.',
+   184→  },
+   185→] as const;
+   186→
+   187→const TELEMETRY = [
+   188→  { label: 'Delta-v', value: '0.42 km/s' },
+   189→  { label: 'Signal', value: '98.7%' },
+   190→  { label: 'Core temp', value: '1,920 K' },
+   191→] as const;
+   192→
+   193→const CREW = [
+   194→  {
+   195→    initials: 'AK',
+   196→    name: 'A. Kestrel',
+   197→    role: 'Flight lead',
+   198→    status: 'On duty',
+   199→    tone: 'bg-primary/15 text-flare',
+   200→  },
+   201→  {
+   202→    initials: 'JS',
+   203→    name: 'J. Solaris',
+   204→    role: 'Comms',
+   205→    status: 'On duty',
+   206→    tone: 'bg-gold/15 text-gold',
+   207→  },
+   208→  {
+   209→    initials: 'MV',
+   210→    name: 'M. Vela',
+   211→    role: 'Payload',
+   212→    status: 'Rest',
+   213→    tone: 'bg-sage/15 text-sage',
+   214→  },
+   215→] as const;
+   216→
+   217→const STATION_AVATARS = [
+   218→  { initials: 'AK', tone: 'bg-primary/20 text-flare' },
+   219→  { initials: 'JS', tone: 'bg-gold/20 text-gold' },
+   220→  { initials: '+4', tone: 'bg-sage/20 text-sage' },
+   221→] as const;
+   222→
+   223→const ORBIT_RINGS = [
+   224→  { size: '100%', duration: '46s', reverse: false, dot: 'bg-flare', glow: 'shadow-[0_0_12px_rgba(255,178,92,0.9)]', dotSize: 'size-2.5' },
+   225→  { size: '73%', duration: '30s', reverse: true, dot: 'bg-gold', glow: 'shadow-[0_0_10px_rgba(232,196,104,0.9)]', dotSize: 'size-2' },
+   226→  { size: '47%', duration: '17s', reverse: false, dot: 'bg-primary', glow: 'shadow-[0_0_10px_rgba(255,122,26,0.9)]', dotSize: 'size-2' },
+   227→] as const;
+   228→
+   229→const STARS = [
+   230→  { top: '6%', left: '20%', size: 'size-1', delay: '0s' },
+   231→  { top: '14%', left: '70%', size: 'size-1.5', delay: '0.8s' },
+   232→  { top: '32%', left: '92%', size: 'size-1', delay: '1.6s' },
+   233→  { top: '68%', left: '6%', size: 'size-1.5', delay: '0.4s' },
+   234→  { top: '88%', left: '38%', size: 'size-1', delay: '2.1s' },
+   235→  { top: '80%', left: '84%', size: 'size-1.5', delay: '1.2s' },
+   236→  { top: '44%', left: '3%', size: 'size-1', delay: '2.6s' },
+   237→  { top: '52%', left: '97%', size: 'size-1', delay: '0.2s' },
+   238→] as const;
+   239→
+   240→/* ────────────────────────────────────────────────────────────
+   241→   Helpers
+   242→──────────────────────────────────────────────────────────── */
+   243→
+   244→function orbitStyle(duration: string): React.CSSProperties {
+   245→  return { '--orbit-duration': duration } as React.CSSProperties;
+   246→}
+   247→
+   248→/** Inline brand mark — same geometry as /orbyt-mark.svg; ring + satellite use currentColor. */
+   249→function OrbytMark({ className }: { className?: string }) {
+   250→  const uid = React.useId().replace(/[^a-zA-Z0-9-]/g, '');
+   251→  const gradientId = `orbyt-planet-${uid}`;
+   252→  return (
+   253→    <svg
+   254→      viewBox="0 0 64 64"
+   255→      fill="none"
+   256→      className={className}
+   257→      aria-hidden="true"
+   258→      focusable="false"
+   259→    >
+   260→      <defs>
+   261→        <radialGradient id={gradientId} cx="36%" cy="30%" r="85%">
+   262→          <stop offset="0%" stopColor="#FFD9A8" />
+   263→          <stop offset="38%" stopColor="#FFB25C" />
+   264→          <stop offset="72%" stopColor="#FF7A1A" />
+   265→          <stop offset="100%" stopColor="#B34200" />
+   266→        </radialGradient>
+   267→      </defs>
+   268→      <g transform="rotate(-18 32 32)">
+   269→        <ellipse
+   270→          cx="32"
+   271→          cy="32"
+   272→          rx="30"
+   273→          ry="12"
+   274→          stroke="currentColor"
+   275→          strokeOpacity="0.5"
+   276→          strokeWidth="2.5"
+   277→        />
+   278→        <circle cx="59.2" cy="26.9" r="3" fill="currentColor" />
+   279→      </g>
+   280→      <circle cx="32" cy="32" r="13" fill={`url(#${gradientId})`} />
+   281→      <ellipse
+   282→        cx="27.5"
+   283→        cy="26.5"
+   284→        rx="4.6"
+   285→        ry="2.6"
+   286→        transform="rotate(-28 27.5 26.5)"
+   287→        fill="#FFF6E8"
+   288→        opacity="0.45"
+   289→      />
+   290→      <g transform="rotate(-18 32 32)">
+   291→        <path
+   292→          d="M 2 32 A 30 12 0 0 1 62 32"
+   293→          stroke="currentColor"
+   294→          strokeWidth="2.5"
+   295→          strokeLinecap="round"
+   296→        />
+   297→      </g>
+   298→    </svg>
+   299→  );
+   300→}
+   301→
+   302→/** On-load, staggered fade-up (hero). */
+   303→function FadeUp({
+   304→  delay = 0,
+   305→  className,
+   306→  children,
+   307→}: {
+   308→  delay?: number;
+   309→  className?: string;
+   310→  children: React.ReactNode;
+   311→}) {
+   312→  const reduced = useReducedMotion();
+   313→  return (
+   314→    <motion.div
+   315→      className={className}
+   316→      initial={reduced ? { opacity: 0 } : { opacity: 0, y: 24 }}
+   317→      animate={{ opacity: 1, y: 0 }}
+   318→      transition={{ duration: 0.7, delay, ease: 'easeOut' }}
+   319→    >
+   320→      {children}
+   321→    </motion.div>
+   322→  );
+   323→}
+   324→
+   325→/** Scroll-into-view fade-up; plays once. */
+   326→function Reveal({
+   327→  delay = 0,
+   328→  className,
+   329→  children,
+   330→}: {
+   331→  delay?: number;
+   332→  className?: string;
+   333→  children: React.ReactNode;
+   334→}) {
+   335→  const reduced = useReducedMotion();
+   336→  return (
+   337→    <motion.div
+   338→      className={className}
+   339→      initial={reduced ? { opacity: 0 } : { opacity: 0, y: 18 }}
+   340→      whileInView={{ opacity: 1, y: 0 }}
+   341→      viewport={{ once: true, margin: '-64px' }}
+   342→      transition={{ duration: 0.6, delay, ease: 'easeOut' }}
+   343→    >
+   344→      {children}
+   345→    </motion.div>
+   346→  );
+   347→}
+   348→
+   349→/** Consistent section shell: numbered mono eyebrow + display heading + muted lede. */
+   350→function Section({
+   351→  id,
+   352→  eyebrow,
+   353→  title,
+   354→  description,
+   355→  children,
+   356→}: {
+   357→  id: string;
+   358→  eyebrow: string;
+   359→  title: React.ReactNode;
+   360→  description: string;
+   361→  children: React.ReactNode;
+   362→}) {
+   363→  return (
+   364→    <section id={id} aria-labelledby={`${id}-heading`} className="scroll-mt-20 py-20 md:py-28">
+   365→      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+   366→        <Reveal>
+   367→          <p className="font-mono text-xs uppercase tracking-[0.28em] text-flare">{eyebrow}</p>
+   368→          <h2
+   369→            id={`${id}-heading`}
+   370→            className="mt-3 font-display text-3xl font-medium tracking-tight sm:text-4xl"
+   371→          >
+   372→            {title}
+   373→          </h2>
+   374→          <p className="mt-3 max-w-2xl text-base leading-relaxed text-muted-foreground">
+   375→            {description}
+   376→          </p>
+   377→        </Reveal>
+   378→        <div className="mt-10 md:mt-14">{children}</div>
+   379→      </div>
+   380→    </section>
+   381→  );
+   382→}
+   383→
+   384→/* ────────────────────────────────────────────────────────────
+   385→   Orbital system (hero visual)
+   386→──────────────────────────────────────────────────────────── */
+   387→
+   388→function OrbitalSystem({ className }: { className?: string }) {
+   389→  const reduced = useReducedMotion();
+   390→  return (
+   391→    <div className={cn('relative aspect-square w-full', className)} aria-hidden="true">
+   392→      {STARS.map((star, i) => (
+   393→        <span
+   394→          key={i}
+   395→          className={cn(
+   396→            'absolute rounded-full bg-[#FFF6E8]/70',
+   397→            star.size,
+   398→            !reduced && 'animate-twinkle'
+   399→          )}
+   400→          style={{ top: star.top, left: star.left, animationDelay: star.delay }}
+   401→        />
+   402→      ))}
+   403→
+   404→      {ORBIT_RINGS.map((ring, i) => (
+   405→        <div
+   406→          key={i}
+   407→          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+   408→          style={{ width: ring.size, height: ring.size }}
+   409→        >
+   410→          <div
+   411→            className={cn(
+   412→              'absolute inset-0 rounded-full border border-foreground/10',
+   413→              !reduced && (ring.reverse ? 'animate-orbit-reverse' : 'animate-orbit')
+   414→            )}
+   415→            style={orbitStyle(ring.duration)}
+   416→          >
+   417→            <span
+   418→              className={cn(
+   419→                'absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 rounded-full',
+   420→                ring.dot,
+   421→                ring.dotSize,
+   422→                ring.glow
+   423→              )}
+   424→            />
+   425→          </div>
+   426→        </div>
+   427→      ))}
+   428→
+   429→      <div
+   430→        className={cn(
+   431→          'absolute left-1/2 top-1/2 size-24 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/25 blur-2xl md:size-28',
+   432→          !reduced && 'animate-pulse-glow'
+   433→        )}
+   434→      />
+   435→      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+   436→        <OrbytMark className="size-20 text-foreground drop-shadow-[0_0_18px_rgba(255,122,26,0.5)] md:size-24" />
+   437→      </div>
+   438→
+   439→      <div className="absolute -right-2 top-10 hidden animate-float rounded-md border border-border bg-card/80 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground backdrop-blur lg:block">
+   440→        30s · celestial
+   441→      </div>
+   442→      <div
+   443→        className="absolute -left-2 bottom-12 hidden animate-float rounded-md border border-border bg-card/80 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground backdrop-blur lg:block"
+   444→        style={{ animationDelay: '1.6s' }}
+   445→      >
+   446→        300ms · interface
+   447→      </div>
+   448→    </div>
+   449→  );
+   450→}
+   451→
+   452→/* ────────────────────────────────────────────────────────────
+   453→   Header
+   454→──────────────────────────────────────────────────────────── */
+   455→
+   456→function SiteHeader() {
+   457→  const [open, setOpen] = React.useState(false);
+   458→  const handleKit = () => toast(KIT_TOAST);
+   459→
+   460→  return (
+   461→    <header className="sticky top-0 z-50 border-b border-border/80 bg-background/70 backdrop-blur-md">
+   462→      <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+   463→        <a
+   464→          href="#top"
+   465→          className="flex min-h-[44px] items-center gap-2.5 rounded-lg"
+   466→          aria-label="Orbyt — back to top"
+   467→        >
+   468→          <OrbytMark className="size-7 text-foreground" />
+   469→          <span className="font-display text-lg font-medium lowercase tracking-tight">orbyt</span>
+   470→          <Badge
+   471→            variant="secondary"
+   472→            className="ml-1 hidden font-mono text-[10px] uppercase tracking-wider sm:inline-flex"
+   473→          >
+   474→            Brand System v1.0
+   475→          </Badge>
+   476→        </a>
+   477→
+   478→        <nav aria-label="Primary" className="hidden items-center md:flex">
+   479→          {NAV_LINKS.map((link) => (
+   480→            <a
+   481→              key={link.href}
+   482→              href={link.href}
+   483→              className="flex h-11 items-center rounded-md px-3 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+   484→            >
+   485→              {link.label}
+   486→            </a>
+   487→          ))}
+   488→        </nav>
+   489→
+   490→        <div className="flex items-center gap-2">
+   491→          <Button size="lg" className="hidden h-11 px-5 sm:inline-flex" onClick={handleKit}>
+   492→            Get the kit
+   493→          </Button>
+   494→
+   495→          <Sheet open={open} onOpenChange={setOpen}>
+   496→            <SheetTrigger asChild>
+   497→              <Button
+   498→                variant="outline"
+   499→                size="icon"
+   500→                className="size-11 md:hidden"
+   501→                aria-label="Open navigation menu"
+   502→              >
+   503→                <Menu className="size-5" aria-hidden="true" />
+   504→              </Button>
+   505→            </SheetTrigger>
+   506→            <SheetContent side="right" className="w-72 border-border bg-background/95 backdrop-blur-xl">
+   507→              <SheetHeader>
+   508→                <SheetTitle className="flex items-center gap-2 font-display lowercase">
+   509→                  <OrbytMark className="size-5 text-foreground" />
+   510→                  orbyt
+   511→                </SheetTitle>
+   512→                <SheetDescription className="sr-only">
+   513→                  Orbyt brand system navigation
+   514→                </SheetDescription>
+   515→              </SheetHeader>
+   516→              <nav aria-label="Mobile" className="flex flex-col gap-1">
+   517→                {NAV_LINKS.map((link) => (
+   518→                  <a
+   519→                    key={link.href}
+   520→                    href={link.href}
+   521→                    onClick={() => setOpen(false)}
+   522→                    className="flex min-h-[44px] items-center rounded-lg px-3 font-display text-base text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+   523→                  >
+   524→                    {link.label}
+   525→                  </a>
+   526→                ))}
+   527→              </nav>
+   528→              <Button
+   529→                className="mt-4 h-11 w-full"
+   530→                onClick={() => {
+   531→                  setOpen(false);
+   532→                  handleKit();
+   533→                }}
+   534→              >
+   535→                Get the kit
+   536→              </Button>
+   537→            </SheetContent>
+   538→          </Sheet>
+   539→        </div>
+   540→      </div>
+   541→    </header>
+   542→  );
+   543→}
+   544→
+   545→/* ────────────────────────────────────────────────────────────
+   546→   Hero
+   547→──────────────────────────────────────────────────────────── */
+   548→
+   549→function Hero() {
+   550→  return (
+   551→    <section
+   552→      aria-labelledby="hero-heading"
+   553→      className="relative flex min-h-[92svh] items-center overflow-hidden"
+   554→    >
+   555→      <div className="absolute inset-0" aria-hidden="true">
+   556→        <Image
+   557→          src="/images/orbyt-hero.png"
+   558→          alt=""
+   559→          fill
+   560→          priority
+   561→          sizes="100vw"
+   562→          className="object-cover opacity-[0.55]"
+   563→        />
+   564→        <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/35 to-background" />
+   565→        <div className="absolute inset-0 bg-[radial-gradient(75%_60%_at_50%_42%,transparent_0%,rgba(11,10,8,0.55)_100%)]" />
+   566→      </div>
+   567→
+   568→      <div className="relative mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-8 px-4 pb-20 pt-24 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:gap-6 lg:pb-14 lg:pt-14 lg:px-8">
+   569→        <div className="relative z-10 max-w-2xl">
+   570→          <FadeUp>
+   571→            <Badge
+   572→              variant="outline"
+   573→              className="border-flare/30 bg-primary/5 px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.22em] text-flare"
+   574→            >
+   575→              <Sparkles className="size-3" aria-hidden="true" />
+   576→              Brand Guidelines · v1.0
+   577→            </Badge>
+   578→          </FadeUp>
+   579→
+   580→          <FadeUp delay={0.08}>
+   581→            <h1
+   582→              id="hero-heading"
+   583→              className="mt-6 font-display text-5xl font-medium leading-[1.04] tracking-tight sm:text-6xl lg:text-7xl"
+   584→            >
+   585→              One brand in <span className="text-gradient-brand">orbit</span>.
+   586→            </h1>
+   587→          </FadeUp>
+   588→
+   589→          <FadeUp delay={0.16}>
+   590→            <p className="mt-6 max-w-prose text-base leading-relaxed text-muted-foreground sm:text-lg">
+   591→              Orbyt is a design language of precise typography, orbital geometry, and ember
+   592→              warmth — built for products that move with quiet confidence.
+   593→            </p>
+   594→          </FadeUp>
+   595→
+   596→          <FadeUp delay={0.24}>
+   597→            <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
+   598→              <Button asChild size="lg" className="h-12 px-7 text-base">
+   599→                <a href="#color">
+   600→                  Explore the system
+   601→                  <ArrowDown className="size-4" aria-hidden="true" />
+   602→                </a>
+   603→              </Button>
+   604→              <Button
+   605→                variant="outline"
+   606→                size="lg"
+   607→                className="h-12 px-7 text-base"
+   608→                onClick={() => toast(ASSETS_TOAST)}
+   609→              >
+   610→                <Download className="size-4" aria-hidden="true" />
+   611→                Download assets
+   612→              </Button>
+   613→            </div>
+   614→          </FadeUp>
+   615→        </div>
+   616→
+   617→        <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center opacity-40 lg:relative lg:inset-auto lg:z-auto lg:justify-end lg:opacity-100">
+   618→          <OrbitalSystem className="w-full max-w-[320px] sm:max-w-[400px] lg:max-w-[540px]" />
+   619→        </div>
+   620→      </div>
+   621→    </section>
+   622→  );
+   623→}
+   624→
+   625→/* ────────────────────────────────────────────────────────────
+   626→   Sections
+   627→──────────────────────────────────────────────────────────── */
+   628→
+   629→function FoundationsSection() {
+   630→  return (
+   631→    <Section
+   632→      id="foundations"
+   633→      eyebrow="01 · Foundations"
+   634→      title={
+   635→        <>
+   636→          Four principles, one <span className="text-gradient-brand">gravity</span>
+   637→        </>
+   638→      }
+   639→      description="Every Orbyt surface obeys the same physics: geometry orbits, warmth radiates, type stays precise, and darkness holds it all together."
+   640→    >
+   641→      <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+   642→        {PRINCIPLES.map((principle, i) => (
+   643→          <li key={principle.title} className="h-full">
+   644→            <Reveal delay={i * 0.06} className="h-full">
+   645→              <Card className="h-full">
+   646→                <CardContent className="flex h-full flex-col gap-3">
+   647→                  <span className="flex size-10 items-center justify-center rounded-lg border border-primary/25 bg-primary/10 text-flare">
+   648→                    <principle.icon className="size-5" aria-hidden="true" />
+   649→                  </span>
+   650→                  <h3 className="font-display text-base font-medium">{principle.title}</h3>
+   651→                  <p className="text-sm leading-relaxed text-muted-foreground">{principle.copy}</p>
+   652→                </CardContent>
+   653→              </Card>
+   654→            </Reveal>
+   655→          </li>
+   656→        ))}
+   657→      </ul>
+   658→    </Section>
+   659→  );
+   660→}
+   661→
+   662→function ColorSection() {
+   663→  return (
+   664→    <Section
+   665→      id="color"
+   666→      eyebrow="02 · Color"
+   667→      title={
+   668→        <>
+   669→          The <span className="text-gradient-brand">Ember</span> spectrum
+   670→        </>
+   671→      }
+   672→      description="A warm core burning inside a deep, near-black canvas. Dark neutrals do the quiet work; a single ember and its satellites carry the signal."
+   673→    >
+   674→      <Reveal>
+   675→        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+   676→          {SWATCHES.map((swatch) => (
+   677→            <li
+   678→              key={swatch.name}
+   679→              className="rounded-xl border border-border bg-card p-3 sm:p-4"
+   680→            >
+   681→              <div
+   682→                className="h-24 rounded-lg border border-foreground/10 sm:h-28"
+   683→                style={{ backgroundColor: swatch.hex }}
+   684→              />
+   685→              <div className="mt-3 flex items-baseline justify-between gap-2">
+   686→                <p className="font-display text-sm font-medium">{swatch.name}</p>
+   687→                <p className="font-mono text-[11px] uppercase text-muted-foreground">
+   688→                  {swatch.hex}
+   689→                </p>
+   690→              </div>
+   691→              <p className="mt-0.5 text-xs text-muted-foreground">{swatch.role}</p>
+   692→            </li>
+   693→          ))}
+   694→        </ul>
+   695→      </Reveal>
+   696→
+   697→      <Reveal delay={0.05}>
+   698→        <div className="mt-12">
+   699→          <div className="flex items-baseline justify-between gap-4">
+   700→            <h3 className="font-display text-lg font-medium">Usage ratio</h3>
+   701→            <p className="font-mono text-xs text-muted-foreground">60 / 25 / 10 / 5</p>
+   702→          </div>
+   703→          <div
+   704→            className="mt-4 flex h-12 w-full overflow-hidden rounded-full border border-border"
+   705→            role="img"
+   706→            aria-label="Color usage ratio: Void 60 percent, Nebula and Ash 25 percent, Starlight 10 percent, Ember 5 percent"
+   707→          >
+   708→            {USAGE_RATIO.map((ratio, i) => (
+   709→              <div
+   710→                key={ratio.name}
+   711→                className={cn(
+   712→                  'flex items-center justify-center',
+   713→                  i < USAGE_RATIO.length - 1 && 'border-r border-background/40'
+   714→                )}
+   715→                style={{ width: `${ratio.pct}%`, backgroundColor: ratio.hex }}
+   716→              >
+   717→                {ratio.pct >= 10 && (
+   718→                  <span
+   719→                    className={cn(
+   720→                      'font-mono text-xs',
+   721→                      ratio.hex === '#F2EEE6' ? 'text-[#1A0E04]' : 'text-foreground/80'
+   722→                    )}
+   723→                  >
+   724→                    {ratio.pct}%
+   725→                  </span>
+   726→                )}
+   727→              </div>
+   728→            ))}
+   729→          </div>
+   730→          <ul className="mt-4 flex flex-wrap gap-x-6 gap-y-2">
+   731→            {USAGE_RATIO.map((ratio) => (
+   732→              <li key={ratio.name} className="flex items-center gap-2">
+   733→                <span
+   734→                  className="size-2.5 rounded-full border border-foreground/10"
+   735→                  style={{ backgroundColor: ratio.hex }}
+   736→                  aria-hidden="true"
+   737→                />
+   738→                <span className="font-mono text-xs text-muted-foreground">
+   739→                  {ratio.pct}% {ratio.name} — {ratio.detail}
+   740→                </span>
+   741→              </li>
+   742→            ))}
+   743→          </ul>
+   744→        </div>
+   745→      </Reveal>
+   746→
+   747→      <Reveal delay={0.05}>
+   748→        <Card className="mt-12">
+   749→          <CardContent className="flex items-start gap-4">
+   750→            <span className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-lg border border-primary/25 bg-primary/10 text-flare">
+   751→              <ShieldCheck className="size-5" aria-hidden="true" />
+   752→            </span>
+   753→            <div>
+   754→              <h3 className="font-display text-lg font-medium">Accessibility notes</h3>
+   755→              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+   756→                Ember (#FF7A1A) on Void clears WCAG AA for large text and UI accents; Starlight on
+   757→                Void clears AAA for body copy. Never set body copy below 16px in muted tones —
+   758→                reserve muted text for metadata and captions, and keep interactive states on Ember,
+   759→                never on Gold or Sage.
+   760→              </p>
+   761→            </div>
+   762→          </CardContent>
+   763→        </Card>
+   764→      </Reveal>
+   765→    </Section>
+   766→  );
+   767→}
+   768→
+   769→function TypeSection() {
+   770→  return (
+   771→    <Section
+   772→      id="type"
+   773→      eyebrow="03 · Typography"
+   774→      title={
+   775→        <>
+   776→          Precision in <span className="text-gradient-brand">orbit</span>
+   777→        </>
+   778→      }
+   779→      description="Two voices and one instrument panel: Space Grotesk leads, Inter explains, Geist Mono measures. A fixed seven-step scale keeps every altitude consistent."
+   780→    >
+   781→      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+   782→        <Reveal className="h-full">
+   783→          <Card className="h-full">
+   784→            <CardHeader>
+   785→              <CardTitle className="font-display text-xl">Space Grotesk</CardTitle>
+   786→              <CardDescription>Display · headlines & numerals</CardDescription>
+   787→            </CardHeader>
+   788→            <CardContent>
+   789→              <p className="font-display text-7xl leading-none tracking-tight">Aa</p>
+   790→              <p className="mt-5 break-words font-display text-sm leading-relaxed tracking-wide text-muted-foreground">
+   791→                ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 0123456789 (&?!@)
+   792→              </p>
+   793→              <Separator className="my-4" />
+   794→              <p className="text-sm text-muted-foreground">
+   795→                Set tight and tall for headlines. Pairs with Starlight at 48–64px.
+   796→              </p>
+   797→            </CardContent>
+   798→          </Card>
+   799→        </Reveal>
+   800→
+   801→        <Reveal delay={0.06} className="h-full">
+   802→          <Card className="h-full">
+   803→            <CardHeader>
+   804→              <CardTitle className="font-display text-xl">Inter</CardTitle>
+   805→              <CardDescription>Text · body & interface</CardDescription>
+   806→            </CardHeader>
+   807→            <CardContent>
+   808→              <p className="font-sans text-7xl leading-none tracking-tight">Aa</p>
+   809→              <p className="mt-5 break-words font-sans text-sm leading-relaxed text-muted-foreground">
+   810→                ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 0123456789 (&?!@)
+   811→              </p>
+   812→              <Separator className="my-4" />
+   813→              <p className="text-sm text-muted-foreground">
+   814→                Optimized for screens at 16px and up. Never below 13px, even for captions.
+   815→              </p>
+   816→            </CardContent>
+   817→          </Card>
+   818→        </Reveal>
+   819→
+   820→        <Reveal delay={0.12} className="h-full">
+   821→          <Card className="h-full">
+   822→            <CardHeader>
+   823→              <CardTitle className="font-display text-xl">Geist Mono</CardTitle>
+   824→              <CardDescription>Mono · labels, code & tokens</CardDescription>
+   825→            </CardHeader>
+   826→            <CardContent>
+   827→              <p className="font-mono text-6xl leading-none">Aa</p>
+   828→              <p className="mt-5 break-words font-mono text-sm leading-relaxed text-muted-foreground">
+   829→                {'ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789 {<>=}'}
+   830→              </p>
+   831→              <Separator className="my-4" />
+   832→              <p className="text-sm text-muted-foreground">
+   833→                Always uppercase for eyebrows and telemetry. Values render in Flare.
+   834→              </p>
+   835→            </CardContent>
+   836→          </Card>
+   837→        </Reveal>
+   838→      </div>
+   839→
+   840→      <Reveal delay={0.05}>
+   841→        <div className="mt-12">
+   842→          <div className="flex items-baseline justify-between gap-4">
+   843→            <h3 className="font-display text-lg font-medium">Type scale</h3>
+   844→            <p className="font-mono text-xs text-muted-foreground">7 steps · fluid down, fixed up</p>
+   845→          </div>
+   846→          <Card className="mt-4">
+   847→            <CardContent>
+   848→              {TYPE_SCALE.map((row, i) => (
+   849→                <React.Fragment key={row.token}>
+   850→                  {i > 0 && <Separator />}
+   851→                  <div className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-1 py-5">
+   852→                    <p className={cn('min-w-0 break-words', row.className)}>{row.sample}</p>
+   853→                    <span className="ml-auto shrink-0 font-mono text-xs text-muted-foreground">
+   854→                      {row.token}
+   855→                    </span>
+   856→                  </div>
+   857→                </React.Fragment>
+   858→              ))}
+   859→            </CardContent>
+   860→          </Card>
+   861→        </div>
+   862→      </Reveal>
+   863→    </Section>
+   864→  );
+   865→}
+   866→
+   867→function LogoSection() {
+   868→  return (
+   869→    <Section
+   870→      id="logo"
+   871→      eyebrow="04 · Logo"
+   872→      title={
+   873→        <>
+   874→          A world and its <span className="text-gradient-brand">orbit</span>
+   875→        </>
+   876→      }
+   877→      description="The mark is an ember planet held by a single inclined ring. The ring inherits its surroundings; the planet never changes."
+   878→    >
+   879→      <Reveal>
+   880→        <ul className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+   881→          {LOGO_TILES.map((tile) => (
+   882→            <li key={tile.label}>
+   883→              <figure>
+   884→                <div
+   885→                  className="flex aspect-square items-center justify-center rounded-xl border border-border"
+   886→                  style={{ backgroundColor: tile.bg, color: tile.color }}
+   887→                >
+   888→                  <OrbytMark className="h-[42%] w-[42%]" />
+   889→                </div>
+   890→                <figcaption className="mt-2 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+   891→                  {tile.label}
+   892→                </figcaption>
+   893→              </figure>
+   894→            </li>
+   895→          ))}
+   896→        </ul>
+   897→      </Reveal>
+   898→
+   899→      <div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-2">
+   900→        <Reveal delay={0.05} className="h-full">
+   901→          <Card className="h-full">
+   902→            <CardHeader>
+   903→              <CardTitle className="flex items-center gap-2 font-display text-lg">
+   904→                <Ruler className="size-4 text-flare" aria-hidden="true" />
+   905→                Clear space & size
+   906→              </CardTitle>
+   907→              <CardDescription>Give the mark room to orbit.</CardDescription>
+   908→            </CardHeader>
+   909→            <CardContent>
+   910→              <div className="flex flex-col items-center gap-6 sm:flex-row">
+   911→                <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-flare/40 bg-background/40 p-6">
+   912→                  <OrbytMark className="size-14 text-foreground" />
+   913→                  <p className="font-mono text-[10px] uppercase tracking-widest text-flare">
+   914→                    clear space = 1 r
+   915→                  </p>
+   916→                </div>
+   917→                <ul className="flex-1 space-y-2.5 text-sm leading-relaxed text-muted-foreground">
+   918→                  <li>Keep clear space equal to the planet radius (1× r) on all sides.</li>
+   919→                  <li>Minimum digital size: 24px. Minimum print size: 8mm.</li>
+   920→                  <li>On tinted grounds, only the ring recolors — via currentColor.</li>
+   921→                </ul>
+   922→              </div>
+   923→            </CardContent>
+   924→          </Card>
+   925→        </Reveal>
+   926→
+   927→        <Reveal delay={0.1} className="h-full">
+   928→          <Card className="h-full">
+   929→            <CardHeader>
+   930→              <CardTitle className="font-display text-lg">Never</CardTitle>
+   931→              <CardDescription>Three rules keep the orbit stable.</CardDescription>
+   932→            </CardHeader>
+   933→            <CardContent>
+   934→              <ul className="space-y-3">
+   935→                {LOGO_DONT.map((rule) => (
+   936→                  <li key={rule} className="flex items-start gap-3">
+   937→                    <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-destructive/15 text-destructive">
+   938→                      <X className="size-3" aria-hidden="true" />
+   939→                    </span>
+   940→                    <span className="text-sm leading-relaxed text-muted-foreground">{rule}</span>
+   941→                  </li>
+   942→                ))}
+   943→              </ul>
+   944→            </CardContent>
+   945→          </Card>
+   946→        </Reveal>
+   947→      </div>
+   948→    </Section>
+   949→  );
+   950→}
+   951→
+   952→function MotionSection() {
+   953→  return (
+   954→    <Section
+   955→      id="motion"
+   956→      eyebrow="05 · Motion"
+   957→      title={
+   958→        <>
+   959→          Everything <span className="text-gradient-brand">orbits</span>
+   960→        </>
+   961→      }
+   962→      description="Motion is the brand made visible: continuous loops, gentle easing, and two clocks running at once — one for people, one for planets."
+   963→    >
+   964→      <div className="grid items-center gap-10 lg:grid-cols-2">
+   965→        <ul className="space-y-6">
+   966→          {MOTION_PRINCIPLES.map((principle, i) => (
+   967→            <li key={principle.title}>
+   968→              <Reveal delay={i * 0.06}>
+   969→                <div className="flex items-start gap-4">
+   970→                  <span className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-primary/25 bg-primary/10 text-flare">
+   971→                    <principle.icon className="size-5" aria-hidden="true" />
+   972→                  </span>
+   973→                  <div>
+   974→                    <h3 className="font-display text-base font-medium">{principle.title}</h3>
+   975→                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+   976→                      {principle.copy}
+   977→                    </p>
+   978→                  </div>
+   979→                </div>
+   980→              </Reveal>
+   981→            </li>
+   982→          ))}
+   983→        </ul>
+   984→
+   985→        <Reveal delay={0.08}>
+   986→          <Card className="border-gradient-brand">
+   987→            <CardHeader>
+   988→              <CardTitle className="font-display text-lg">Motion tokens in action</CardTitle>
+   989→              <CardDescription>Three loops from the Orbyt motion set, running live.</CardDescription>
+   990→            </CardHeader>
+   991→            <CardContent>
+   992→              <div className="grid gap-8 sm:grid-cols-3 sm:items-center">
+   993→                <div className="flex flex-col items-center gap-3">
+   994→                  <div className="relative size-32" aria-hidden="true">
+   995→                    <div className="absolute inset-0 rounded-full border border-foreground/15" />
+   996→                    <div className="absolute inset-0 animate-orbit" style={orbitStyle('12s')}>
+   997→                      <span className="absolute left-1/2 top-0 size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-flare shadow-[0_0_12px_rgba(255,178,92,0.9)]" />
+   998→                    </div>
+   999→                    <span className="absolute left-1/2 top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary glow-primary" />
+  1000→                  </div>
+  1001→                  <p className="font-mono text-[11px] text-muted-foreground">animate-orbit · 12s</p>
+  1002→                </div>
+  1003→
+  1004→                <div className="flex flex-col items-center gap-3">
+  1005→                  <div className="animate-float rounded-lg border border-border bg-secondary px-4 py-2.5 font-mono text-xs text-secondary-foreground">
+  1006→                    float · 7s
+  1007→                  </div>
+  1008→                  <p className="font-mono text-[11px] text-muted-foreground">animate-float · 7s</p>
+  1009→                </div>
+  1010→
+  1011→                <div className="flex flex-col items-center gap-3">
+  1012→                  <span
+  1013→                    className="size-5 animate-pulse-glow rounded-full bg-primary glow-primary"
+  1014→                    aria-hidden="true"
+  1015→                  />
+  1016→                  <p className="font-mono text-[11px] text-muted-foreground">
+  1017→                    animate-pulse-glow · 5s
+  1018→                  </p>
+  1019→                </div>
+  1020→              </div>
+  1021→            </CardContent>
+  1022→          </Card>
+  1023→        </Reveal>
+  1024→      </div>
+  1025→    </Section>
+  1026→  );
+  1027→}
+  1028→
+  1029→function ComponentsSection() {
+  1030→  return (
+  1031→    <Section
+  1032→      id="components"
+  1033→      eyebrow="06 · Components"
+  1034→      title={
+  1035→        <>
+  1036→          The system in <span className="text-gradient-brand">practice</span>
+  1037→        </>
+  1038→      }
+  1039→      description="Every primitive inherits the token set automatically — no per-component theming. What follows is a slice of a real product surface, plus the control inventory."
+  1040→    >
+  1041→      <div className="grid items-start gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+  1042→        <Reveal>
+  1043→          <Card className="border-gradient-brand">
+  1044→            <CardHeader>
+  1045→              <CardTitle className="font-display text-lg">Orbyt Mission Control</CardTitle>
+  1046→              <CardDescription>Systems nominal · all stations reporting</CardDescription>
+  1047→              <CardAction>
+  1048→                <Badge className="gap-1.5">
+  1049→                  <span
+  1050→                    className="size-1.5 animate-pulse rounded-full bg-primary-foreground/80"
+  1051→                    aria-hidden="true"
+  1052→                  />
+  1053→                  Live
+  1054→                </Badge>
+  1055→              </CardAction>
+  1056→            </CardHeader>
+  1057→            <CardContent className="space-y-5">
+  1058→              <form
+  1059→                className="flex gap-2"
+  1060→                onSubmit={(event) => {
+  1061→                  event.preventDefault();
+  1062→                  toast({
+  1063→                    title: 'Telemetry scan queued',
+  1064→                    description: 'Demo action — no spacecraft were contacted.',
+  1065→                  });
+  1066→                }}
+  1067→              >
+  1068→                <Input
+  1069→                  className="h-10 min-w-0 flex-1"
+  1070→                  placeholder="Search telemetry…"
+  1071→                  aria-label="Search telemetry"
+  1072→                />
+  1073→                <Button type="submit" className="h-10">
+  1074→                  Scan
+  1075→                </Button>
+  1076→              </form>
+  1077→
+  1078→              <Separator />
+  1079→
+  1080→              <div className="flex flex-wrap gap-2">
+  1081→                <Badge>Nominal</Badge>
+  1082→                <Badge variant="secondary">Standby</Badge>
+  1083→                <Badge variant="outline">Uplink</Badge>
+  1084→                <Badge variant="outline" className="border-gold/40 bg-gold/10 text-gold">
+  1085→                  Caution
+  1086→                </Badge>
+  1087→              </div>
+  1088→
+  1089→              <Tabs defaultValue="overview">
+  1090→                <TabsList>
+  1091→                  <TabsTrigger value="overview">Overview</TabsTrigger>
+  1092→                  <TabsTrigger value="telemetry">Telemetry</TabsTrigger>
+  1093→                  <TabsTrigger value="crew">Crew</TabsTrigger>
+  1094→                </TabsList>
+  1095→                <TabsContent value="overview" className="pt-2">
+  1096→                  <p className="text-sm leading-relaxed text-muted-foreground">
+  1097→                    All orbital systems nominal. Station-keeping within tolerance; next correction
+  1098→                    burn in 42 minutes.
+  1099→                  </p>
+  1100→                  <div className="mt-4 space-y-1.5">
+  1101→                    <div className="flex items-baseline justify-between font-mono text-xs text-muted-foreground">
+  1102→                      <span>Uplink stability</span>
+  1103→                      <span>68%</span>
+  1104→                    </div>
+  1105→                    <Progress value={68} aria-label="Uplink stability: 68 percent" />
+  1106→                  </div>
+  1107→                </TabsContent>
+  1108→                <TabsContent value="telemetry" className="pt-2">
+  1109→                  <dl className="grid grid-cols-3 gap-2">
+  1110→                    {TELEMETRY.map((stat) => (
+  1111→                      <div
+  1112→                        key={stat.label}
+  1113→                        className="rounded-lg border border-border bg-background/40 px-2 py-3 text-center"
+  1114→                      >
+  1115→                        <dt className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+  1116→                          {stat.label}
+  1117→                        </dt>
+  1118→                        <dd className="mt-1 font-display text-sm font-medium sm:text-base">
+  1119→                          {stat.value}
+  1120→                        </dd>
+  1121→                      </div>
+  1122→                    ))}
+  1123→                  </dl>
+  1124→                </TabsContent>
+  1125→                <TabsContent value="crew" className="pt-2">
+  1126→                  <ul className="space-y-2.5">
+  1127→                    {CREW.map((member) => (
+  1128→                      <li key={member.name} className="flex items-center gap-3">
+  1129→                        <Avatar className="size-8 border border-border">
+  1130→                          <AvatarFallback className={cn('text-[11px] font-medium', member.tone)}>
+  1131→                            {member.initials}
+  1132→                          </AvatarFallback>
+  1133→                        </Avatar>
+  1134→                        <div className="min-w-0">
+  1135→                          <p className="text-sm font-medium leading-tight">{member.name}</p>
+  1136→                          <p className="text-xs text-muted-foreground">{member.role}</p>
+  1137→                        </div>
+  1138→                        <Badge
+  1139→                          variant={member.status === 'Rest' ? 'secondary' : 'outline'}
+  1140→                          className="ml-auto font-mono text-[10px] uppercase tracking-wider"
+  1141→                        >
+  1142→                          {member.status}
+  1143→                        </Badge>
+  1144→                      </li>
+  1145→                    ))}
+  1146→                  </ul>
+  1147→                </TabsContent>
+  1148→              </Tabs>
+  1149→
+  1150→              <Separator />
+  1151→
+  1152→              <div className="flex items-center justify-between gap-4">
+  1153→                <div className="flex -space-x-2.5">
+  1154→                  {STATION_AVATARS.map((avatar) => (
+  1155→                    <Avatar key={avatar.initials} className="size-9 ring-2 ring-card">
+  1156→                      <AvatarFallback
+  1157→                        className={cn('border border-border text-[11px] font-semibold', avatar.tone)}
+  1158→                      >
+  1159→                        {avatar.initials}
+  1160→                      </AvatarFallback>
+  1161→                    </Avatar>
+  1162→                  ))}
+  1163→                </div>
+  1164→                <div className="flex items-center gap-3">
+  1165→                  <Switch id="auto-uplink" defaultChecked aria-label="Toggle auto uplink" />
+  1166→                  <Label htmlFor="auto-uplink" className="text-sm text-muted-foreground">
+  1167→                    Auto-uplink
+  1168→                  </Label>
+  1169→                </div>
+  1170→              </div>
+  1171→            </CardContent>
+  1172→          </Card>
+  1173→        </Reveal>
+  1174→
+  1175→        <Reveal delay={0.08}>
+  1176→          <Card>
+  1177→            <CardHeader>
+  1178→              <CardTitle className="font-display text-lg">Buttons & badges</CardTitle>
+  1179→              <CardDescription>Every control inherits the ember token set.</CardDescription>
+  1180→            </CardHeader>
+  1181→            <CardContent className="space-y-5">
+  1182→              <div className="flex flex-wrap gap-2.5">
+  1183→                <Button className="h-10">Primary</Button>
+  1184→                <Button variant="secondary" className="h-10">
+  1185→                  Secondary
+  1186→                </Button>
+  1187→                <Button variant="outline" className="h-10">
+  1188→                  Outline
+  1189→                </Button>
+  1190→                <Button variant="ghost" className="h-10">
+  1191→                  Ghost
+  1192→                </Button>
+  1193→                <Button variant="destructive" className="h-10">
+  1194→                  Abort
+  1195→                </Button>
+  1196→                <Button variant="link" className="h-10">
+  1197→                  Documentation
+  1198→                </Button>
+  1199→                <Button
+  1200→                  variant="outline"
+  1201→                  size="icon"
+  1202→                  className="size-10"
+  1203→                  aria-label="Launch sequence"
+  1204→                >
+  1205→                  <Rocket className="size-4" aria-hidden="true" />
+  1206→                </Button>
+  1207→              </div>
+  1208→
+  1209→              <Separator />
+  1210→
+  1211→              <div className="flex flex-wrap items-center gap-2">
+  1212→                <Badge>Ember</Badge>
+  1213→                <Badge variant="secondary">Ash</Badge>
+  1214→                <Badge variant="outline">Starlight</Badge>
+  1215→                <Badge variant="destructive">Alert</Badge>
+  1216→                <Badge variant="outline" className="border-flare/40 bg-primary/10 text-flare">
+  1217→                  Flare
+  1218→                </Badge>
+  1219→                <Badge variant="outline" className="border-gold/40 bg-gold/10 text-gold">
+  1220→                  Gold
+  1221→                </Badge>
+  1222→              </div>
+  1223→
+  1224→              <Separator />
+  1225→
+  1226→              <Button
+  1227→                variant="secondary"
+  1228→                className="h-10"
+  1229→                onClick={() =>
+  1230→                  toast({
+  1231→                    title: 'Signal received',
+  1232→                    description: 'Control room acknowledges. (Demo toast)',
+  1233→                  })
+  1234→                }
+  1235→              >
+  1236→                <Satellite className="size-4" aria-hidden="true" />
+  1237→                Ping control room
+  1238→              </Button>
+  1239→
+  1240→              <p className="font-mono text-xs text-muted-foreground">
+  1241→                radius: 1rem · focus ring: ember · border: white 10%
+  1242→              </p>
+  1243→            </CardContent>
+  1244→          </Card>
+  1245→        </Reveal>
+  1246→      </div>
+  1247→    </Section>
+  1248→  );
+  1249→}
+  1250→
+  1251→/* ────────────────────────────────────────────────────────────
+  1252→   Footer
+  1253→──────────────────────────────────────────────────────────── */
+  1254→
+  1255→const FOOTER_LINKS = [
+  1256→  {
+  1257→    label: 'Guidelines',
+  1258→    toast: {
+  1259→      title: 'Guidelines',
+  1260→      description: 'You are reading the living guidelines — scroll on.',
+  1261→    },
+  1262→  },
+  1263→  { label: 'Assets', toast: ASSETS_TOAST },
+  1264→  {
+  1265→    label: 'License',
+  1266→    toast: {
+  1267→      title: 'License',
+  1268→      description: 'Orbyt v1.0 demo license — remix freely, honor the ember.',
+  1269→    },
+  1270→  },
+  1271→] as const;
+  1272→
+  1273→function SiteFooter() {
+  1274→  return (
+  1275→    <footer className="mt-auto border-t border-border">
+  1276→      <div className="mx-auto w-full max-w-6xl px-4 pb-[max(env(safe-area-inset-bottom),2.5rem)] pt-12 sm:px-6 lg:px-8">
+  1277→        <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
+  1278→          <div>
+  1279→            <div className="flex items-center gap-2.5">
+  1280→              <OrbytMark className="size-6 text-foreground" />
+  1281→              <span className="font-display text-lg font-medium lowercase tracking-tight">
+  1282→                orbyt
+  1283→              </span>
+  1284→            </div>
+  1285→            <p className="mt-3 max-w-xs text-sm leading-relaxed text-muted-foreground">
+  1286→              A stellar design language — crafted in orbit, shipped with warmth.
+  1287→            </p>
+  1288→          </div>
+  1289→          <nav aria-label="Footer">
+  1290→            <ul className="flex flex-wrap gap-x-4 gap-y-1">
+  1291→              {FOOTER_LINKS.map((link) => (
+  1292→                <li key={link.label}>
+  1293→                  <button
+  1294→                    type="button"
+  1295→                    onClick={() => toast(link.toast)}
+  1296→                    className="flex min-h-[44px] items-center px-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
+  1297→                  >
+  1298→                    {link.label}
+  1299→                  </button>
+  1300→                </li>
+  1301→              ))}
+  1302→            </ul>
+  1303→          </nav>
+  1304→        </div>
+  1305→
+  1306→        <Separator className="my-8" />
+  1307→
+  1308→        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+  1309→          <p className="text-xs text-muted-foreground">
+  1310→            © 2025 Orbyt Studio — Crafted in orbit
+  1311→          </p>
+  1312→          <p className="font-mono text-xs text-muted-foreground">Stellar Ember theme v1.0</p>
+  1313→        </div>
+  1314→      </div>
+  1315→    </footer>
+  1316→  );
+  1317→}
+  1318→
+  1319→/* ────────────────────────────────────────────────────────────
+  1320→   Page
+  1321→──────────────────────────────────────────────────────────── */
+  1322→
+  1323→export default function Home() {
+  1324→  return (
+  1325→    <div id="top" className="flex min-h-screen flex-col bg-background text-foreground">
+  1326→      <SiteHeader />
+  1327→      <main className="flex-1">
+  1328→        <Hero />
+  1329→        <FoundationsSection />
+  1330→        <ColorSection />
+  1331→        <TypeSection />
+  1332→        <LogoSection />
+  1333→        <MotionSection />
+  1334→        <ComponentsSection />
+  1335→      </main>
+  1336→      <SiteFooter />
+  1337→    </div>
+  1338→  );
+  1339→}
+  1340→

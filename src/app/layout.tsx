@@ -21,7 +21,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Orbyt — Brand System",
   description:
-    "Orbyt brand system: a stellar design language built on orbital motion, ember warmth, and precise typography. Living style guide with colors, type, logo, and components.",
+    "Orbyt brand system: bold flat color, pixel precision, and relentless forward motion. Living style guide with colors, type, logo, and components.",
   keywords: [
     "Orbyt",
     "brand system",
@@ -33,12 +33,12 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Orbyt Studio" }],
   icons: {
-    icon: "/orbyt-mark.svg",
+    icon: "/orbyt-mark.png",
   },
   openGraph: {
     title: "Orbyt — Brand System",
     description:
-      "A stellar design language built on orbital motion, ember warmth, and precise typography.",
+      "Bold flat color, pixel precision, and relentless forward motion.",
     siteName: "Orbyt",
     type: "website",
   },
@@ -50,7 +50,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${inter.variable} ${spaceGrotesk.variable} ${geistMono.variable} antialiased bg-background text-foreground font-sans`}
       >

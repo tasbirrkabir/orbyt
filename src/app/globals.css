@@ -38,33 +38,24 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --color-flare: var(--flare);
-  --color-gold: var(--gold);
-  --color-sage: var(--sage);
-  --color-terra: var(--terra);
+  --color-ember-deep: var(--ember-deep);
+  --color-ember-tint: var(--ember-tint);
+  --color-smoke: var(--smoke);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --animate-orbit: orbit var(--orbit-duration, 26s) linear infinite;
-  --animate-orbit-reverse: orbit-reverse var(--orbit-duration, 34s) linear infinite;
-  --animate-twinkle: twinkle 3.2s ease-in-out infinite;
+  --animate-marquee: marquee var(--marquee-duration, 28s) linear infinite;
   --animate-pulse-glow: pulse-glow 5s ease-in-out infinite;
   --animate-float: float 7s ease-in-out infinite;
+  --animate-blink: blink 1.2s steps(2, start) infinite;
+  --animate-step-run: step-run 1.4s steps(3, end) infinite;
 }
 
 /* ── Orbyt motion keyframes ─────────────────────────────── */
-@keyframes orbit {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-@keyframes orbit-reverse {
-  from { transform: rotate(360deg); }
-  to   { transform: rotate(0deg); }
-}
-@keyframes twinkle {
-  0%, 100% { opacity: 0.15; }
-  50%      { opacity: 0.9; }
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
 }
 @keyframes pulse-glow {
   0%, 100% { opacity: 0.55; transform: scale(1); }
@@ -74,96 +65,103 @@
   0%, 100% { transform: translateY(0); }
   50%      { transform: translateY(-10px); }
 }
-
-/* ── Orbyt Brand System · Theme: "Stellar Ember" (dark) ── */
-:root {
-  --radius: 1rem;
-
-  /* Core surfaces */
-  --background: #0b0a08;            /* Void */
-  --foreground: #f2eee6;            /* Starlight */
-  --card: #14120d;                  /* Nebula */
-  --card-foreground: #f2eee6;
-  --popover: #17150f;
-  --popover-foreground: #f2eee6;
-
-  /* Brand accent */
-  --primary: #ff7a1a;               /* Ember */
-  --primary-foreground: #1a0e04;
-  --secondary: #211d15;             /* Ash */
-  --secondary-foreground: #ede8dc;
-  --muted: #1c1913;
-  --muted-foreground: #a69c8a;
-  --accent: #ffb25c;                /* Flare */
-  --accent-foreground: #20150a;
-  --destructive: #e5484d;
-
-  /* Extended brand palette */
-  --flare: #ffb25c;
-  --gold: #e8c468;
-  --sage: #9baf7e;
-  --terra: #d96c4f;
-
-  /* Lines & focus */
-  --border: rgba(242, 238, 230, 0.1);
-  --input: rgba(242, 238, 230, 0.14);
-  --ring: #ff7a1a;
-
-  /* Data-viz */
-  --chart-1: #ff7a1a;
-  --chart-2: #ffb25c;
-  --chart-3: #e8c468;
-  --chart-4: #9baf7e;
-  --chart-5: #d96c4f;
-
-  /* Sidebar */
-  --sidebar: #100e0a;
-  --sidebar-foreground: #f2eee6;
-  --sidebar-primary: #ff7a1a;
-  --sidebar-primary-foreground: #1a0e04;
-  --sidebar-accent: #211d15;
-  --sidebar-accent-foreground: #ede8dc;
-  --sidebar-border: rgba(242, 238, 230, 0.1);
-  --sidebar-ring: #ff7a1a;
-
-  /* Brand effects */
-  --brand-glow: rgba(255, 122, 26, 0.35);
-  --brand-star: #fff6e8;
+@keyframes blink {
+  50% { opacity: 0; }
+}
+@keyframes step-run {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-10px); }
 }
 
-/* Mirror the dark brand theme for next-themes compatibility */
+/* ── Orbyt Brand System · Theme: "Flat Ember" (light) ──
+   Core colors extracted from the official mark:
+   Orbyt Orange #FD5A01 · Orbyt Charcoal #1B1B1A        */
+:root {
+  --radius: 0.75rem;
+
+  /* Core surfaces */
+  --background: #faf7f2;            /* Paper */
+  --foreground: #1b1b1a;            /* Charcoal */
+  --card: #ffffff;
+  --card-foreground: #1b1b1a;
+  --popover: #ffffff;
+  --popover-foreground: #1b1b1a;
+
+  /* Brand accent */
+  --primary: #fd5a01;               /* Orbyt Orange */
+  --primary-foreground: #1b1b1a;    /* Charcoal on orange — as in the mark */
+  --secondary: #f1ebe1;             /* Warm sand */
+  --secondary-foreground: #1b1b1a;
+  --muted: #f4efe7;
+  --muted-foreground: #6b6862;
+  --accent: #ffe3d1;                /* Ember tint */
+  --accent-foreground: #1b1b1a;
+  --destructive: #d93636;
+
+  /* Extended brand palette */
+  --ember-deep: #b44401;
+  --ember-tint: #ff8a3d;
+  --smoke: #efeadf;
+
+  /* Lines & focus */
+  --border: rgba(27, 27, 26, 0.12);
+  --input: rgba(27, 27, 26, 0.16);
+  --ring: #fd5a01;
+
+  /* Data-viz */
+  --chart-1: #fd5a01;
+  --chart-2: #1b1b1a;
+  --chart-3: #ff8a3d;
+  --chart-4: #b44401;
+  --chart-5: #a8a296;
+
+  /* Sidebar */
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1b1b1a;
+  --sidebar-primary: #fd5a01;
+  --sidebar-primary-foreground: #1b1b1a;
+  --sidebar-accent: #f1ebe1;
+  --sidebar-accent-foreground: #1b1b1a;
+  --sidebar-border: rgba(27, 27, 26, 0.12);
+  --sidebar-ring: #fd5a01;
+
+  /* Brand effects */
+  --brand-glow: rgba(253, 90, 1, 0.28);
+}
+
+/* Charcoal-dominant inversion for dark contexts */
 .dark {
-  --background: #0b0a08;
-  --foreground: #f2eee6;
-  --card: #14120d;
-  --card-foreground: #f2eee6;
-  --popover: #17150f;
-  --popover-foreground: #f2eee6;
-  --primary: #ff7a1a;
-  --primary-foreground: #1a0e04;
-  --secondary: #211d15;
-  --secondary-foreground: #ede8dc;
-  --muted: #1c1913;
-  --muted-foreground: #a69c8a;
-  --accent: #ffb25c;
-  --accent-foreground: #20150a;
-  --destructive: #e5484d;
-  --border: rgba(242, 238, 230, 0.1);
-  --input: rgba(242, 238, 230, 0.14);
-  --ring: #ff7a1a;
-  --chart-1: #ff7a1a;
-  --chart-2: #ffb25c;
-  --chart-3: #e8c468;
-  --chart-4: #9baf7e;
-  --chart-5: #d96c4f;
-  --sidebar: #100e0a;
-  --sidebar-foreground: #f2eee6;
-  --sidebar-primary: #ff7a1a;
-  --sidebar-primary-foreground: #1a0e04;
-  --sidebar-accent: #211d15;
-  --sidebar-accent-foreground: #ede8dc;
-  --sidebar-border: rgba(242, 238, 230, 0.1);
-  --sidebar-ring: #ff7a1a;
+  --background: #141413;
+  --foreground: #faf7f2;
+  --card: #1d1d1c;
+  --card-foreground: #faf7f2;
+  --popover: #1d1d1c;
+  --popover-foreground: #faf7f2;
+  --primary: #fd5a01;
+  --primary-foreground: #1b1b1a;
+  --secondary: #2a2a28;
+  --secondary-foreground: #faf7f2;
+  --muted: #262624;
+  --muted-foreground: #a8a296;
+  --accent: #3a2317;
+  --accent-foreground: #ffe3d1;
+  --destructive: #ff5d5d;
+  --border: rgba(250, 247, 242, 0.12);
+  --input: rgba(250, 247, 242, 0.16);
+  --ring: #fd5a01;
+  --chart-1: #fd5a01;
+  --chart-2: #faf7f2;
+  --chart-3: #ff8a3d;
+  --chart-4: #b44401;
+  --chart-5: #6b6862;
+  --sidebar: #1a1a19;
+  --sidebar-foreground: #faf7f2;
+  --sidebar-primary: #fd5a01;
+  --sidebar-primary-foreground: #1b1b1a;
+  --sidebar-accent: #2a2a28;
+  --sidebar-accent-foreground: #faf7f2;
+  --sidebar-border: rgba(250, 247, 242, 0.12);
+  --sidebar-ring: #fd5a01;
 }
 
 @layer base {
@@ -177,8 +175,8 @@
     @apply bg-background text-foreground;
   }
   ::selection {
-    background: rgba(255, 122, 26, 0.35);
-    color: #fff6e8;
+    background: #fd5a01;
+    color: #1b1b1a;
   }
 }
 
@@ -191,48 +189,48 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(242, 238, 230, 0.14);
+  background: rgba(27, 27, 26, 0.18);
   border-radius: 8px;
   border: 2px solid transparent;
   background-clip: content-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 122, 26, 0.5);
+  background: rgba(253, 90, 1, 0.6);
   border: 2px solid transparent;
   background-clip: content-box;
 }
 
 @layer utilities {
-  /* Ember gradient text */
+  /* Ember gradient text (orange → deep ember) */
   .text-gradient-brand {
-    background: linear-gradient(100deg, #ffd9a8 0%, #ffb25c 30%, #ff7a1a 62%, #d95f00 100%);
+    background: linear-gradient(100deg, #fd5a01 0%, #ff8a3d 55%, #b44401 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
   }
-  /* Soft ember glow shadow */
+  /* Soft ember shadow */
   .glow-primary {
-    box-shadow: 0 0 24px var(--brand-glow), 0 0 64px rgba(255, 122, 26, 0.12);
+    box-shadow: 0 0 0 1px rgba(253, 90, 1, 0.25), 0 8px 32px var(--brand-glow);
   }
-  /* Hairline gradient border for hero surfaces */
-  .border-gradient-brand {
-    border: 1px solid transparent;
-    background:
-      linear-gradient(var(--card), var(--card)) padding-box,
-      linear-gradient(135deg, rgba(255, 178, 92, 0.5), rgba(255, 122, 26, 0.08) 45%, rgba(242, 238, 230, 0.12)) border-box;
+  /* Hard offset shadow — pixel-poster energy */
+  .shadow-pixel {
+    box-shadow: 6px 6px 0 0 #1b1b1a;
+  }
+  .shadow-pixel-orange {
+    box-shadow: 6px 6px 0 0 #fd5a01;
   }
 }
 
-/* ── Reduced motion — park the celestial loops ──────────── */
+/* ── Reduced motion: park all brand keyframes ─────────── */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
-  .animate-orbit,
-  .animate-orbit-reverse,
-  .animate-twinkle,
+  .animate-marquee,
   .animate-pulse-glow,
-  .animate-float {
-    animation: none;
+  .animate-float,
+  .animate-blink,
+  .animate-step-run {
+    animation: none !important;
   }
 }
