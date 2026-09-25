@@ -96,7 +96,7 @@ function NeedLoginCard({ next }: { next: string }) {
           <Link href={`/login?next=${next}`}>{PROTECTED.needLogin.login}</Link>
         </Button>
         <Button asChild variant="outline" className="h-11 font-semibold">
-          <Link href="/login?mode=register">{PROTECTED.needLogin.register}</Link>
+          <Link href="/contact">{PROTECTED.needLogin.project}</Link>
         </Button>
       </div>
     </div>

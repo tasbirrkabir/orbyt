@@ -12,6 +12,9 @@ export const DEMO_EMAIL = "demo@orbyt.com";
 export const DEMO_PASSWORD = "orbyt-demo";
 export const DEMO_NAME = "Demo";
 
+/** The demo client's portal key, shown on the login page and in the portal. */
+export const DEMO_CLIENT_ID = "ORB-DEMO";
+
 /**
  * Sample profile. Challenge strings must stay in sync with
  * ONBOARDING.challenges in src/content/flows.ts: the dashboard's system
@@ -52,3 +55,45 @@ export const DEMO_SUBMISSIONS = [
 
 /** The demo account was provisioned this many days ago, for a lived-in tenure. */
 export const DEMO_AGE_DAYS = 6;
+
+/**
+ * The demo client's project, mid-build, with the kind of updates the crew
+ * would actually post. Written against the sample profile above, so the
+ * portal reads like one coherent story instead of filler.
+ */
+export const DEMO_PROJECT = {
+  title: "The acquisition system",
+  status: "BUILD",
+  startedDaysAgo: 5,
+} as const;
+
+export const DEMO_UPDATES = [
+  {
+    tag: "SHIPPED",
+    title: "Lead routing is live",
+    body:
+      "Every form submission now lands in one queue with an owner and a one hour timer. The three inboxes and the spreadsheet are retired.",
+    daysAgo: 1,
+  },
+  {
+    tag: "SHIPPED",
+    title: "GA4 events rebuilt",
+    body:
+      "The full funnel is instrumented from first view to purchase. Ads and the store finally tell the same story.",
+    daysAgo: 2,
+  },
+  {
+    tag: "IN PROGRESS",
+    title: "Conversions API wiring",
+    body:
+      "Server-side purchase events go into testing this week, so the ad platforms see every order even when cookies don't.",
+    daysAgo: 3,
+  },
+  {
+    tag: "NOTE",
+    title: "System map approved",
+    body:
+      "We mapped the path from ad click to repeat purchase and agreed where the first bottlenecks live: lead follow-up and weekly reporting.",
+    daysAgo: 5,
+  },
+] as const;

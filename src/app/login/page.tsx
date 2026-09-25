@@ -8,17 +8,16 @@ import { signIn } from "next-auth/react";
 import { Eye, EyeOff, Loader2, Compass } from "lucide-react";
 import { AUTH } from "@/content/flows";
 import { FOOTER, HERO } from "@/content/orbyt";
-import { DEMO_EMAIL, DEMO_PASSWORD } from "@/lib/demo";
+import { DEMO_CLIENT_ID, DEMO_EMAIL, DEMO_PASSWORD } from "@/lib/demo";
+import { normalizeClientId } from "@/lib/client-id";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { SiteShell } from "@/components/orbyt/site-shell";
 
-type Mode = "login" | "register";
-
 type FieldErrors = {
-  name?: string;
+  clientId?: string;
   email?: string;
   password?: string;
   form?: string;
@@ -94,10 +93,7 @@ function AuthCard() {
   const params = useSearchParams();
   const { toast } = useToast();
 
-  const [mode, setMode] = useState<Mode>(() =>
-    params.get("mode") === "register" ? "register" : "login"
-  );
-  const [name, setName] = useState("");
+  const [clientId, setClientId] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -106,12 +102,64 @@ function AuthCard() {
   const [demoPending, setDemoPending] = useState(false);
 
   const nextPath = params.get("next");
-  const copy = mode === "login" ? AUTH.login : AUTH.register;
+
+  function clearError(key: keyof FieldErrors) {
+    setErrors((prev) => (prev[key] ? { ...prev, [key]: undefined } : prev));
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (pending) return;
+
+    const trimmedId = normalizeClientId(clientId);
+    const trimmedEmail = email.trim();
+    const nextErrors: FieldErrors = {};
+
+    if (!trimmedId) {
+      nextErrors.clientId = "Your client ID opens the portal";
+    }
+    if (!EMAIL_PATTERN.test(trimmedEmail)) {
+      nextErrors.email = "That email doesn't look right";
+    }
+    if (!password) {
+      nextErrors.password = "Your password is needed";
+    }
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
+      return;
+    }
+
+    setErrors({});
+    setPending(true);
+
+    try {
+      const signInResult = await signIn("credentials", {
+        redirect: false,
+        clientId: trimmedId,
+        email: trimmedEmail,
+        password,
+      });
+      if (signInResult?.ok) {
+        router.push(nextPath ?? "/workspace");
+        return;
+      }
+      setErrors({
+        form:
+          signInResult?.error === "CredentialsSignin"
+            ? AUTH.login.invalid
+            : AUTH.login.error,
+      });
+      setPending(false);
+    } catch {
+      setErrors({ form: AUTH.login.error });
+      setPending(false);
+    }
+  }
 
   /**
    * One click into the public demo: provision it (idempotent), sign in
-   * with the shared credentials, land in the workspace. The credentials
-   * are public by design; see src/lib/demo.ts.
+   * with the shared credentials, land in the portal. The credentials are
+   * public by design; see src/lib/demo.ts.
    */
   async function handleDemo() {
     if (demoPending || pending) return;
@@ -124,6 +172,7 @@ function AuthCard() {
 
       const signInResult = await signIn("credentials", {
         redirect: false,
+        clientId: DEMO_CLIENT_ID,
         email: DEMO_EMAIL,
         password: DEMO_PASSWORD,
       });
@@ -140,142 +189,54 @@ function AuthCard() {
     }
   }
 
-  function switchMode(target: Mode) {
-    setMode(target);
-    setErrors({});
-    setShowPassword(false);
-  }
-
-  function clearError(key: keyof FieldErrors) {
-    setErrors((prev) => (prev[key] ? { ...prev, [key]: undefined } : prev));
-  }
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (pending) return;
-
-    const trimmedName = name.trim();
-    const trimmedEmail = email.trim();
-    const nextErrors: FieldErrors = {};
-
-    if (mode === "register" && trimmedName.length < 2) {
-      nextErrors.name = AUTH.register.nameRequired;
-    }
-    if (!EMAIL_PATTERN.test(trimmedEmail)) {
-      nextErrors.email = AUTH.register.emailInvalid;
-    }
-    if (mode === "register" && password.length < 8) {
-      nextErrors.password = AUTH.register.passwordShort;
-    }
-    if (Object.keys(nextErrors).length > 0) {
-      setErrors(nextErrors);
-      return;
-    }
-
-    setErrors({});
-    setPending(true);
-
-    try {
-      if (mode === "register") {
-        const response = await fetch("/api/auth/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: trimmedName,
-            email: trimmedEmail,
-            password,
-          }),
-        });
-
-        if (response.status === 409) {
-          setErrors({ email: AUTH.register.emailTaken });
-          setPending(false);
-          return;
-        }
-        if (!response.ok) {
-          setErrors({ form: AUTH.register.error });
-          setPending(false);
-          return;
-        }
-
-        const signInResult = await signIn("credentials", {
-          redirect: false,
-          email: trimmedEmail,
-          password,
-        });
-        if (signInResult?.ok) {
-          toast({ title: AUTH.shared.welcomeNew });
-          router.push(nextPath ?? "/onboarding");
-          return;
-        }
-        setErrors({ form: AUTH.login.error });
-        setPending(false);
-        return;
-      }
-
-      const signInResult = await signIn("credentials", {
-        redirect: false,
-        email: trimmedEmail,
-        password,
-      });
-      if (signInResult?.ok) {
-        router.push(nextPath ?? "/workspace");
-        return;
-      }
-      setErrors({
-        form:
-          signInResult?.error === "CredentialsSignin"
-            ? AUTH.login.invalid
-            : AUTH.login.error,
-      });
-      setPending(false);
-    } catch {
-      setErrors({
-        form: mode === "register" ? AUTH.register.error : AUTH.login.error,
-      });
-      setPending(false);
-    }
-  }
-
   return (
     <div className="w-full max-w-md rounded-md border border-border bg-card p-6 sm:p-8">
       <h1 className="font-display text-3xl font-bold leading-tight tracking-tight">
-        {copy.title}
+        {AUTH.login.title}
       </h1>
       <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-        {copy.sub}
+        {AUTH.login.sub}
       </p>
 
       <form onSubmit={handleSubmit} noValidate className="mt-8">
         <div className="space-y-5">
-          {mode === "register" ? (
-            <div className="space-y-2">
-              <Label htmlFor="auth-name">{AUTH.register.nameLabel}</Label>
-              <Input
-                id="auth-name"
-                name="name"
-                autoComplete="name"
-                placeholder={AUTH.register.namePlaceholder}
-                value={name}
-                onChange={(event) => {
-                  setName(event.target.value);
-                  clearError("name");
-                }}
-                aria-invalid={errors.name ? true : undefined}
-                aria-describedby={errors.name ? "auth-name-error" : undefined}
-              />
-              <FieldError id="auth-name-error" message={errors.name} />
-            </div>
-          ) : null}
+          <div className="space-y-2">
+            <Label htmlFor="auth-client-id">{AUTH.login.clientIdLabel}</Label>
+            <Input
+              id="auth-client-id"
+              name="clientId"
+              placeholder={AUTH.login.clientIdPlaceholder}
+              autoComplete="off"
+              autoCapitalize="characters"
+              spellCheck={false}
+              value={clientId}
+              onChange={(event) => {
+                setClientId(event.target.value);
+                clearError("clientId");
+              }}
+              className="h-12 font-mono uppercase tracking-[0.14em]"
+              aria-invalid={errors.clientId ? true : undefined}
+              aria-describedby={
+                errors.clientId ? "auth-client-id-error" : "auth-client-id-hint"
+              }
+            />
+            <p
+              id="auth-client-id-hint"
+              className="text-xs leading-relaxed text-muted-foreground"
+            >
+              {AUTH.login.clientIdHint}
+            </p>
+            <FieldError id="auth-client-id-error" message={errors.clientId} />
+          </div>
 
           <div className="space-y-2">
-            <Label htmlFor="auth-email">{copy.emailLabel}</Label>
+            <Label htmlFor="auth-email">{AUTH.login.emailLabel}</Label>
             <Input
               id="auth-email"
               name="email"
               type="email"
               autoComplete="email"
-              placeholder={copy.emailPlaceholder}
+              placeholder={AUTH.login.emailPlaceholder}
               value={email}
               onChange={(event) => {
                 setEmail(event.target.value);
@@ -288,16 +249,14 @@ function AuthCard() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="auth-password">{copy.passwordLabel}</Label>
+            <Label htmlFor="auth-password">{AUTH.login.passwordLabel}</Label>
             <div className="relative">
               <Input
                 id="auth-password"
                 name="password"
                 type={showPassword ? "text" : "password"}
-                autoComplete={
-                  mode === "login" ? "current-password" : "new-password"
-                }
-                placeholder={copy.passwordPlaceholder}
+                autoComplete="current-password"
+                placeholder={AUTH.login.passwordPlaceholder}
                 value={password}
                 onChange={(event) => {
                   setPassword(event.target.value);
@@ -306,11 +265,7 @@ function AuthCard() {
                 className="h-12 pr-14"
                 aria-invalid={errors.password ? true : undefined}
                 aria-describedby={
-                  errors.password
-                    ? "auth-password-error"
-                    : mode === "register"
-                      ? "auth-password-hint"
-                      : undefined
+                  errors.password ? "auth-password-error" : undefined
                 }
               />
               <button
@@ -331,14 +286,6 @@ function AuthCard() {
                 )}
               </button>
             </div>
-            {mode === "register" ? (
-              <p
-                id="auth-password-hint"
-                className="text-xs text-muted-foreground"
-              >
-                {AUTH.register.passwordHint}
-              </p>
-            ) : null}
             <FieldError id="auth-password-error" message={errors.password} />
           </div>
         </div>
@@ -360,15 +307,13 @@ function AuthCard() {
           {pending ? (
             <Loader2 aria-hidden="true" className="animate-spin" />
           ) : null}
-          {pending ? copy.submitting : copy.submit}
+          {pending ? AUTH.login.submitting : AUTH.login.submit}
         </Button>
       </form>
 
-      {mode === "login" ? (
-        <p className="mt-5 text-xs leading-relaxed text-muted-foreground">
-          {AUTH.login.forgot}
-        </p>
-      ) : null}
+      <p className="mt-5 text-xs leading-relaxed text-muted-foreground">
+        {AUTH.login.forgot}
+      </p>
 
       <div className="mt-6 flex items-center gap-4" aria-hidden="true">
         <span className="h-px flex-1 bg-border" />
@@ -401,19 +346,16 @@ function AuthCard() {
         </p>
       </div>
 
-      <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-border pt-4">
-        <p className="text-sm text-muted-foreground">
-          {mode === "login" ? AUTH.login.noAccount : AUTH.register.haveAccount}
+      <div className="mt-6 border-t border-border pt-5">
+        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-foreground">
+          {AUTH.login.noIdTitle}
         </p>
-        <button
-          type="button"
-          onClick={() => switchMode(mode === "login" ? "register" : "login")}
-          className="inline-flex h-11 items-center font-mono text-xs uppercase tracking-[0.18em] text-primary transition-colors hover:text-primary/80"
-        >
-          {mode === "login"
-            ? AUTH.login.switchToRegister
-            : AUTH.register.switchToLogin}
-        </button>
+        <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+          {AUTH.login.noIdBody}
+        </p>
+        <Button asChild variant="outline" className="mt-4 h-11 w-full font-semibold">
+          <Link href="/contact">{AUTH.login.noIdCta}</Link>
+        </Button>
       </div>
     </div>
   );

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,13 +14,63 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { FOOTER, NAV_LINKS, SITE } from "@/content/orbyt";
+import { NAV_LINKS, SITE } from "@/content/orbyt";
 import { AnimatedMark } from "./animated-mark";
 import { ScrollProgress } from "./scroll-progress";
 import { cn } from "@/lib/utils";
 
 function isActivePath(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+/**
+ * Account nav, session-aware: guests see Log in, clients see their portal.
+ * One link, never two: the workspace IS the logged-in state.
+ */
+function useAccountLinks() {
+  const { status } = useSession();
+  if (status === "authenticated") {
+    return [{ label: "Workspace", href: "/workspace" }];
+  }
+  if (status === "loading") {
+    return [];
+  }
+  return [{ label: "Log in", href: "/login" }];
+}
+
+function AccountNav() {
+  const links = useAccountLinks();
+  return (
+    <nav aria-label="Account" className="hidden items-center gap-1 md:flex">
+      {links.map((link) => (
+        <Link
+          key={link.href}
+          href={link.href}
+          className="flex h-11 items-center px-3 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-primary"
+        >
+          {link.label}
+        </Link>
+      ))}
+    </nav>
+  );
+}
+
+function AccountSheetLinks({ onNavigate }: { onNavigate: () => void }) {
+  const links = useAccountLinks();
+  return (
+    <>
+      {links.map((link) => (
+        <Link
+          key={link.href}
+          href={link.href}
+          onClick={onNavigate}
+          className="flex h-11 items-center border-b border-border font-mono text-sm uppercase tracking-[0.18em] text-foreground/90 transition-colors hover:text-primary"
+        >
+          {link.label}
+        </Link>
+      ))}
+    </>
+  );
 }
 
 function Wordmark() {
@@ -76,20 +127,7 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <nav
-            aria-label="Account"
-            className="hidden items-center gap-1 md:flex"
-          >
-            {FOOTER.accountLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="flex h-11 items-center px-3 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-primary"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
+          <AccountNav />
 
           <Button
             asChild
@@ -139,16 +177,7 @@ export function Header() {
                 <p className="pt-6 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
                   Account
                 </p>
-                {FOOTER.accountLinks.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    onClick={() => setOpen(false)}
-                    className="flex h-11 items-center border-b border-border font-mono text-sm uppercase tracking-[0.18em] text-foreground/90 transition-colors hover:text-primary"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
+                <AccountSheetLinks onNavigate={() => setOpen(false)} />
               </nav>
               <div className="mt-auto p-6 pt-6">
                 <Button asChild className="h-12 w-full font-semibold">

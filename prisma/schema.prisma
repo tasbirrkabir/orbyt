@@ -18,11 +18,41 @@ model User {
   email        String    @unique
   name         String?
   passwordHash String?
+  // Portal key. Issued by ORBYT when a service engagement starts,
+  // never self-served. Null means the account cannot open the portal.
+  clientId     String?   @unique
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
   submissions        ContactSubmission[]
   onboardingProfile  OnboardingProfile?
+  projects           Project[]
+}
+
+model Project {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  // Current step of the six stage loop: DISCOVER, DESIGN, BUILD,
+  // CONNECT, MEASURE, IMPROVE.
+  status    String   @default("DISCOVER")
+  startedAt DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  updates ProjectUpdate[]
+}
+
+model ProjectUpdate {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  // SHIPPED, IN PROGRESS, NOTE
+  tag       String   @default("NOTE")
+  title     String
+  body      String
+  createdAt DateTime @default(now())
 }
 
 model OnboardingProfile {

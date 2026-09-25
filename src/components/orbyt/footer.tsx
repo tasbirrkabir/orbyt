@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { FOOTER, NAV_LINKS } from "@/content/orbyt";
 import { AnimatedMark } from "./animated-mark";
+import { FooterAccountLinks } from "./account-links";
 
 const linkClass =
   "flex h-11 items-center font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground transition-all hover:translate-x-0.5 hover:text-primary";
@@ -42,15 +43,7 @@ export function Footer() {
           {/* Account + legal */}
           <div>
             <nav aria-label="Account">
-              <ul>
-                {FOOTER.accountLinks.map((link) => (
-                  <li key={link.href}>
-                    <Link href={link.href} className={linkClass}>
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+              <FooterAccountLinks itemClassName={linkClass} />
             </nav>
             <nav aria-label="Legal" className="mt-6">
               <ul>

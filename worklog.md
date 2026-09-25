@@ -345,3 +345,25 @@ Work Log:
 
 Stage Summary:
 - The redirect loop was a platform-gateway x Next trailing-slash normalization collision unique to the path /dashboard. Fixed permanently with skipTrailingSlashRedirect (loop-proof for every path) plus a rename to /workspace, which also matches the product's own vocabulary. The demo one-click flow is verified working on the actual preview domain; old /dashboard links now land on the branded 404 instead of looping.
+
+---
+Task ID: 20
+Agent: main (Z.ai Code)
+Task: Client portal conversion: client ID gate on login, project updates feed, session-aware nav. (User brief in Banglish: workspace -> client portal; client ID issued only when a service is bought; portal shows project-related updates; nav shows only Login, or Workspace when logged in.)
+
+Work Log:
+- SCHEMA (prisma): User.clientId (String? @unique, portal key issued by ORBYT, null = no portal access), new Project (title, status mapped to the 6-stage loop, startedAt, cascade from User), new ProjectUpdate (tag SHIPPED/IN PROGRESS/NOTE, title, body, cascade from Project). bun run db:push OK.
+- CLIENT ID SYSTEM (src/lib/client-id.ts): normalizeClientId ("orb demo"/"orb-demo"/lowercase -> "ORB-DEMO") + generateClientId (ORB-XXXXXX, unambiguous alphabet, no 0/O/1/I/L) for future provisioning.
+- AUTH GATE (lib/auth.ts): credentials now take clientId + email + password; authorize requires exact match against user.clientId after normalization. Accounts without a client ID can never log in, by design.
+- REGISTER REMOVED: deleted /api/auth/register route; login page fully rewritten as a 3-field client portal login (Client ID mono uppercase field + Email + Password), no signup toggle; "No client ID yet?" panel routes to /contact (portal access starts with a project); AUTH.register + welcomeNew copy removed from flows.ts.
+- DEMO (lib/demo.ts + /api/demo): demo client ID fixed "ORB-DEMO"; idempotent provisioning now also seeds the demo project "The acquisition system" (status BUILD, started 5d ago) with 4 humanized updates (SHIPPED lead routing live, SHIPPED GA4 events rebuilt, IN PROGRESS Conversions API wiring, NOTE system map approved) guarded by title so reruns never duplicate.
+- /api/me: returns user.clientId + projects[] with full updates[] (newest first); types.ts extended (MeProject/MeProjectUpdate).
+- PROJECT PANEL (new project-panel.tsx): per-project card with PROJECT NN index, title, orange status badge (BUILD · 3/6), 6-segment stage rail (filled/current/future, aria-labeled), started date + update count, and a drawing ember timeline of updates with tag badges; honest empty state routes to /contact. Mounted as the FIRST panel in the workspace grid (above system map).
+- WORKSPACE PAGE: scramble line now "ORBYT // WORKSPACE // {clientId}" (fallback email for legacy accounts); tenure line gained "CLIENT ID {key}" prefix; stats swapped "Days in the system" -> "Projects"; demo badge retitled "DEMO PORTAL" with "Start a project" CTA; NeedLoginCard buttons are Log in + Start a project.
+- NAV (session-aware): header desktop + mobile sheet and footer account list now show exactly ONE account link: "Log in" for guests, "Workspace" for authenticated users (new useAccountLinks hook in header; FooterAccountLinks client component in footer). FOOTER.accountLinks label updated to Workspace.
+- ONBOARDING: need-login state's register button replaced with Start a project (/contact).
+- OPS: /api/demo 500'd after schema push because the running dev server held the pre-regeneration Prisma client (PrismaClientValidationError on clientId). Restarted dev server via start-stop-daemon (plain nohup/setsid processes were reaped between tool calls; daemonized PID persisted). Verified new client loaded.
+- E2E (agent-browser, all through localhost + preview paths): demo one-click -> /workspace with "CLIENT ID ORB-DEMO" line, Projects stat 1, project card BUILD 3/6 with all 4 updates newest-first; manual login with WRONG client ID rejected ("Those details don't match..."), lowercase "orb-demo" accepted via normalization; nav shows only WORKSPACE logged in and only LOG IN logged out (header + footer); mobile 375px scrollWidth 375 on /login and /workspace; zero page errors; bun run lint clean; tsc clean for src/.
+
+Stage Summary:
+- The workspace is now a true client portal: three-factor login (client ID + email + password) where the client ID is only issued when ORBYT takes on a service engagement, and the portal's centerpiece is a per-project updates feed with stage-rail progress through the six-step loop. Public self-signup is gone; the nav carries a single session-aware account link. Demo remains one click away with ORB-DEMO fully seeded.

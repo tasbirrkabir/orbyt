@@ -5,53 +5,37 @@
 
 export const AUTH = {
   login: {
-    title: "Welcome back.",
-    sub: "Log in to your ORBYT workspace.",
-    submit: "Log in",
+    title: "Client portal.",
+    sub: "Log in with the client ID from your welcome email, plus your email and password.",
+    clientIdLabel: "Client ID",
+    clientIdPlaceholder: "ORB-XXXX",
+    clientIdHint: "Issued by email when your project starts. Lost it? We'll re-send it.",
+    submit: "Open my portal",
     submitting: "Checking",
-    noAccount: "New here?",
-    switchToRegister: "Create an account",
     emailLabel: "Email",
     emailPlaceholder: "you@company.com",
     passwordLabel: "Password",
     passwordPlaceholder: "Your password",
     forgot: "Forgot your password? Email us from the contact page and we'll sort it out.",
-    invalid: "Email or password didn't match. Try again.",
+    invalid: "Those details don't match. Check the client ID, the email and the password.",
     error: "Login is unavailable right now. Try again in a minute.",
     showPassword: "Show password",
     hidePassword: "Hide password",
-  },
-  register: {
-    title: "Create your ORBYT account.",
-    sub: "One account for projects, onboarding and everything we build together.",
-    submit: "Create account",
-    submitting: "Creating",
-    haveAccount: "Already have an account?",
-    switchToLogin: "Log in instead",
-    nameLabel: "Name",
-    namePlaceholder: "Your name",
-    emailLabel: "Email",
-    emailPlaceholder: "you@company.com",
-    passwordLabel: "Password",
-    passwordHint: "At least 8 characters. A phrase beats a symbol soup.",
-    passwordPlaceholder: "Create a password",
-    nameRequired: "Tell us your name",
-    emailInvalid: "That email doesn't look right",
-    passwordShort: "8 characters minimum",
-    emailTaken: "An account with this email already exists. Try logging in.",
-    error: "Registration is unavailable right now. Try again in a minute.",
+    noIdTitle: "No client ID yet?",
+    noIdBody:
+      "Portal access starts with a project. Tell us what's slowing growth down, and if we build together, your ID arrives with the welcome email.",
+    noIdCta: "Start a project",
   },
   shared: {
     orDivider: "or",
     backHome: "Back to the homepage",
-    welcomeNew: "Account created. Let's set up your workspace.",
   },
   demo: {
     eyebrow: "JUST LOOKING?",
-    label: "Explore the demo workspace",
+    label: "Explore the demo portal",
     submitting: "Opening the demo",
-    ready: "Demo workspace ready.",
-    note: "Sample profile, sample conversations, the real layout. No signup, no email, nothing to clean up after.",
+    ready: "Demo portal ready.",
+    note: "Sample client, sample project, sample updates, the real layout. No signup, no email, nothing to clean up after.",
     error: "The demo didn't open. Try again in a minute.",
   },
 } as const;
@@ -155,9 +139,9 @@ export const DASHBOARD = {
       label: "Profile complete",
       hint: "How much of your system we can already see.",
     },
-    days: {
-      label: "Days in the system",
-      hint: "Counted from the day you joined.",
+    projects: {
+      label: "Projects",
+      hint: "Builds currently on our desk.",
     },
     friction: {
       label: "Friction mapped",
@@ -231,20 +215,37 @@ export const DASHBOARD = {
     insights: { label: "Read the insights", href: "/insights" },
   },
   demo: {
-    tag: "DEMO WORKSPACE",
-    body: "You're looking at sample data so you can see how the workspace behaves with a project in it. Create an account and this screen fills with yours.",
-    cta: "Make it yours",
+    tag: "DEMO PORTAL",
+    body: "You're looking at sample data so you can see how the portal behaves with a live project in it. Become a client and this screen fills with yours.",
+    cta: "Start a project",
   },
   signOut: "Log out",
   signedInAs: "Signed in as",
 } as const;
 
+/** Project portal copy: the updates feed clients actually log in for. */
+export const PORTAL = {
+  clientIdLine: "CLIENT ID",
+  projects: {
+    title: "Project updates",
+    sub: "Straight from the crew: what shipped, what's wiring next, what we're watching. Updates land here as the work moves.",
+    projectLabel: "PROJECT",
+    stageLabel: "Stage",
+    startedLabel: "Started",
+    updatesLabel: "Updates",
+    emptyTitle: "No projects on file yet.",
+    empty:
+      "The portal fills in when work starts. If your project is already running and this looks empty, email us and we'll sort it the same day.",
+    emptyCta: { label: "Start a project", href: "/contact" },
+  },
+} as const;
+
 export const PROTECTED = {
   redirecting: "Checking your session",
   needLogin: {
-    title: "This page needs an account.",
-    body: "It's where your project profile and conversations live. Logging in takes a few seconds.",
+    title: "This portal needs a client account.",
+    body: "Project updates, your system profile and every brief you've sent live here. Log in with the client ID from your welcome email.",
     login: "Log in",
-    register: "Create an account",
+    project: "Start a project",
   },
 } as const;

@@ -6,7 +6,7 @@ import { signOut, useSession } from "next-auth/react";
 import { format } from "date-fns";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
-import { DASHBOARD, PROTECTED } from "@/content/flows";
+import { DASHBOARD, PORTAL, PROTECTED } from "@/content/flows";
 import { CONTACT } from "@/content/orbyt";
 import { DEMO_EMAIL } from "@/lib/demo";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import { SiteShell } from "@/components/orbyt/site-shell";
 import { ConsoleFrame } from "@/components/orbyt/dashboard/console-frame";
 import { StatTiles, type StatItem } from "@/components/orbyt/dashboard/stat-tiles";
 import { SystemMap } from "@/components/orbyt/dashboard/system-map";
+import { ProjectPanel } from "@/components/orbyt/dashboard/project-panel";
 import { ConversationLog } from "@/components/orbyt/dashboard/conversation-log";
 import { ProfilePanel, profileCompletion } from "@/components/orbyt/dashboard/profile-panel";
 import { NextSteps } from "@/components/orbyt/dashboard/next-steps";
@@ -60,7 +61,7 @@ function NeedLoginCard({ next }: { next: string }) {
           <Link href={`/login?next=${next}`}>{PROTECTED.needLogin.login}</Link>
         </Button>
         <Button asChild variant="outline" className="h-11 font-semibold">
-          <Link href="/login?mode=register">{PROTECTED.needLogin.register}</Link>
+          <Link href="/contact">{PROTECTED.needLogin.project}</Link>
         </Button>
       </div>
     </div>
@@ -92,7 +93,9 @@ function WorkspaceBody({ data }: { data: MePayload }) {
   const email = data.user.email;
   const displayName = data.user.name || email.split("@")[0];
   const submissions = data.submissions ?? [];
+  const projects = data.projects ?? [];
   const days = daysSince(data.user.createdAt);
+  const portalKey = data.user.clientId ?? email.toUpperCase();
 
   const completion = profileCompletion(data.profile);
   const frictionCount = (data.profile?.challenges ?? []).length;
@@ -101,7 +104,7 @@ function WorkspaceBody({ data }: { data: MePayload }) {
   const stats: StatItem[] = [
     { value: submissions.length, label: DASHBOARD.stats.messages.label, hint: DASHBOARD.stats.messages.hint },
     { value: completion, suffix: "%", label: DASHBOARD.stats.completion.label, hint: DASHBOARD.stats.completion.hint },
-    { value: days, label: DASHBOARD.stats.days.label, hint: DASHBOARD.stats.days.hint },
+    { value: projects.length, label: DASHBOARD.stats.projects.label, hint: DASHBOARD.stats.projects.hint },
     { value: frictionCount, label: DASHBOARD.stats.friction.label, hint: DASHBOARD.stats.friction.hint },
   ];
 
@@ -117,7 +120,7 @@ function WorkspaceBody({ data }: { data: MePayload }) {
           <div className="min-w-0">
             <div className="max-w-full truncate">
               <Scramble
-                text={`${DASHBOARD.console.workspace} // ${email.toUpperCase()}`}
+                text={`${DASHBOARD.console.workspace} // ${portalKey}`}
                 className="font-mono text-[11px] uppercase tracking-[0.22em] text-primary"
               />
             </div>
@@ -143,7 +146,9 @@ function WorkspaceBody({ data }: { data: MePayload }) {
               {DASHBOARD.sub}
             </p>
             <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-              <span className="text-primary">{DASHBOARD.tenure.prefix} {days}</span>
+              <span className="text-primary">{PORTAL.clientIdLine} {portalKey}</span>
+              {" · "}
+              <span>{DASHBOARD.tenure.prefix} {days}</span>
               {" · "}
               {DASHBOARD.tenure.since}{" "}
               {format(new Date(data.user.createdAt), "MMMM d, yyyy")}
@@ -185,6 +190,7 @@ function WorkspaceBody({ data }: { data: MePayload }) {
         {/* Workspace grid */}
         <div className="mt-6 grid items-start gap-6 lg:grid-cols-5">
           <div className="flex flex-col gap-6 lg:col-span-3">
+            <ProjectPanel projects={projects} />
             <SystemMap profile={data.profile} />
             <ConversationLog submissions={submissions} />
           </div>

@@ -5,13 +5,16 @@ import { db } from '@/lib/db'
 
 /**
  * GET /api/me (protected)
- * Contract: -> 200 { user: { id, name, email, createdAt }, profile, submissions }
+ * Contract: -> 200 { user: { id, name, email, clientId, createdAt }, profile, submissions, projects }
  *           | 401 { error: 'Unauthorized' } (no session / account deleted)
  *           | 500 { error } (unexpected internal error, details never leaked)
  *
  * profile is the OnboardingProfile (challenges parsed back to a string array)
  * or null when onboarding was never completed. submissions are the latest 20
- * ContactSubmissions created by this account. passwordHash is never included.
+ * ContactSubmissions created by this account. projects carry each project's
+ * status and full update history, newest first. passwordHash and clientId
+ * issues are never included beyond the client ID itself, which is the
+ * account's own portal key.
  */
 
 function parseChallenges(json: string): string[] {
@@ -45,6 +48,12 @@ export async function GET() {
           orderBy: { createdAt: 'desc' },
           take: 20,
         },
+        projects: {
+          orderBy: { startedAt: 'desc' },
+          include: {
+            updates: { orderBy: { createdAt: 'desc' } },
+          },
+        },
       },
     })
 
@@ -73,6 +82,7 @@ export async function GET() {
         id: user.id,
         name: user.name,
         email: user.email,
+        clientId: user.clientId,
         createdAt: user.createdAt,
       },
       profile,
@@ -83,6 +93,19 @@ export async function GET() {
         topic: submission.topic,
         message: submission.message,
         createdAt: submission.createdAt,
+      })),
+      projects: user.projects.map((project) => ({
+        id: project.id,
+        title: project.title,
+        status: project.status,
+        startedAt: project.startedAt,
+        updates: project.updates.map((update) => ({
+          id: update.id,
+          tag: update.tag,
+          title: update.title,
+          body: update.body,
+          createdAt: update.createdAt,
+        })),
       })),
     })
   } catch (error) {

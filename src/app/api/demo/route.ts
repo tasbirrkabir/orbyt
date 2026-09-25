@@ -3,11 +3,14 @@ import { db } from '@/lib/db'
 import { hashPassword } from '@/lib/password'
 import {
   DEMO_AGE_DAYS,
+  DEMO_CLIENT_ID,
   DEMO_EMAIL,
   DEMO_NAME,
   DEMO_PASSWORD,
   DEMO_PROFILE,
+  DEMO_PROJECT,
   DEMO_SUBMISSIONS,
+  DEMO_UPDATES,
 } from '@/lib/demo'
 
 /**
@@ -34,6 +37,7 @@ export async function POST() {
         email: DEMO_EMAIL,
         name: DEMO_NAME,
         passwordHash: hashPassword(DEMO_PASSWORD),
+        clientId: DEMO_CLIENT_ID,
         // Created "a week ago" so the workspace shows a believable tenure.
         createdAt: new Date(now - DEMO_AGE_DAYS * DAY_MS),
       },
@@ -41,10 +45,13 @@ export async function POST() {
 
     // The account can also come into existence through a contact submission
     // (no password). Repair that case so the shared credentials always work.
-    if (!user.passwordHash) {
+    if (!user.passwordHash || !user.clientId) {
       await db.user.update({
         where: { id: user.id },
-        data: { passwordHash: hashPassword(DEMO_PASSWORD) },
+        data: {
+          ...(user.passwordHash ? {} : { passwordHash: hashPassword(DEMO_PASSWORD) }),
+          ...(user.clientId ? {} : { clientId: DEMO_CLIENT_ID }),
+        },
       })
     }
 
@@ -76,6 +83,33 @@ export async function POST() {
             topic: submission.topic,
             message: submission.message,
             createdAt: new Date(now - submission.daysAgo * DAY_MS),
+          },
+        })
+      }
+    }
+
+    // The demo client's project, with its update history. Guarded by title
+    // so re-running never duplicates the story.
+    const existingProject = await db.project.findFirst({
+      where: { userId: user.id, title: DEMO_PROJECT.title },
+    })
+    if (!existingProject) {
+      const project = await db.project.create({
+        data: {
+          userId: user.id,
+          title: DEMO_PROJECT.title,
+          status: DEMO_PROJECT.status,
+          startedAt: new Date(now - DEMO_PROJECT.startedDaysAgo * DAY_MS),
+        },
+      })
+      for (const update of DEMO_UPDATES) {
+        await db.projectUpdate.create({
+          data: {
+            projectId: project.id,
+            tag: update.tag,
+            title: update.title,
+            body: update.body,
+            createdAt: new Date(now - update.daysAgo * DAY_MS),
           },
         })
       }
