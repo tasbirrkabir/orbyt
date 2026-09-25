@@ -331,6 +331,11 @@ export function PortalLoginForm({
             {DEMO_CLIENT_ID} · {DEMO_EMAIL} · {DEMO_PASSWORD}
           </span>
         </p>
+        <p className="mt-1.5 break-words font-mono text-[10px] leading-relaxed text-muted-foreground">
+          <span className="text-foreground">ORB-NOVA · nova@orbyt.com · orbyt-nova</span>
+          <span aria-hidden="true"> · </span>
+          <span className="text-foreground">ORB-ATLAS · atlas@orbyt.com · orbyt-atlas</span>
+        </p>
         <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
           {AUTH.demo.note}
         </p>

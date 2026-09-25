@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,85 +7,479 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ─────────────────────────────────────────────────────────────
+// ORBYT CLIENT COMMAND CENTER: domain model
+//
+// Tenant model: Organization is the client organization (one per
+// engagement). Every portal-scoped row carries organizationId so the
+// data access layer can scope every query to the authenticated
+// client's own organization. No portal query ever runs without it.
+//
+// Status fields are strings (SQLite has no enums); every one is
+// documented with its closed set at the field, and the sets are
+// mirrored in src/lib/portal/domain.ts.
+// ─────────────────────────────────────────────────────────────
+
+/// The client organization: the tenant boundary for the whole portal.
+/// tier drives which portal modules exist for this client:
+///   WEBSITE_ONLY        base modules
+///   MARKETING_WEBSITE   base + Reports
+///   FULL_SERVICE        base + Reports + Systems
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  /// The portal key ORBYT issues when an engagement starts (ORB-XXXX).
+  clientId  String   @unique
+  tier      String   @default("WEBSITE_ONLY")
+  country   String   @default("BD")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users         User[]
+  projects      Project[]
+  approvals     Approval[]
+  requests      Request[]
+  files         PortalFile[]
+  threads       MessageThread[]
+  events        ActivityEvent[]
+  systems       SystemEntry[]
+  reports       Report[]
+  meetings      Meeting[]
+  invoices      Invoice[]
+  notifications Notification[]
+}
+
 model User {
-  id           String    @id @default(cuid())
-  email        String    @unique
+  id           String   @id @default(cuid())
+  email        String   @unique
   name         String?
   passwordHash String?
   // Portal key. Issued by ORBYT when a service engagement starts,
   // never self-served. Null means the account cannot open the portal.
-  clientId     String?   @unique
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  // Kept on the primary contact for login; org members log in with the
+  // organization's client ID.
+  clientId     String?  @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  submissions        ContactSubmission[]
-  onboardingProfile  OnboardingProfile?
-  projects           Project[]
+  // Tenant + role. Role closed set: CLIENT_OWNER, CLIENT_MEMBER,
+  // CLIENT_VIEWER. Viewers read everything but cannot approve, pay,
+  // or post. ORBYT-side staff roles are out of scope for this portal.
+  organizationId        String?
+  organization          Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  role                  String        @default("CLIENT_OWNER")
+  // Invited members that have not activated yet have no password hash.
+  activatedAt           DateTime?
+  // Notification preferences: { approvals, requests, reports, billing, systems, meetings }
+  notificationPrefsJson String        @default("{}")
+
+  submissions       ContactSubmission[]
+  onboardingProfile OnboardingProfile?
+  projects          Project[]
+  approvalDecisions Approval[]          @relation("ApprovalDecisions")
+  requestsFiled     Request[]           @relation("RequestsFiled")
 }
 
 model Project {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  title     String
-  // Current step of the six stage loop: DISCOVER, DESIGN, BUILD,
-  // CONNECT, MEASURE, IMPROVE.
-  status    String   @default("DISCOVER")
-  startedAt DateTime @default(now())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String        @id @default(cuid())
+  userId         String
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  title          String
+  /// Human reference code, e.g. PRJ-001.
+  code           String?
+  // Two orthogonal axes:
+  //   stage: the six stage loop: DISCOVER, DESIGN, BUILD, CONNECT,
+  //          MEASURE, IMPROVE (the working phase shown on the rail)
+  //   status: the health of the engagement: PLANNING, IN_PROGRESS,
+  //          IN_REVIEW, BLOCKED, COMPLETED, PAUSED, ARCHIVED
+  stage          String        @default("DISCOVER")
+  status         String        @default("PLANNING")
+  /// What this engagement is: WEBSITE, MARKETING, AUTOMATION, AI, FULL_SERVICE
+  type           String        @default("WEBSITE")
+  /// One honest sentence about what we are building toward.
+  goal           String        @default("")
+  /// Who on the ORBYT side owns it day to day (a label, not a user row).
+  ownerLabel     String        @default("ORBYT crew")
+  startedAt      DateTime      @default(now())
+  targetLaunchAt DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
-  updates ProjectUpdate[]
+  updates      ProjectUpdate[]
   deliverables Deliverable[]
-  messages ContactSubmission[]
+  milestones   Milestone[]
+  approvals    Approval[]
+  requests     Request[]
+  files        PortalFile[]
+  threads      MessageThread[]
+  meetings     Meeting[]
+  messages     ContactSubmission[]
+}
+
+/// Client-visible milestone on the project rail. Progress is computed
+/// from DONE count / total, never a hand-typed percentage.
+model Milestone {
+  id          String    @id @default(cuid())
+  projectId   String
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title       String
+  description String    @default("")
+  // DONE, ACTIVE, UPCOMING
+  status      String    @default("UPCOMING")
+  position    Int       @default(0)
+  dueDate     DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+}
+
+/// A dated note from the crew on the project log. SHIPPED rows carry
+/// client sign-off (acknowledgedAt) set when the client approves from
+/// the portal; null means still awaiting their approval.
+model ProjectUpdate {
+  id             String    @id @default(cuid())
+  projectId      String
+  project        Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  // SHIPPED, IN PROGRESS, NOTE
+  tag            String    @default("NOTE")
+  title          String
+  body           String
+  acknowledgedAt DateTime?
+  createdAt      DateTime  @default(now())
 }
 
 model Deliverable {
-  id        String   @id @default(cuid())
-  projectId String
-  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  title     String
+  id            String    @id @default(cuid())
+  projectId     String
+  project       Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title         String
   // What it is and what it contains, in one or two honest sentences.
-  detail    String   @default("")
+  detail        String    @default("")
   // DELIVERED, IN PREP
-  status    String   @default("IN PREP")
+  status        String    @default("IN PREP")
   // How the client receives it. EMAIL for now: files travel by email,
   // the portal is the index of what exists, when it landed and where.
-  channel   String   @default("EMAIL")
+  channel       String    @default("EMAIL")
+  // DRAFT, IN REVIEW, APPROVED, FINAL
+  approvalState String    @default("DRAFT")
+  version       String    @default("v1")
+  // STRATEGY, BRAND, UX, DESIGN, DEVELOPMENT, MARKETING, REPORTS, FINAL, OTHER
+  category      String    @default("OTHER")
   // Optional. Only set when a real, client-reachable URL exists.
-  link      String?
-  deliveredAt DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  link          String?
+  deliveredAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  approvals Approval[]
 }
 
-model ProjectUpdate {
-  id        String   @id @default(cuid())
-  projectId String
-  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  // SHIPPED, IN PROGRESS, NOTE
-  tag       String   @default("NOTE")
-  title     String
-  body      String
-  // Client sign-off. Set when the client approves a shipped update from
-  // the portal; null means it is still awaiting their approval.
-  acknowledgedAt DateTime?
-  createdAt DateTime @default(now())
+/// A formal sign-off request. Approvals are one-way: once a version is
+/// approved it is never silently replaced; a new version means a new
+/// approval. History lives in the rows themselves (decidedAt, comment).
+model Approval {
+  id              String       @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  projectId       String?
+  project         Project?     @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  deliverableId   String?
+  deliverable     Deliverable? @relation(fields: [deliverableId], references: [id], onDelete: SetNull)
+  title           String
+  // What kind of thing is being signed off: DELIVERABLE, COPY, CREATIVE, DOCUMENT
+  type            String       @default("DELIVERABLE")
+  version         String       @default("v1")
+  description     String       @default("")
+  // PENDING, APPROVED, CHANGES_REQUESTED
+  status          String       @default("PENDING")
+  submittedAt     DateTime     @default(now())
+  decidedAt       DateTime?
+  decidedById     String?
+  decidedBy       User?        @relation("ApprovalDecisions", fields: [decidedById], references: [id], onDelete: SetNull)
+  decisionComment String       @default("")
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+}
+
+/// A structured client request (ticket). The client files it; ORBYT
+/// works it and the lifecycle is visible end to end.
+model Request {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  projectId      String?
+  project        Project?     @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  /// Human reference code, e.g. REQ-0042.
+  code           String
+  requesterId    String?
+  requester      User?        @relation("RequestsFiled", fields: [requesterId], references: [id], onDelete: SetNull)
+  requesterName  String       @default("")
+  title          String
+  // WEBSITE, DESIGN, MARKETING, TRACKING, AUTOMATION, AI, TECHNICAL, OTHER
+  category       String       @default("OTHER")
+  // NORMAL, IMPORTANT, URGENT
+  priority       String       @default("NORMAL")
+  // SUBMITTED, REVIEWING, IN_PROGRESS, WAITING_FOR_CLIENT, COMPLETED, CLOSED
+  status         String       @default("SUBMITTED")
+  description    String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  comments RequestComment[]
+}
+
+model RequestComment {
+  id         String   @id @default(cuid())
+  requestId  String
+  request    Request  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  authorName String
+  // CLIENT or ORBYT
+  authorRole String   @default("CLIENT")
+  body       String
+  createdAt  DateTime @default(now())
+}
+
+/// The secure file index. Files travel by email; this is the tenant-
+/// scoped index of what exists, with metadata, so nothing lives in one
+/// inbox or one person's memory. A row with a real link offers it;
+/// rows without one never render a fake download button.
+model PortalFile {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  projectId      String?
+  project        Project?     @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  name           String
+  kind           String       @default("pdf")
+  sizeKb         Int          @default(0)
+  version        String       @default("v1")
+  // STRATEGY, BRAND, UX, DESIGN, DEVELOPMENT, MARKETING, REPORTS, FINAL, OTHER
+  category       String       @default("OTHER")
+  // DRAFT, SHARED, FINAL, ARCHIVED
+  status         String       @default("SHARED")
+  uploadedBy     String       @default("ORBYT")
+  note           String       @default("")
+  // Optional. Only set when a real, client-reachable URL exists.
+  link           String?
+  uploadedAt     DateTime     @default(now())
+}
+
+/// A project-linked conversation, not a chat clone. Threads attach to
+/// a project (or stand alone); each keeps both sides of the exchange.
+model MessageThread {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  projectId      String?
+  project        Project?     @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  subject        String
+  // PROJECT, REQUEST, APPROVAL, DELIVERABLE, MEETING, GENERAL
+  context        String       @default("GENERAL")
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  messages Message[]
+}
+
+model Message {
+  id           String        @id @default(cuid())
+  threadId     String
+  thread       MessageThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  senderName   String
+  // CLIENT or ORBYT
+  senderRole   String        @default("CLIENT")
+  body         String
+  readByClient Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+}
+
+/// The immutable chronological record of what happened, client-visible.
+/// Doubles as the audit trail for client-facing actions (approvals,
+/// request lifecycle, file events); ORBYT-side internal audit is a
+/// server concern and never exposed here.
+model ActivityEvent {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  // PROJECT, REQUEST, APPROVAL, DELIVERABLE, FILE, REPORT, SYSTEM, BILLING, MEETING, MESSAGE, ACCOUNT
+  type           String
+  title          String
+  actorName      String
+  // CLIENT or ORBYT
+  actorRole      String       @default("ORBYT")
+  targetType     String       @default("")
+  targetLabel    String       @default("")
+  /// Deep link into the portal, when one exists.
+  link           String?
+  createdAt      DateTime     @default(now())
+}
+
+/// A system ORBYT builds, runs or monitors for the client. Full-service
+/// tenants only. Health states are recorded facts, never decoration:
+///   HEALTHY, WARNING, ISSUE, OFFLINE, NOT_CONNECTED, MONITORING,
+///   ACTIVE, PAUSED
+model SystemEntry {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name           String
+  // WEBSITE, TRACKING, ANALYTICS, MARKETING, AUTOMATION, AI, FORMS, INTEGRATIONS, CRM, NOTIFICATIONS
+  category       String
+  status         String       @default("MONITORING")
+  description    String       @default("")
+  /// For automations: what starts it and what it does.
+  trigger        String       @default("")
+  actions        String       @default("")
+  /// JSON array of connected service names.
+  connectedJson  String       @default("[]")
+  ownerLabel     String       @default("ORBYT")
+  lastCheckedAt  DateTime?
+  lastUpdatedAt  DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  checks SystemCheck[]
+  runs   AutomationRun[]
+}
+
+/// One recorded health check for a system. Status closed set mirrors
+/// SystemEntry. Empty checks mean "not checked yet", never "healthy".
+model SystemCheck {
+  id        String      @id @default(cuid())
+  systemId  String
+  system    SystemEntry @relation(fields: [systemId], references: [id], onDelete: Cascade)
+  name      String
+  status    String      @default("HEALTHY")
+  note      String      @default("")
+  checkedAt DateTime    @default(now())
+}
+
+/// One execution of an automation, for the run history.
+model AutomationRun {
+  id       String      @id @default(cuid())
+  systemId String
+  system   SystemEntry @relation(fields: [systemId], references: [id], onDelete: Cascade)
+  summary  String
+  // OK, FAILED
+  status   String      @default("OK")
+  ranAt    DateTime    @default(now())
+}
+
+/// A published performance report. Metrics and series are stored as
+/// JSON snapshots. Status NOT_CONNECTED means exactly that: no data
+/// source is wired up yet, and the UI says so instead of inventing
+/// numbers. Demo rows are labeled as sample data at render time.
+model Report {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  title          String
+  // 7D, 30D, 90D
+  period         String       @default("30D")
+  // READY, NOT_CONNECTED
+  status         String       @default("NOT_CONNECTED")
+  dataSource     String       @default("")
+  /// JSON: [{ key, label, value, prev, unit, question }]
+  metricsJson    String       @default("[]")
+  /// JSON: [{ key, label, unit, points: [{ label, value }] }]
+  seriesJson     String       @default("[]")
+  note           String       @default("")
+  updatedAt      DateTime     @updatedAt
+  createdAt      DateTime     @default(now())
+}
+
+model Meeting {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  projectId      String?
+  project        Project?     @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  title          String
+  startsAt       DateTime
+  durationMins   Int          @default(30)
+  agenda         String       @default("")
+  // UPCOMING, COMPLETED
+  status         String       @default("UPCOMING")
+  notes          String       @default("")
+  decisions      String       @default("")
+  createdAt      DateTime     @default(now())
+}
+
+model Invoice {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  /// Human reference like INV-0002. Unique within an organization; the
+  /// seeder and the API guard that, not a global index.
+  number         String
+  issueDate      DateTime
+  dueDate        DateTime
+  description    String
+  subtotalCents  Int
+  taxCents       Int          @default(0)
+  totalCents     Int
+  currency       String       @default("BDT")
+  // DRAFT, PENDING, PAID, OVERDUE, CANCELLED
+  status         String       @default("PENDING")
+  paidAt         DateTime?
+  method         String       @default("")
+  createdAt      DateTime     @default(now())
+
+  payments Payment[]
+}
+
+model Payment {
+  id          String   @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  amountCents Int
+  // BANK_TRANSFER, BKASH, NAGAD, CARD
+  method      String   @default("BANK_TRANSFER")
+  reference   String   @default("")
+  paidAt      DateTime @default(now())
+}
+
+model Notification {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  // APPROVAL, REQUEST, REPORT, SYSTEM, BILLING, MEETING, PROJECT, ACCOUNT
+  type           String
+  title          String
+  body           String       @default("")
+  link           String?
+  readAt         DateTime?
+  createdAt      DateTime     @default(now())
+}
+
+/// Server-side audit log for security-relevant client actions.
+/// Immutable from the client interface: no API writes to it except
+/// append, and nothing in the portal renders it.
+model AuditLog {
+  id           String   @id @default(cuid())
+  actorEmail   String
+  actorRole    String   @default("CLIENT")
+  action       String
+  targetType   String   @default("")
+  targetLabel  String   @default("")
+  metadataJson String   @default("{}")
+  createdAt    DateTime @default(now())
 }
 
 model OnboardingProfile {
-  id            String    @id @default(cuid())
-  userId        String    @unique
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  company       String?
-  industry      String?
-  stage         String?
-  challengesJson String   @default("[]")
-  tools         String?
-  goal          String?
-  completedAt   DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id             String    @id @default(cuid())
+  userId         String    @unique
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company        String?
+  industry       String?
+  stage          String?
+  challengesJson String    @default("[]")
+  tools          String?
+  goal           String?
+  completedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 }
 
 model Post {

@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { SupportView } from "@/components/orbyt/portal/views/support-view";
+import { CommandSupport } from "@/components/orbyt/command/command-support";
 
 export const metadata: Metadata = {
-  title: "Support · Workspace · ORBYT",
+  title: "Support · ORBYT Command Center",
 };
 
-export default function WorkspaceSupportPage() {
-  return <SupportView />;
+export default function SupportPage() {
+  return <CommandSupport />;
 }

@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { MessagesView } from "@/components/orbyt/portal/views/messages-view";
+import { CommandMessages } from "@/components/orbyt/command/command-messages";
 
 export const metadata: Metadata = {
-  title: "Messages · Workspace · ORBYT",
+  title: "Messages · ORBYT Command Center",
 };
 
 export default function WorkspaceMessagesPage() {
-  return <MessagesView />;
+  return <CommandMessages />;
 }

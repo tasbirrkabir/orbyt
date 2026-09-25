@@ -1,23 +1,66 @@
 /**
- * The public demo account. Intentionally public: the credentials ship in
- * the client bundle and the account holds only sample data, clearly
- * labeled as a demo inside the workspace. Anyone can explore the layout
- * without handing over an email; nobody's real data is involved.
+ * The Command Center demo stories. Intentionally public: the three
+ * demo accounts ship their credentials in the client bundle and hold
+ * only sample data, clearly labeled inside the portal. Anyone can
+ * explore the full product without handing over an email; nobody's
+ * real data is involved.
  *
- * /api/demo rebuilds all of this idempotently, so even if the database
- * is reset or someone deletes the account, one click brings it back.
+ * Three tenants on purpose, matching the three service shapes ORBYT
+ * actually sells:
+ *   A  ORB-DEMO   Demo Roasters  website only
+ *   B  ORB-NOVA   Nova Foods     website + marketing (adds Reports)
+ *   C  ORB-ATLAS  Atlas Clinics  full service (adds Reports + Systems)
+ *
+ * /api/demo rebuilds all of this idempotently: every step is an
+ * upsert or a count-guarded create, so a wiped database is repaired
+ * on the next click.
  */
 
-export const DEMO_EMAIL = "demo@orbyt.com";
-export const DEMO_PASSWORD = "orbyt-demo";
-export const DEMO_NAME = "Demo";
+export type DemoAccount = {
+  clientId: string;
+  email: string;
+  password: string;
+  name: string;
+  organizationName: string;
+  tier: "WEBSITE_ONLY" | "MARKETING_WEBSITE" | "FULL_SERVICE";
+};
 
-/** The demo client's portal key, shown on the login page and in the portal. */
-export const DEMO_CLIENT_ID = "ORB-DEMO";
+export const DEMO_ACCOUNTS: DemoAccount[] = [
+  {
+    clientId: "ORB-DEMO",
+    email: "demo@orbyt.com",
+    password: "orbyt-demo",
+    name: "Demo",
+    organizationName: "Demo Roasters",
+    tier: "WEBSITE_ONLY",
+  },
+  {
+    clientId: "ORB-NOVA",
+    email: "nova@orbyt.com",
+    password: "orbyt-nova",
+    name: "Tasnim Rahman",
+    organizationName: "Nova Foods",
+    tier: "MARKETING_WEBSITE",
+  },
+  {
+    clientId: "ORB-ATLAS",
+    email: "atlas@orbyt.com",
+    password: "orbyt-atlas",
+    name: "Dr. Farhana Karim",
+    organizationName: "Atlas Clinics",
+    tier: "FULL_SERVICE",
+  },
+];
+
+// Back-compat: the flagship demo account used across login copy.
+export const DEMO_CLIENT_ID = DEMO_ACCOUNTS[0].clientId;
+export const DEMO_EMAIL = DEMO_ACCOUNTS[0].email;
+export const DEMO_PASSWORD = DEMO_ACCOUNTS[0].password;
+export const DEMO_NAME = DEMO_ACCOUNTS[0].name;
 
 /**
- * Sample profile. Challenge strings must stay in sync with
- * ONBOARDING.challenges in src/content/flows.ts: the dashboard's system
+ * Sample profile for the flagship demo. Challenge strings must stay in
+ * sync with ONBOARDING.challenges in src/content/flows.ts: the system
  * map routes friction to pillars by substring match on these phrases.
  */
 export const DEMO_PROFILE = {
@@ -33,11 +76,9 @@ export const DEMO_PROFILE = {
   goal: "Every lead gets a reply within the hour, and the Monday report builds itself.",
 } as const;
 
-/**
- * Two sample briefs so the conversation timeline and the path tracker
- * have real rows to render. Written like a customer would write, because
- * a demo full of lorem ipsum says nothing about how the workspace feels.
- */
+export const DEMO_AGE_DAYS = 6;
+
+/** Two legacy briefs so the conversation timeline keeps its history. */
 export const DEMO_SUBMISSIONS = [
   {
     topic: "Systems",
@@ -50,92 +91,5 @@ export const DEMO_SUBMISSIONS = [
     message:
       "Every Monday goes to pulling numbers from four tools into one report. Could an agent take the copy-paste part, or is that wishful thinking?",
     daysAgo: 1,
-  },
-] as const;
-
-/** The demo account was provisioned this many days ago, for a lived-in tenure. */
-export const DEMO_AGE_DAYS = 6;
-
-/**
- * The demo client's project, mid-build, with the kind of updates the crew
- * would actually post. Written against the sample profile above, so the
- * portal reads like one coherent story instead of filler.
- */
-export const DEMO_PROJECT = {
-  title: "The acquisition system",
-  status: "BUILD",
-  startedDaysAgo: 5,
-} as const;
-
-export const DEMO_UPDATES = [
-  {
-    tag: "SHIPPED",
-    title: "Lead routing is live",
-    body:
-      "Every form submission now lands in one queue with an owner and a one hour timer. The three inboxes and the spreadsheet are retired.",
-    daysAgo: 1,
-    // Still open: this one is waiting on the client's sign-off.
-    ackDaysAgo: null,
-  },
-  {
-    tag: "SHIPPED",
-    title: "GA4 events rebuilt",
-    body:
-      "The full funnel is instrumented from first view to purchase. Ads and the store finally tell the same story.",
-    daysAgo: 2,
-    // Already signed off, so the demo shows both states in one feed.
-    ackDaysAgo: 1,
-  },
-  {
-    tag: "IN PROGRESS",
-    title: "Conversions API wiring",
-    body:
-      "Server-side purchase events go into testing this week, so the ad platforms see every order even when cookies don't.",
-    daysAgo: 3,
-    ackDaysAgo: null,
-  },
-  {
-    tag: "NOTE",
-    title: "System map approved",
-    body:
-      "We mapped the path from ad click to repeat purchase and agreed where the first bottlenecks live: lead follow-up and weekly reporting.",
-    daysAgo: 5,
-    ackDaysAgo: null,
-  },
-] as const;
-
-/**
- * The demo client's deliverable index. Honest by construction: every row
- * travels by email, no fake download buttons, and the in-prep row matches
- * the in-progress update above so the story stays coherent.
- */
-export const DEMO_DELIVERABLES = [
-  {
-    title: "Working agreement and scope",
-    detail:
-      "The engagement on one page: what we're building, the six stages, the cadence, and what we need from you and when.",
-    status: "DELIVERED",
-    daysAgo: 5,
-  },
-  {
-    title: "Lead routing blueprint",
-    detail:
-      "The routing map behind the new lead queue: owners, the one hour timer, and what happens when nobody picks up.",
-    status: "DELIVERED",
-    daysAgo: 1,
-  },
-  {
-    title: "GA4 event map",
-    detail:
-      "Every tracked event from first view to purchase, plus the test sheet we used to verify each one before sign-off.",
-    status: "DELIVERED",
-    daysAgo: 2,
-  },
-  {
-    title: "Conversions API test checklist",
-    detail:
-      "The pass or fail list the server-side events have to clear before they go live. Lands in your inbox when testing starts.",
-    status: "IN PREP",
-    daysAgo: null,
   },
 ] as const;

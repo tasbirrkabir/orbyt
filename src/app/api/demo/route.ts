@@ -1,174 +1,27 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db'
-import { hashPassword } from '@/lib/password'
-import {
-  DEMO_AGE_DAYS,
-  DEMO_CLIENT_ID,
-  DEMO_DELIVERABLES,
-  DEMO_EMAIL,
-  DEMO_NAME,
-  DEMO_PASSWORD,
-  DEMO_PROFILE,
-  DEMO_PROJECT,
-  DEMO_SUBMISSIONS,
-  DEMO_UPDATES,
-} from '@/lib/demo'
+import { seedCommandCenter } from '@/lib/portal/demo-seed'
 
 /**
  * POST /api/demo
- * Idempotently provisions the public demo account, its sample profile and
- * its two sample briefs. The login page calls this, then signs in with the
- * shared credentials (which are public by design; see src/lib/demo.ts).
+ * Idempotently provisions the three public demo tenants (website-only,
+ * website + marketing, full service), their projects, milestones,
+ * approvals, requests, files, threads, meetings, invoices, systems,
+ * reports, notifications and activity. The login page calls this, then
+ * signs in with the shared credentials (which are public by design;
+ * see src/lib/demo.ts).
  *
- * Every step is an upsert or a count-guarded create, so calling this any
- * number of times is safe, and a wiped database is repaired on the next
- * click. No request body, no user input to validate.
+ * Every step is an upsert or a count-guarded create, so calling this
+ * any number of times is safe, and a wiped database is repaired on the
+ * next click. No request body, no user input to validate.
  *
  * Contract: -> 200 { ok: true } | 500 { error } (details never leaked)
  */
 export async function POST() {
-  const DAY_MS = 86_400_000
-  const now = Date.now()
-
   try {
-    const user = await db.user.upsert({
-      where: { email: DEMO_EMAIL },
-      update: {},
-      create: {
-        email: DEMO_EMAIL,
-        name: DEMO_NAME,
-        passwordHash: hashPassword(DEMO_PASSWORD),
-        clientId: DEMO_CLIENT_ID,
-        // Created "a week ago" so the workspace shows a believable tenure.
-        createdAt: new Date(now - DEMO_AGE_DAYS * DAY_MS),
-      },
-    })
-
-    // The account can also come into existence through a contact submission
-    // (no password). Repair that case so the shared credentials always work.
-    if (!user.passwordHash || !user.clientId) {
-      await db.user.update({
-        where: { id: user.id },
-        data: {
-          ...(user.passwordHash ? {} : { passwordHash: hashPassword(DEMO_PASSWORD) }),
-          ...(user.clientId ? {} : { clientId: DEMO_CLIENT_ID }),
-        },
-      })
-    }
-
-    await db.onboardingProfile.upsert({
-      where: { userId: user.id },
-      update: {},
-      create: {
-        userId: user.id,
-        company: DEMO_PROFILE.company,
-        industry: DEMO_PROFILE.industry,
-        stage: DEMO_PROFILE.stage,
-        challengesJson: JSON.stringify(DEMO_PROFILE.challenges),
-        tools: DEMO_PROFILE.tools,
-        goal: DEMO_PROFILE.goal,
-        completedAt: new Date(now - (DEMO_AGE_DAYS - 1) * DAY_MS),
-      },
-    })
-
-    const submissionCount = await db.contactSubmission.count({
-      where: { userId: user.id },
-    })
-    if (submissionCount === 0) {
-      for (const submission of DEMO_SUBMISSIONS) {
-        await db.contactSubmission.create({
-          data: {
-            userId: user.id,
-            name: DEMO_NAME,
-            email: DEMO_EMAIL,
-            topic: submission.topic,
-            message: submission.message,
-            createdAt: new Date(now - submission.daysAgo * DAY_MS),
-          },
-        })
-      }
-    }
-
-    // The demo client's project, with its update history. Guarded by title
-    // so re-running never duplicates the story.
-    const existingProject = await db.project.findFirst({
-      where: { userId: user.id, title: DEMO_PROJECT.title },
-    })
-    if (!existingProject) {
-      const project = await db.project.create({
-        data: {
-          userId: user.id,
-          title: DEMO_PROJECT.title,
-          status: DEMO_PROJECT.status,
-          startedAt: new Date(now - DEMO_PROJECT.startedDaysAgo * DAY_MS),
-        },
-      })
-      for (const update of DEMO_UPDATES) {
-        await db.projectUpdate.create({
-          data: {
-            projectId: project.id,
-            tag: update.tag,
-            title: update.title,
-            body: update.body,
-            acknowledgedAt:
-              update.ackDaysAgo === null
-                ? null
-                : new Date(now - update.ackDaysAgo * DAY_MS),
-            createdAt: new Date(now - update.daysAgo * DAY_MS),
-          },
-        })
-      }
-    } else {
-      // The account predates sign-offs: bring the demo's shipped GA4 update
-      // to its approved state so the feed shows both states, every time.
-      await db.projectUpdate.updateMany({
-        where: {
-          projectId: existingProject.id,
-          title: "GA4 events rebuilt",
-          acknowledgedAt: null,
-        },
-        data: { acknowledgedAt: new Date(now - 1 * DAY_MS) },
-      })
-    }
-
-    // The deliverable index, kept in step with the update story above.
-    // Email is the transport; the portal only records what exists and when.
-    // Count-guarded and outside the project branch, so demo databases that
-    // predate deliverables get repaired here too.
-    const deliverableCount = await db.deliverable.count({
-      where: { project: { userId: user.id } },
-    })
-    if (deliverableCount === 0) {
-      const project = await db.project.findFirst({
-        where: { userId: user.id, title: DEMO_PROJECT.title },
-      })
-      if (project) {
-        for (const deliverable of DEMO_DELIVERABLES) {
-          await db.deliverable.create({
-            data: {
-              projectId: project.id,
-              title: deliverable.title,
-              detail: deliverable.detail,
-              status: deliverable.status,
-              channel: 'EMAIL',
-              link: null,
-              deliveredAt:
-                deliverable.daysAgo === null
-                  ? null
-                  : new Date(now - deliverable.daysAgo * DAY_MS),
-              createdAt:
-                deliverable.daysAgo === null
-                  ? new Date(now)
-                  : new Date(now - deliverable.daysAgo * DAY_MS),
-            },
-          })
-        }
-      }
-    }
-
+    await seedCommandCenter()
     return NextResponse.json({ ok: true })
   } catch (error) {
-    console.error('[api/demo] Failed to provision demo account:', error)
+    console.error('[api/demo] Failed to provision demo tenants:', error)
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })
   }
 }

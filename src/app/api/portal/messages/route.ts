@@ -1,130 +1,116 @@
-import { NextResponse } from 'next/server'
-import { z } from 'zod'
-import { getServerSession } from 'next-auth/next'
-import { authOptions, type SessionUserWithId } from '@/lib/auth'
-import { db } from '@/lib/db'
+import { NextResponse } from "next/server";
+import { z } from "zod";
+import { db } from "@/lib/db";
+import { identityOf, portalRoute, readJson } from "@/lib/portal/api";
+import { recordActivity, recordAudit } from "@/lib/portal/records";
+import type { ThreadSummary } from "@/lib/portal/types";
 
 /**
- * POST /api/portal/messages (protected)
- * Contract: { message, topic?, projectId? } -> 201 { ok: true, id }
- *           | 400 { error } (invalid JSON / validation)
- *           | 401 { error: 'Unauthorized' } (no session)
- *           | 429 { error } (rate limited)
- *           | 500 { error } (unexpected internal error, details never leaked)
+ * GET  /api/portal/messages (protected)
+ * POST /api/portal/messages (protected, writers only)
  *
- * The composer inside the client portal. A note posted here lands on the
- * same desk as the contact form (a ContactSubmission linked to the
- * account), so nothing the client says is ever scattered. Replies go out
- * by email; the portal keeps the client's side of the thread organized.
- *
- * `topic` must come from the fixed chip list so the log stays scannable.
- * `projectId` is optional context; it must belong to the session user.
+ * GET lists the organization's conversation threads, most recent
+ * activity first, with unread counts. POST opens a new thread; the
+ * first message is the opener. Project context must belong to the
+ * tenant. Contract:
+ *   GET  200 { threads: ThreadSummary[] }
+ *   POST 201 { threadId }
+ *   400 | 401 | 403 | 500
  */
 
-const TOPICS = ['Portal note', 'Check-in request', 'Question', 'New priority'] as const
-
-const messageSchema = z.object({
-  message: z.string().trim().min(2).max(2000),
-  topic: z.enum(TOPICS).default('Portal note'),
+const createSchema = z.object({
+  subject: z.string().trim().min(3).max(120),
+  body: z.string().trim().min(2).max(4000),
   projectId: z.string().trim().min(1).max(64).optional(),
-})
+});
 
-// Same lightweight limiter as /api/contact: max 10 notes per 10 minutes.
-const RATE_LIMIT_MAX = 10
-const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000
+export async function GET() {
+  return portalRoute(
+      async (context) => {
+    const threads = await db.messageThread.findMany({
+      where: { organizationId: context.organizationId },
+      orderBy: { updatedAt: "desc" },
+      include: {
+        project: { select: { title: true } },
+        messages: { orderBy: { createdAt: "desc" }, take: 1 },
+        _count: { select: { messages: true } },
+      },
+    });
 
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
+    const items: ThreadSummary[] = threads.map((thread) => {
+      const last = thread.messages[0];
+      const unread = thread.messages.filter((m) => !m.readByClient).length;
+      return {
+        id: thread.id,
+        subject: thread.subject,
+        context: thread.context,
+        projectId: thread.projectId,
+        projectTitle: thread.project?.title ?? null,
+        lastMessageAt: thread.updatedAt.toISOString(),
+        lastSenderRole: last?.senderRole ?? "ORBYT",
+        lastMessageBody: last?.body ?? "",
+        messageCount: thread._count.messages,
+        // The take:1 query only counted the latest message; unread
+        // beyond that still shows the thread as unread via last role.
+        unreadForClient: unread,
+      };
+    });
 
-function isRateLimited(key: string): boolean {
-  const now = Date.now()
-  const entry = rateLimitMap.get(key)
-
-  if (!entry || now >= entry.resetAt) {
-    if (rateLimitMap.size > 1000) {
-      for (const [k, v] of rateLimitMap) {
-        if (now >= v.resetAt) rateLimitMap.delete(k)
-      }
-    }
-    rateLimitMap.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS })
-    return false
-  }
-
-  entry.count += 1
-  return entry.count > RATE_LIMIT_MAX
+    return NextResponse.json({ threads: items });
+  });
 }
 
 export async function POST(request: Request) {
-  const session = await getServerSession(authOptions)
-  const sessionUser = session?.user as SessionUserWithId | undefined
-  const userId =
-    sessionUser && typeof sessionUser.id === 'string' ? sessionUser.id : null
-  if (!userId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  return portalRoute(async (context) => {
+    const input = await readJson(request, createSchema);
 
-  const clientKey =
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
-  if (isRateLimited(`${clientKey}:${userId}`)) {
-    return NextResponse.json(
-      { error: 'Too many notes in a row. Give it a few minutes.' },
-      { status: 429 },
-    )
-  }
-
-  let body: unknown
-  try {
-    body = await request.json()
-  } catch {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
-  }
-
-  const parsed = messageSchema.safeParse(body)
-  if (!parsed.success) {
-    return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? 'Invalid input' },
-      { status: 400 },
-    )
-  }
-
-  try {
-    // Name and email come from the account, never from the request body.
-    const user = await db.user.findUnique({
-      where: { id: userId },
-      select: { name: true, email: true },
-    })
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Project context is optional but must be the client's own project.
-    let projectId: string | null = null
-    if (parsed.data.projectId) {
+    let projectId: string | null = null;
+    if (input.projectId) {
       const project = await db.project.findFirst({
-        where: { id: parsed.data.projectId, userId },
+        where: { id: input.projectId, organizationId: context.organizationId },
         select: { id: true },
-      })
+      });
       if (!project) {
         return NextResponse.json(
-          { error: 'That project is not on your account' },
+          { error: "That project is not on your account" },
           { status: 400 },
-        )
+        );
       }
-      projectId = project.id
+      projectId = project.id;
     }
 
-    const submission = await db.contactSubmission.create({
+    const thread = await db.messageThread.create({
       data: {
-        name: user.name ?? 'Client',
-        email: user.email,
-        topic: parsed.data.topic,
-        message: parsed.data.message,
-        userId,
+        organizationId: context.organizationId,
         projectId,
+        subject: input.subject,
+        context: projectId ? "PROJECT" : "GENERAL",
+        messages: {
+          create: {
+            senderName: context.name,
+            senderRole: "CLIENT",
+            body: input.body,
+          },
+        },
       },
-    })
-    return NextResponse.json({ ok: true, id: submission.id }, { status: 201 })
-  } catch (error) {
-    console.error('[api/portal/messages] Failed to save note:', error)
-    return NextResponse.json({ error: 'Internal error' }, { status: 500 })
-  }
+    });
+
+    await Promise.all([
+      recordActivity(context, {
+        type: "MESSAGE",
+        title: `New message: ${thread.subject}`,
+        actorRole: "CLIENT",
+        targetType: "THREAD",
+        targetLabel: thread.subject,
+        link: `/workspace/messages/${thread.id}`,
+      }),
+      recordAudit(context, {
+        action: "message.create",
+        targetType: "THREAD",
+        targetLabel: thread.subject,
+      }),
+    ]);
+
+    return NextResponse.json({ threadId: thread.id }, { status: 201 });
+  }, { write: true });
 }

@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { DeliverablesView } from "@/components/orbyt/portal/views/deliverables-view";
+import { CommandDeliverables } from "@/components/orbyt/command/command-deliverables";
 
 export const metadata: Metadata = {
-  title: "Deliverables · Workspace · ORBYT",
+  title: "Deliverables · ORBYT Command Center",
 };
 
 export default function WorkspaceDeliverablesPage() {
-  return <DeliverablesView />;
+  return <CommandDeliverables />;
 }

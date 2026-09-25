@@ -48,10 +48,20 @@ export const authOptions: NextAuthOptions = {
           typeof credentials?.password === 'string' ? credentials.password : ''
         if (!clientId || !email || !password) return null
 
-        const user = await db.user.findUnique({ where: { email } })
+        // The client ID names the engagement. It matches either the
+        // organization itself (any team member logs in with it) or,
+        // for accounts created before organizations existed, the user
+        // row directly. Generic failure either way: no enumeration.
+        const user = await db.user.findFirst({
+          where: {
+            email,
+            OR: [
+              { organization: { clientId } },
+              { clientId },
+            ],
+          },
+        })
         if (!user?.passwordHash) return null
-        // No client ID on the account, or the ID doesn't match: no portal.
-        if (!user.clientId || user.clientId !== clientId) return null
         if (!verifyPassword(password, user.passwordHash)) return null
 
         // Never return or log the hash beyond this boundary.
