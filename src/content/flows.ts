@@ -120,7 +120,7 @@ export const ONBOARDING = {
 
 export const DASHBOARD = {
   greeting: { morning: "Good morning", afternoon: "Good afternoon", evening: "Good evening" },
-  sub: "One screen for the whole relationship. Your system profile, every message you've sent us, and where each one points next.",
+  sub: "One screen for the whole relationship. Approve what ships, post notes straight to the desk, and see exactly where every project stands.",
   console: {
     workspace: "ORBYT // WORKSPACE",
     active: "SYSTEM: ACTIVE",
@@ -146,6 +146,10 @@ export const DASHBOARD = {
       label: "Projects",
       hint: "Builds currently on our desk.",
     },
+    approvals: {
+      label: "Awaiting approval",
+      hint: "Shipped work waiting on your sign-off.",
+    },
     friction: {
       label: "Friction mapped",
       hint: "Points you flagged during onboarding.",
@@ -167,7 +171,7 @@ export const DASHBOARD = {
   },
   conversations: {
     title: "Project conversations",
-    sub: "Every message you've sent through the contact flow, newest first.",
+    sub: "Everything you've sent us, from the contact flow or right here in the portal, newest first.",
     sent: "Sent",
     show: "Show full message",
     hide: "Collapse",
@@ -231,15 +235,41 @@ export const PORTAL = {
   clientIdLine: "CLIENT ID",
   projects: {
     title: "Project updates",
-    sub: "Straight from the crew: what shipped, what's wiring next, what we're watching. Updates land here as the work moves.",
+    sub: "Straight from the crew: what shipped, what's wiring next, what we're watching. Approve what's done, and it's on record.",
     projectLabel: "PROJECT",
     stageLabel: "Stage",
     startedLabel: "Started",
     updatesLabel: "Updates",
+    awaiting: (count: number) =>
+      count === 1
+        ? "1 shipped update is waiting on your approval"
+        : `${count} shipped updates are waiting on your approval`,
     emptyTitle: "No projects on file yet.",
     empty:
       "The portal fills in when work starts. If your project is already running and this looks empty, email us and we'll sort it the same day.",
     emptyCta: { label: "Start a project", href: "/contact" },
+  },
+  approve: {
+    button: "Approve",
+    approving: "Saving",
+    approved: "APPROVED",
+    error: "Couldn't save the approval. Try again in a minute.",
+    hint: "Sign off so the crew knows it landed right",
+  },
+  messages: {
+    title: "Message the crew",
+    sub: "Notes land on the same desk as the contact form. We reply by email, usually within one business day.",
+    topicLabel: "What is this about?",
+    topics: ["Portal note", "Check-in request", "Question", "New priority"],
+    projectLabel: "About a project?",
+    projectNone: "No specific project",
+    label: "Your note",
+    placeholder: "What changed on your side, what you need, what's on your mind.",
+    required: "Write a line or two first",
+    submit: "Send the note",
+    submitting: "Sending",
+    sent: "Note sent. It's on the desk.",
+    error: "The note didn't send. Try again in a minute.",
   },
 } as const;
 

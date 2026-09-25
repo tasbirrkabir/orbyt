@@ -10,12 +10,20 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/orbyt/reveal";
 import { cn } from "@/lib/utils";
-import type { MeSubmission } from "./types";
+import type { MeProject, MeSubmission } from "./types";
 
 const COPY = DASHBOARD.conversations;
 const PREVIEW_CHARS = 140;
 
-function ConversationRow({ submission, index }: { submission: MeSubmission; index: number }) {
+function ConversationRow({
+  submission,
+  index,
+  projectTitle,
+}: {
+  submission: MeSubmission;
+  index: number;
+  projectTitle?: string;
+}) {
   const [expanded, setExpanded] = useState(false);
   const isLong = submission.message.length > PREVIEW_CHARS;
   const sentAt = new Date(submission.createdAt);
@@ -36,6 +44,11 @@ function ConversationRow({ submission, index }: { submission: MeSubmission; inde
             {COPY.sent} {format(sentAt, "MMM d, yyyy · HH:mm")}
           </time>
           {submission.topic ? <Badge variant="outline">{submission.topic}</Badge> : null}
+          {projectTitle ? (
+            <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+              · {projectTitle}
+            </span>
+          ) : null}
         </div>
         <p
           className={cn(
@@ -66,11 +79,21 @@ function ConversationRow({ submission, index }: { submission: MeSubmission; inde
 }
 
 /**
- * Every brief the account has sent, as a timeline: the rail draws in,
+ * Every note the account has sent, as a timeline: the rail draws in,
  * entries stagger after it, long messages expand in place. Newest first.
+ * Notes posted from the portal carry their project context here.
  */
-export function ConversationLog({ submissions }: { submissions: MeSubmission[] }) {
+export function ConversationLog({
+  submissions,
+  projects,
+}: {
+  submissions: MeSubmission[];
+  projects?: MeProject[] | null;
+}) {
   const reduced = useReducedMotion();
+  const projectTitles = new Map(
+    (projects ?? []).map((project) => [project.id, project.title]),
+  );
 
   return (
     <section aria-label={COPY.title} className="border border-border bg-card p-5 sm:p-6">
@@ -103,7 +126,16 @@ export function ConversationLog({ submissions }: { submissions: MeSubmission[] }
             ) : null}
             <ul className="space-y-0">
               {submissions.map((submission, index) => (
-                <ConversationRow key={submission.id} submission={submission} index={index} />
+                <ConversationRow
+                  key={submission.id}
+                  submission={submission}
+                  index={index}
+                  projectTitle={
+                    submission.projectId
+                      ? projectTitles.get(submission.projectId)
+                      : undefined
+                  }
+                />
               ))}
             </ul>
           </div>

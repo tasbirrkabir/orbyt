@@ -42,6 +42,7 @@ model Project {
   updatedAt DateTime @updatedAt
 
   updates ProjectUpdate[]
+  messages ContactSubmission[]
 }
 
 model ProjectUpdate {
@@ -52,6 +53,9 @@ model ProjectUpdate {
   tag       String   @default("NOTE")
   title     String
   body      String
+  // Client sign-off. Set when the client approves a shipped update from
+  // the portal; null means it is still awaiting their approval.
+  acknowledgedAt DateTime?
   createdAt DateTime @default(now())
 }
 
@@ -88,5 +92,8 @@ model ContactSubmission {
   message   String
   userId    String?
   user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  // Optional project context when a note is posted from the portal.
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
   createdAt DateTime @default(now())
 }

@@ -12,7 +12,8 @@ import { db } from '@/lib/db'
  * profile is the OnboardingProfile (challenges parsed back to a string array)
  * or null when onboarding was never completed. submissions are the latest 20
  * ContactSubmissions created by this account. projects carry each project's
- * status and full update history, newest first. passwordHash and clientId
+ * status and full update history, newest first, each update carrying its
+ * client sign-off (acknowledgedAt) when one exists. passwordHash and clientId
  * issues are never included beyond the client ID itself, which is the
  * account's own portal key.
  */
@@ -92,6 +93,7 @@ export async function GET() {
         email: submission.email,
         topic: submission.topic,
         message: submission.message,
+        projectId: submission.projectId,
         createdAt: submission.createdAt,
       })),
       projects: user.projects.map((project) => ({
@@ -104,6 +106,7 @@ export async function GET() {
           tag: update.tag,
           title: update.title,
           body: update.body,
+          acknowledgedAt: update.acknowledgedAt,
           createdAt: update.createdAt,
         })),
       })),

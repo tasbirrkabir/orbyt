@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { format } from "date-fns";
@@ -14,6 +14,7 @@ import { Magnetic } from "@/components/orbyt/magnetic";
 import { Scramble } from "@/components/orbyt/scramble";
 import { SiteShell } from "@/components/orbyt/site-shell";
 import { PortalGate } from "@/components/orbyt/portal/portal-gate";
+import { MessageComposer } from "@/components/orbyt/portal/message-composer";
 import { ConsoleFrame } from "@/components/orbyt/dashboard/console-frame";
 import { StatTiles, type StatItem } from "@/components/orbyt/dashboard/stat-tiles";
 import { SystemMap } from "@/components/orbyt/dashboard/system-map";
@@ -66,7 +67,7 @@ function SkeletonCards() {
   );
 }
 
-function WorkspaceBody({ data }: { data: MePayload }) {
+function WorkspaceBody({ data, refresh }: { data: MePayload; refresh: () => void }) {
   const reduced = useReducedMotion();
 
   const greeting = greetingFor(new Date().getHours());
@@ -78,14 +79,38 @@ function WorkspaceBody({ data }: { data: MePayload }) {
   const portalKey = data.user.clientId ?? email.toUpperCase();
 
   const completion = profileCompletion(data.profile);
-  const frictionCount = (data.profile?.challenges ?? []).length;
   const isDemo = email === DEMO_EMAIL;
+
+  // The client's side of the desk: shipped work they haven't signed off yet.
+  const pendingApprovals = projects.reduce(
+    (sum, project) =>
+      sum +
+      project.updates.filter(
+        (update) => update.tag === "SHIPPED" && !update.acknowledgedAt,
+      ).length,
+    0,
+  );
+
+  async function handleApprove(updateId: string) {
+    try {
+      const response = await fetch(`/api/portal/updates/${updateId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ acknowledged: true }),
+      });
+      if (!response.ok) return false;
+      refresh();
+      return true;
+    } catch {
+      return false;
+    }
+  }
 
   const stats: StatItem[] = [
     { value: submissions.length, label: DASHBOARD.stats.messages.label, hint: DASHBOARD.stats.messages.hint },
     { value: completion, suffix: "%", label: DASHBOARD.stats.completion.label, hint: DASHBOARD.stats.completion.hint },
     { value: projects.length, label: DASHBOARD.stats.projects.label, hint: DASHBOARD.stats.projects.hint },
-    { value: frictionCount, label: DASHBOARD.stats.friction.label, hint: DASHBOARD.stats.friction.hint },
+    { value: pendingApprovals, label: DASHBOARD.stats.approvals.label, hint: DASHBOARD.stats.approvals.hint },
   ];
 
   return (
@@ -170,11 +195,12 @@ function WorkspaceBody({ data }: { data: MePayload }) {
         {/* Workspace grid */}
         <div className="mt-6 grid items-start gap-6 lg:grid-cols-5">
           <div className="flex flex-col gap-6 lg:col-span-3">
-            <ProjectPanel projects={projects} />
+            <ProjectPanel projects={projects} onApprove={handleApprove} />
             <SystemMap profile={data.profile} />
-            <ConversationLog submissions={submissions} />
+            <ConversationLog submissions={submissions} projects={projects} />
           </div>
           <div className="flex flex-col gap-6 lg:col-span-2">
+            <MessageComposer projects={projects} onSent={refresh} />
             <ProfilePanel profile={data.profile} updatedAt={data.profile?.updatedAt ?? null} />
             <NextSteps data={data} />
           </div>
@@ -222,6 +248,18 @@ export default function WorkspacePage() {
   const [data, setData] = useState<MePayload | null>(null);
   const [needLogin, setNeedLogin] = useState(false);
   const [failed, setFailed] = useState(false);
+
+  /** Quiet re-fetch after a portal action (note sent, update approved). */
+  const refresh = useCallback(() => {
+    void (async () => {
+      try {
+        const response = await fetch("/api/me");
+        if (response.ok) setData((await response.json()) as MePayload);
+      } catch {
+        // Keep the current view; the next full load retries.
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     if (status !== "authenticated") return;
@@ -276,7 +314,7 @@ export default function WorkspacePage() {
 
           {status === "authenticated" && !needLogin ? (
             data ? (
-              <WorkspaceBody data={data} />
+              <WorkspaceBody data={data} refresh={refresh} />
             ) : failed ? (
               <div className="mt-10 rounded-md border border-destructive/40 bg-destructive/10 p-6">
                 <p className="font-mono text-xs uppercase tracking-[0.18em] text-destructive">

@@ -23,6 +23,7 @@ export type MeSubmission = {
   id: string;
   topic: string | null;
   message: string;
+  projectId: string | null;
   createdAt: string;
 };
 
@@ -31,6 +32,7 @@ export type MeProjectUpdate = {
   tag: string;
   title: string;
   body: string;
+  acknowledgedAt: string | null;
   createdAt: string;
 };
 

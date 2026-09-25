@@ -109,10 +109,25 @@ export async function POST() {
             tag: update.tag,
             title: update.title,
             body: update.body,
+            acknowledgedAt:
+              update.ackDaysAgo === null
+                ? null
+                : new Date(now - update.ackDaysAgo * DAY_MS),
             createdAt: new Date(now - update.daysAgo * DAY_MS),
           },
         })
       }
+    } else {
+      // The account predates sign-offs: bring the demo's shipped GA4 update
+      // to its approved state so the feed shows both states, every time.
+      await db.projectUpdate.updateMany({
+        where: {
+          projectId: existingProject.id,
+          title: "GA4 events rebuilt",
+          acknowledgedAt: null,
+        },
+        data: { acknowledgedAt: new Date(now - 1 * DAY_MS) },
+      })
     }
 
     return NextResponse.json({ ok: true })

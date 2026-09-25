@@ -74,6 +74,8 @@ export const DEMO_UPDATES = [
     body:
       "Every form submission now lands in one queue with an owner and a one hour timer. The three inboxes and the spreadsheet are retired.",
     daysAgo: 1,
+    // Still open: this one is waiting on the client's sign-off.
+    ackDaysAgo: null,
   },
   {
     tag: "SHIPPED",
@@ -81,6 +83,8 @@ export const DEMO_UPDATES = [
     body:
       "The full funnel is instrumented from first view to purchase. Ads and the store finally tell the same story.",
     daysAgo: 2,
+    // Already signed off, so the demo shows both states in one feed.
+    ackDaysAgo: 1,
   },
   {
     tag: "IN PROGRESS",
@@ -88,6 +92,7 @@ export const DEMO_UPDATES = [
     body:
       "Server-side purchase events go into testing this week, so the ad platforms see every order even when cookies don't.",
     daysAgo: 3,
+    ackDaysAgo: null,
   },
   {
     tag: "NOTE",
@@ -95,5 +100,6 @@ export const DEMO_UPDATES = [
     body:
       "We mapped the path from ad click to repeat purchase and agreed where the first bottlenecks live: lead follow-up and weekly reporting.",
     daysAgo: 5,
+    ackDaysAgo: null,
   },
 ] as const;

@@ -385,3 +385,21 @@ Work Log:
 
 Stage Summary:
 - /workspace is now a true two-state portal: locked login console -> live client dashboard, in place, no redirect. Demo portal is one click away everywhere login renders, credentials shown in the open (ORB-DEMO / demo@orbyt.com / orbyt-demo).
+
+---
+Task ID: 22
+Agent: main (Z.ai Code)
+Task: Client er portal ta "kajer" banano — read-only showcase theke interactive portal (client actions: approve shipped work + post notes to the crew).
+
+Work Log:
+- SCHEMA: ProjectUpdate.acknowledgedAt DateTime? (client sign-off) + ContactSubmission.projectId (optional project context, SetNull) + Project.messages back-relation. bun run db:push OK; dev server restarted via start-stop-daemon --chdir (plain SSD chdirs to / — bun "Script not found dev" without it), fresh Prisma client verified.
+- API POST /api/portal/messages (protected): zod { message 2..2000, topic enum [Portal note, Check-in request, Question, New priority], projectId? }; ownership-checked project context; name/email always from the account; per-user+IP rate limit 10/10min; notes land in the ContactSubmission desk queue (same as contact form).
+- API PATCH /api/portal/updates/[id] (protected): { acknowledged: true } one-way idempotent sign-off; 404 unless the update's parent project belongs to the session user.
+- /api/me + types: acknowledgedAt on updates, projectId on submissions.
+- UI: UpdateRow gained an APPROVE button (SHIPPED + unacked only) with saving/error states and an "APPROVED · MMM d" mono badge; ProjectPanel header shows a blinking "N shipped updates waiting on your approval" counter; 4th stat tile swapped Friction mapped -> Awaiting approval; ConversationLog shows "· {project title}" context on portal notes; new MessageComposer (right column, top) with topic chips + project Select + 2000-char textarea.
+- flows.ts: PORTAL.approve + PORTAL.messages + projects.awaiting(count) copy, DASHBOARD.stats.approvals, sub copy now leads with the actions ("Approve what ships, post notes straight to the desk...").
+- DEMO: GA4 update pre-approved (ackDaysAgo seed + idempotent repair patch for pre-existing demo projects) so the feed shows both states; "Lead routing is live" left pending for the demo approval flow.
+- E2E (agent-browser, preview domain): demo login in place -> awaiting badge "1 SHIPPED UPDATE..." + APPROVED · SEP 24 on GA4; clicked APPROVE on Lead routing -> APPROVED · SEP 25, counter 1 -> 0, awaiting line gone; composer: Check-in request chip + The acquisition system + note -> appears in conversation log with "· THE ACQUISITION SYSTEM" chip; reload -> note + both approvals persist (DB verified: submission with projectId, two ack timestamps); 375px scrollWidth 375; zero page errors; lint + tsc clean.
+
+Stage Summary:
+- The portal now gives clients actual work: sign off on shipped updates (persisted, one-way, ownership-checked) and post notes to the crew's desk from inside the portal (topic + project context). The approvals counter turns the feed into a to-do; the composer makes the portal two-way within honest bounds (replies go out by email).
