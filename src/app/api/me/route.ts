@@ -5,7 +5,7 @@ import { db } from '@/lib/db'
 
 /**
  * GET /api/me (protected)
- * Contract: -> 200 { user: { id, name, email, clientId, createdAt }, profile, submissions, projects }
+ * Contract: -> 200 { user: { id, name, email, clientId, createdAt }, profile, submissions, projects, deliverables }
  *           | 401 { error: 'Unauthorized' } (no session / account deleted)
  *           | 500 { error } (unexpected internal error, details never leaked)
  *
@@ -13,9 +13,11 @@ import { db } from '@/lib/db'
  * or null when onboarding was never completed. submissions are the latest 20
  * ContactSubmissions created by this account. projects carry each project's
  * status and full update history, newest first, each update carrying its
- * client sign-off (acknowledgedAt) when one exists. passwordHash and clientId
- * issues are never included beyond the client ID itself, which is the
- * account's own portal key.
+ * client sign-off (acknowledgedAt) when one exists. deliverables are the
+ * engagement's files and documents, flat across projects: the portal is the
+ * index of what exists, when it landed and where, not the transport.
+ * passwordHash is never included; clientId appears only as the account's
+ * own portal key.
  */
 
 function parseChallenges(json: string): string[] {
@@ -53,6 +55,7 @@ export async function GET() {
           orderBy: { startedAt: 'desc' },
           include: {
             updates: { orderBy: { createdAt: 'desc' } },
+            deliverables: { orderBy: { createdAt: 'desc' } },
           },
         },
       },
@@ -110,6 +113,20 @@ export async function GET() {
           createdAt: update.createdAt,
         })),
       })),
+      // Flat across projects, newest first; the views group and label them.
+      deliverables: user.projects.flatMap((project) =>
+        project.deliverables.map((deliverable) => ({
+          id: deliverable.id,
+          title: deliverable.title,
+          detail: deliverable.detail,
+          status: deliverable.status,
+          channel: deliverable.channel,
+          link: deliverable.link,
+          deliveredAt: deliverable.deliveredAt,
+          createdAt: deliverable.createdAt,
+          projectId: project.id,
+        })),
+      ),
     })
   } catch (error) {
     console.error('[api/me] Failed to load account:', error)

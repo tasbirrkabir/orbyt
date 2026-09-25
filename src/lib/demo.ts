@@ -103,3 +103,39 @@ export const DEMO_UPDATES = [
     ackDaysAgo: null,
   },
 ] as const;
+
+/**
+ * The demo client's deliverable index. Honest by construction: every row
+ * travels by email, no fake download buttons, and the in-prep row matches
+ * the in-progress update above so the story stays coherent.
+ */
+export const DEMO_DELIVERABLES = [
+  {
+    title: "Working agreement and scope",
+    detail:
+      "The engagement on one page: what we're building, the six stages, the cadence, and what we need from you and when.",
+    status: "DELIVERED",
+    daysAgo: 5,
+  },
+  {
+    title: "Lead routing blueprint",
+    detail:
+      "The routing map behind the new lead queue: owners, the one hour timer, and what happens when nobody picks up.",
+    status: "DELIVERED",
+    daysAgo: 1,
+  },
+  {
+    title: "GA4 event map",
+    detail:
+      "Every tracked event from first view to purchase, plus the test sheet we used to verify each one before sign-off.",
+    status: "DELIVERED",
+    daysAgo: 2,
+  },
+  {
+    title: "Conversions API test checklist",
+    detail:
+      "The pass or fail list the server-side events have to clear before they go live. Lands in your inbox when testing starts.",
+    status: "IN PREP",
+    daysAgo: null,
+  },
+] as const;

@@ -120,7 +120,7 @@ export const ONBOARDING = {
 
 export const DASHBOARD = {
   greeting: { morning: "Good morning", afternoon: "Good afternoon", evening: "Good evening" },
-  sub: "One screen for the whole relationship. Approve what ships, post notes straight to the desk, and see exactly where every project stands.",
+  sub: "One portal for the whole relationship. Approve what ships, track what's delivered, and reach the desk in one move.",
   console: {
     workspace: "ORBYT // WORKSPACE",
     active: "SYSTEM: ACTIVE",
@@ -215,24 +215,171 @@ export const DASHBOARD = {
     cta: { label: "Start a project", href: "/contact" },
     ctaReady: { label: "Book the fit call", href: "/contact" },
   },
-  actions: {
-    label: "Quick moves",
-    start: { label: "Start a project", href: "/contact" },
-    profile: { label: "Update profile", href: "/onboarding" },
-    insights: { label: "Read the insights", href: "/insights" },
-  },
   demo: {
     tag: "DEMO PORTAL",
-    body: "You're looking at sample data so you can see how the portal behaves with a live project in it. Become a client and this screen fills with yours.",
+    body: "You're looking at sample data so you can see how the portal behaves with a live project in it. Become a client and these rooms fill with yours.",
     cta: "Start a project",
   },
   signOut: "Log out",
   signedInAs: "Signed in as",
 } as const;
 
-/** Project portal copy: the updates feed clients actually log in for. */
+/**
+ * Project portal copy: a six room workspace, not one long screen. Each
+ * section answers one question a client actually asks.
+ */
 export const PORTAL = {
   clientIdLine: "CLIENT ID",
+  nav: {
+    label: "Portal sections",
+    overview: { label: "Overview", href: "/workspace" },
+    project: { label: "Project", href: "/workspace/project" },
+    deliverables: { label: "Deliverables", href: "/workspace/deliverables" },
+    messages: { label: "Messages", href: "/workspace/messages" },
+    support: { label: "Support", href: "/workspace/support" },
+    profile: { label: "Profile", href: "/workspace/profile" },
+  },
+  overview: {
+    attention: {
+      label: "Needs your attention",
+      approvalsOne: "One shipped update is waiting on your sign-off.",
+      approvalsMany: (count: number) =>
+        `${count} shipped updates are waiting on your sign-off.`,
+      approvalsCta: "Review and approve",
+      latestLabel: "Latest from the crew",
+      latestCta: "Open the project log",
+      allClear:
+        "Nothing is waiting on you. The crew keeps building, and this screen is where you'll hear about it first.",
+    },
+    quick: {
+      label: "The rest of the portal",
+      sub: "Five rooms, each one answerable in a sentence. Pick the one you need.",
+      items: {
+        project: {
+          title: "The project",
+          desc: "The stage rail, the full crew log, and your approvals.",
+        },
+        deliverables: {
+          title: "Deliverables",
+          desc: "Every file and doc: what's delivered, what's in prep.",
+        },
+        messages: {
+          title: "Messages",
+          desc: "Notes to the crew, and every note you've sent.",
+        },
+        support: {
+          title: "Support",
+          desc: "Response times, check-in calls, straight answers.",
+        },
+        profile: {
+          title: "Profile",
+          desc: "What we know about your system, and the friction map.",
+        },
+      },
+    },
+  },
+  projectPage: {
+    eyebrow: "PORTAL / PROJECT",
+    title: "The project.",
+    sub: "Where it stands in the six stage loop, the full crew log, and the updates waiting on your sign-off.",
+    brief: {
+      label: "The brief",
+      title: "What we're building toward.",
+      sub: "Your words from onboarding, kept in front of both of us. This is the standard the work gets measured against.",
+      empty:
+        "No brief on file yet. Onboarding takes two minutes and gives the work its target.",
+      emptyCta: "Write the brief",
+      profileCta: "Open the full profile",
+    },
+  },
+  deliverables: {
+    eyebrow: "PORTAL / DELIVERABLES",
+    title: "Everything we've handed over.",
+    sub: "The index of what exists: files, maps and documents, what's delivered, and what's still on the bench.",
+    note: "Files travel by email. This page tracks what was sent and when, so nothing lives in one inbox or one person's memory.",
+    sections: { delivered: "Delivered", inPrep: "In prep" },
+    channelLabel: "BY EMAIL",
+    deliveredOn: "Delivered",
+    openLabel: "Open",
+    inPrepNote: "Expected in your inbox as the work clears testing.",
+    emptyTitle: "Nothing delivered yet.",
+    empty:
+      "When work ships, every file and document lands here with the date it reached your inbox. No hunting through threads.",
+  },
+  messagesPage: {
+    eyebrow: "PORTAL / MESSAGES",
+    title: "Messages.",
+    sub: "Write to the crew, and read back everything you've sent. Replies land in your email, usually within one business day.",
+  },
+  profilePage: {
+    eyebrow: "PORTAL / PROFILE",
+    title: "Your system profile.",
+    sub: "What we know going into every conversation, and the map that routes your friction to the right desk.",
+  },
+  support: {
+    eyebrow: "PORTAL / SUPPORT",
+    title: "How to reach the desk.",
+    sub: "One desk, real people, and a reply time we hold ourselves to. No ticket numbers, no runaround.",
+    promise: {
+      title: "One business day. That's the standard.",
+      body: "Every note lands on the same desk, whether it starts here or on the contact page. A real person reads it and replies by email, usually within one business day. If a reply is ever late, say the word and it jumps the queue.",
+    },
+    channels: {
+      label: "Two ways in",
+      portal: {
+        title: "A note in the portal",
+        desc: "The fastest route. It lands on the desk with your project context already attached.",
+        cta: "Write a note",
+      },
+      contact: {
+        title: "The contact page",
+        desc: "For anything new: a fresh problem, a second project, or someone else on your team asking.",
+        cta: "Go to contact",
+      },
+    },
+    checkin: {
+      label: "Check-in call",
+      title: "Want time with the crew?",
+      sub: "Request a check-in and we'll confirm a slot by email. No calendar bots, no booking maze: a human writes back with a time.",
+      dayLabel: "Which day works?",
+      days: ["Any day", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+      windowLabel: "Time of day?",
+      windows: ["Morning", "Afternoon"],
+      agendaLabel: "What should we cover?",
+      agendaPlaceholder:
+        "Optional. A line or two, so the call starts in the right place.",
+      submit: "Request the check-in",
+      submitting: "Sending",
+      sent: "Request sent. We'll confirm a time by email.",
+      error: "The request didn't send. Try again in a minute.",
+      required: "Pick a day and a time window first",
+    },
+    faq: {
+      label: "Straight answers",
+      items: [
+        {
+          q: "Where do my files live?",
+          a: "They travel by email, and the Deliverables page is the index: what was sent, when, and what's inside. If something is missing from both, tell us and we'll re-send it the same day.",
+        },
+        {
+          q: "How do approvals work?",
+          a: "When something ships, it shows up in your project log marked SHIPPED. You read it, and if it landed right, you approve it. Your sign-off goes on record with the date, so both sides know exactly what was accepted and when.",
+        },
+        {
+          q: "How does billing work?",
+          a: "Invoices go out by email and payment happens by bank transfer. This portal never asks for a card and never processes a payment. If a number ever looks off, reply to the invoice and a human sorts it out.",
+        },
+        {
+          q: "Lost your client ID or password?",
+          a: "Send a note from the contact page. We verify it's you, then re-send the ID or reset the password the same day. Nobody on our side can see your password, by design.",
+        },
+        {
+          q: "Something is on fire?",
+          a: "Mark your note with the 'New priority' topic and put the fire in the first line. Urgent things move first; that's the whole system.",
+        },
+      ],
+    },
+  },
   projects: {
     title: "Project updates",
     sub: "Straight from the crew: what shipped, what's wiring next, what we're watching. Approve what's done, and it's on record.",

@@ -4,6 +4,7 @@ import { hashPassword } from '@/lib/password'
 import {
   DEMO_AGE_DAYS,
   DEMO_CLIENT_ID,
+  DEMO_DELIVERABLES,
   DEMO_EMAIL,
   DEMO_NAME,
   DEMO_PASSWORD,
@@ -128,6 +129,41 @@ export async function POST() {
         },
         data: { acknowledgedAt: new Date(now - 1 * DAY_MS) },
       })
+    }
+
+    // The deliverable index, kept in step with the update story above.
+    // Email is the transport; the portal only records what exists and when.
+    // Count-guarded and outside the project branch, so demo databases that
+    // predate deliverables get repaired here too.
+    const deliverableCount = await db.deliverable.count({
+      where: { project: { userId: user.id } },
+    })
+    if (deliverableCount === 0) {
+      const project = await db.project.findFirst({
+        where: { userId: user.id, title: DEMO_PROJECT.title },
+      })
+      if (project) {
+        for (const deliverable of DEMO_DELIVERABLES) {
+          await db.deliverable.create({
+            data: {
+              projectId: project.id,
+              title: deliverable.title,
+              detail: deliverable.detail,
+              status: deliverable.status,
+              channel: 'EMAIL',
+              link: null,
+              deliveredAt:
+                deliverable.daysAgo === null
+                  ? null
+                  : new Date(now - deliverable.daysAgo * DAY_MS),
+              createdAt:
+                deliverable.daysAgo === null
+                  ? new Date(now)
+                  : new Date(now - deliverable.daysAgo * DAY_MS),
+            },
+          })
+        }
+      }
     }
 
     return NextResponse.json({ ok: true })

@@ -36,6 +36,18 @@ export type MeProjectUpdate = {
   createdAt: string;
 };
 
+export type MeDeliverable = {
+  id: string;
+  title: string;
+  detail: string;
+  status: string;
+  channel: string;
+  link: string | null;
+  deliveredAt: string | null;
+  createdAt: string;
+  projectId: string | null;
+};
+
 export type MeProject = {
   id: string;
   title: string;
@@ -49,4 +61,5 @@ export type MePayload = {
   profile: MeProfile | null;
   submissions: MeSubmission[] | null;
   projects: MeProject[] | null;
+  deliverables: MeDeliverable[] | null;
 };
