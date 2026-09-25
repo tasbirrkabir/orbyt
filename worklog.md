@@ -421,3 +421,17 @@ Work Log:
 
 Stage Summary:
 - The workspace is now a researched six-room portal: Overview answers "what needs me", Project answers "where does it stand", Deliverables answers "where is my stuff" (honest email-transport index, schema-backed), Messages answers "how do I reach them", Support answers "what are the rules" (response promise, check-in booking via the desk, honest billing/FAQ), Profile keeps the brief + friction map. One ConsoleFrame + tab rail across all rooms; the gate wraps any deep link and flips in place. Real client utility without a single fabricated feature.
+
+---
+Task ID: 24
+Agent: main (Z.ai Code)
+Task: "do it" + pasted file. The upload mount arrived empty (file never reached the server), so: (a) audited the old pending list to find what was actually left, (b) executed the standing wow-factor/animation directive with targeted upgrades, (c) full-site verification crawl.
+
+Work Log:
+- AUDIT: every item from the stale pending list is already built and verified: /team + TeamSection on home, WorkedWith marquee, /legal/[slug] with privacy + terms, zero em/en-dashes in src (grep across all dash codepoints), all views present. So the remaining directive was the animation/wow pass.
+- WOW UPGRADE 1 (footer): FooterWordmark (new client component) replaces the static letter wall. Letters rise staggered (44px, 0.07s increments, custom ease) when scrolled into view via whileInView once, base opacity lifted 0.06 -> 0.1 so the wall actually reads, hover lift + ember kept (hover translate on the outer span so framer's transform never fights Tailwind's). Reduced motion gets the wall instantly.
+- WOW UPGRADE 2 (portal gate): AnimatedMark size 72 with halo + 2 satellites centered above the gate heading; heading, eyebrow, sub and the no-ID line centered to match. The locked console now has a brand heartbeat instead of a bare form.
+- E2E CRAWL (agent-browser, preview domain): all 12 public routes render with correct titles (/ /services /process /work /about /team /insights /contact /legal/privacy /legal/terms /login /onboarding); /nowhere correctly 404s; cookie-clear did not drop the JWT session (logged out via the button instead) and the new client-side logout kept the user on the preview origin; gate verified with the new mark at 1440px; footer wordmark verified on home; 375px sweep: scrollWidth == innerWidth on ALL 12 routes; zero page errors; dev.log shows only the intentional 404 besides 200s; lint + tsc clean.
+
+Stage Summary:
+- Site fully verified end to end after four sessions of work: every route renders, every flow works (login, demo, in-place gate flip, approvals, check-ins, deliverables), every route is mobile-clean. Footer gained a staggered rising wordmark and the portal gate gained the animated brand mark: the two brand moments that were still static now move.

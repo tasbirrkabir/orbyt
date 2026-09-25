@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { AUTH, DASHBOARD, PROTECTED } from "@/content/flows";
+import { AnimatedMark } from "@/components/orbyt/animated-mark";
 import { ConsoleFrame } from "@/components/orbyt/dashboard/console-frame";
 import { PortalLoginForm } from "./portal-login-form";
 
@@ -31,13 +32,18 @@ export function PortalGate({
         activeLabel={DASHBOARD.console.standby}
         sessionLabel={DASHBOARD.console.locked}
       >
-        <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-primary">
+        {/* Brand heartbeat while the console is locked */}
+        <div className="mb-8 flex justify-center">
+          <AnimatedMark size={72} satellites={2} halo />
+        </div>
+
+        <p className="text-center font-mono text-[11px] uppercase tracking-[0.22em] text-primary">
           {PROTECTED.gate.eyebrow}
         </p>
-        <h1 className="mt-3 font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
+        <h1 className="mt-3 text-center font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
           {AUTH.login.title}
         </h1>
-        <p className="mt-3 max-w-lg text-sm leading-relaxed text-muted-foreground">
+        <p className="mx-auto mt-3 max-w-lg text-center text-sm leading-relaxed text-muted-foreground">
           {PROTECTED.gate.sub}
         </p>
 
@@ -51,7 +57,7 @@ export function PortalGate({
           />
         </div>
 
-        <p className="mt-8 border-t border-border pt-5 text-xs leading-relaxed text-muted-foreground">
+        <p className="mt-8 border-t border-border pt-5 text-center text-xs leading-relaxed text-muted-foreground">
           {PROTECTED.gate.noId}{" "}
           <Link
             href="/contact"
