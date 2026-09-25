@@ -295,7 +295,7 @@ function Wizard() {
           {review.success}
         </p>
         <Button asChild className="mt-8 h-12 px-7 font-semibold">
-          <Link href="/dashboard">{review.toDashboard}</Link>
+          <Link href="/workspace">{review.toWorkspace}</Link>
         </Button>
       </div>
     );

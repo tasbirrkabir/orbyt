@@ -85,7 +85,7 @@ function SkeletonCards() {
   );
 }
 
-function DashboardBody({ data }: { data: MePayload }) {
+function WorkspaceBody({ data }: { data: MePayload }) {
   const reduced = useReducedMotion();
 
   const greeting = greetingFor(new Date().getHours());
@@ -231,7 +231,7 @@ function DashboardBody({ data }: { data: MePayload }) {
   );
 }
 
-export default function DashboardPage() {
+export default function WorkspacePage() {
   const { status } = useSession();
   const [data, setData] = useState<MePayload | null>(null);
   const [needLogin, setNeedLogin] = useState(false);
@@ -278,12 +278,12 @@ export default function DashboardPage() {
           {status === "loading" ? <SessionSpinner /> : null}
 
           {status === "unauthenticated" || needLogin ? (
-            <NeedLoginCard next="/dashboard" />
+            <NeedLoginCard next="/workspace" />
           ) : null}
 
           {status === "authenticated" && !needLogin ? (
             data ? (
-              <DashboardBody data={data} />
+              <WorkspaceBody data={data} />
             ) : failed ? (
               <div className="mt-10 rounded-md border border-destructive/40 bg-destructive/10 p-6">
                 <p className="font-mono text-xs uppercase tracking-[0.18em] text-destructive">

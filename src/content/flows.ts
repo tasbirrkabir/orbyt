@@ -60,7 +60,7 @@ export const ONBOARDING = {
   title: "Set up your workspace.",
   sub: "Four short steps. This tells us where to look first when we start working together.",
   progressLabels: ["You", "The friction", "The goal", "Review"],
-  edit: "You can update this any time from your dashboard.",
+  edit: "You can update this any time from your workspace.",
   steps: {
     you: {
       label: "You",
@@ -117,13 +117,13 @@ export const ONBOARDING = {
     review: {
       label: "Review",
       title: "Quick check before we save it.",
-      sub: "You can change any of this later from your dashboard.",
+      sub: "You can change any of this later from your workspace.",
       submit: "Save and open my workspace",
       submitting: "Saving",
       successTitle: "Workspace ready.",
       success:
         "Your system profile is saved. When you start a project conversation, we'll already know where to look.",
-      toDashboard: "Open my dashboard",
+      toWorkspace: "Open my workspace",
     },
   },
   errors: {

@@ -129,7 +129,7 @@ function AuthCard() {
       });
       if (signInResult?.ok) {
         toast({ title: AUTH.demo.ready });
-        router.push(nextPath ?? "/dashboard");
+        router.push(nextPath ?? "/workspace");
         return;
       }
       setErrors({ form: AUTH.demo.error });
@@ -219,7 +219,7 @@ function AuthCard() {
         password,
       });
       if (signInResult?.ok) {
-        router.push(nextPath ?? "/dashboard");
+        router.push(nextPath ?? "/workspace");
         return;
       }
       setErrors({

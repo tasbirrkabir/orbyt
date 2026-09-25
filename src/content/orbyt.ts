@@ -614,7 +614,7 @@ export const FOOTER = {
   ],
   accountLinks: [
     { label: "Log in", href: "/login" },
-    { label: "Dashboard", href: "/dashboard" },
+    { label: "Workspace", href: "/workspace" },
   ],
 } as const;
 
