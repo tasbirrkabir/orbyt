@@ -8,6 +8,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { DASHBOARD, PROTECTED } from "@/content/flows";
 import { CONTACT } from "@/content/orbyt";
+import { DEMO_EMAIL } from "@/lib/demo";
 import { Button } from "@/components/ui/button";
 import { Magnetic } from "@/components/orbyt/magnetic";
 import { Scramble } from "@/components/orbyt/scramble";
@@ -95,6 +96,7 @@ function DashboardBody({ data }: { data: MePayload }) {
 
   const completion = profileCompletion(data.profile);
   const frictionCount = (data.profile?.challenges ?? []).length;
+  const isDemo = email === DEMO_EMAIL;
 
   const stats: StatItem[] = [
     { value: submissions.length, label: DASHBOARD.stats.messages.label, hint: DASHBOARD.stats.messages.hint },
@@ -155,6 +157,27 @@ function DashboardBody({ data }: { data: MePayload }) {
             {DASHBOARD.signOut}
           </Button>
         </header>
+
+        {/* Demo disclosure: sample data, honestly labeled. */}
+        {isDemo ? (
+          <div className="mt-8 flex flex-col gap-4 rounded-md border border-primary/30 bg-primary/5 p-4 sm:p-5 lg:flex-row lg:items-center">
+            <div className="min-w-0 lg:mr-auto">
+              <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-primary">
+                {DASHBOARD.demo.tag}
+              </p>
+              <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                {DASHBOARD.demo.body}
+              </p>
+            </div>
+            <Button
+              asChild
+              variant="outline"
+              className="h-10 shrink-0 font-semibold"
+            >
+              <Link href="/login?mode=register">{DASHBOARD.demo.cta}</Link>
+            </Button>
+          </div>
+        ) : null}
 
         {/* Gauges */}
         <StatTiles items={stats} />

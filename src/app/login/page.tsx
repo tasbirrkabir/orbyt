@@ -5,9 +5,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, Compass } from "lucide-react";
 import { AUTH } from "@/content/flows";
 import { FOOTER, HERO } from "@/content/orbyt";
+import { DEMO_EMAIL, DEMO_PASSWORD } from "@/lib/demo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -102,9 +103,42 @@ function AuthCard() {
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [pending, setPending] = useState(false);
+  const [demoPending, setDemoPending] = useState(false);
 
   const nextPath = params.get("next");
   const copy = mode === "login" ? AUTH.login : AUTH.register;
+
+  /**
+   * One click into the public demo: provision it (idempotent), sign in
+   * with the shared credentials, land in the workspace. The credentials
+   * are public by design; see src/lib/demo.ts.
+   */
+  async function handleDemo() {
+    if (demoPending || pending) return;
+    setDemoPending(true);
+    setErrors({});
+
+    try {
+      const response = await fetch("/api/demo", { method: "POST" });
+      if (!response.ok) throw new Error("demo provisioning failed");
+
+      const signInResult = await signIn("credentials", {
+        redirect: false,
+        email: DEMO_EMAIL,
+        password: DEMO_PASSWORD,
+      });
+      if (signInResult?.ok) {
+        toast({ title: AUTH.demo.ready });
+        router.push(nextPath ?? "/dashboard");
+        return;
+      }
+      setErrors({ form: AUTH.demo.error });
+    } catch {
+      setErrors({ form: AUTH.demo.error });
+    } finally {
+      setDemoPending(false);
+    }
+  }
 
   function switchMode(target: Mode) {
     setMode(target);
@@ -335,6 +369,37 @@ function AuthCard() {
           {AUTH.login.forgot}
         </p>
       ) : null}
+
+      <div className="mt-6 flex items-center gap-4" aria-hidden="true">
+        <span className="h-px flex-1 bg-border" />
+        <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+          {AUTH.shared.orDivider}
+        </span>
+        <span className="h-px flex-1 bg-border" />
+      </div>
+
+      <div className="mt-5 rounded-md border border-border bg-blueprint p-4">
+        <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-primary">
+          {AUTH.demo.eyebrow}
+        </p>
+        <Button
+          type="button"
+          variant="outline"
+          disabled={demoPending || pending}
+          onClick={handleDemo}
+          className="mt-3 h-12 w-full font-semibold"
+        >
+          {demoPending ? (
+            <Loader2 aria-hidden="true" className="animate-spin" />
+          ) : (
+            <Compass aria-hidden="true" className="size-4" />
+          )}
+          {demoPending ? AUTH.demo.submitting : AUTH.demo.label}
+        </Button>
+        <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+          {AUTH.demo.note}
+        </p>
+      </div>
 
       <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-border pt-4">
         <p className="text-sm text-muted-foreground">

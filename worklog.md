@@ -314,3 +314,19 @@ Work Log:
 
 Stage Summary:
 - /dashboard is now a mission-control workspace on the brand's boot/console language: live status chrome, four animated gauges, an orbital system map that routes the client's real onboarding friction to ORBYT pillars with drawn connections and orbiting satellites, an animated conversation timeline, a completion-ring profile card, and an honestly derived path tracker. Every number on screen is derived from real account data (no fabricated metrics). Fixed a latent NextAuth dev secret bug that broke all server-side session reads after recompiles. Verified end to end in browser, desktop + mobile, zero errors.
+
+---
+Task ID: 18
+Agent: main (Z.ai Code)
+Task: Public demo account: one-click access to the dashboard with honestly labeled sample data. (User brief: "demo account.")
+
+Work Log:
+- NEW src/lib/demo.ts: public-by-design demo constants (demo@orbyt.com / orbyt-demo, name "Demo"), sample profile (Demo Roasters / eCommerce / Growing steadily / 3 exact ONBOARDING challenge phrases / tools / 90-day goal), 2 sample briefs written like real customer messages (Systems, 6d ago; AI & automation, 1d ago), DEMO_AGE_DAYS=6 so the workspace shows "Day 7" tenure. Documented constraint: challenge strings must stay in sync with ONBOARDING.challenges because system-map routes by substring match.
+- NEW POST /api/demo: idempotent provisioning (upsert user with backdated createdAt; repair missing passwordHash for accounts created via contact submissions; upsert OnboardingProfile; count-guarded creation of the 2 briefs). No request body to validate; wiped DBs self-repair on next click. Contract 200 {ok:true} | 500.
+- flows.ts: AUTH.demo (eyebrow "JUST LOOKING?", label "Explore the demo workspace", submitting/ready/note/error) + DASHBOARD.demo (tag "DEMO WORKSPACE", honest sample-data body, "Make it yours" CTA). Zero em/en dashes.
+- login/page.tsx: "or" hairline divider + blueprint demo panel under the form (Compass icon, full-width outline button, note). handleDemo: POST /api/demo -> signIn(credentials, redirect:false) -> toast + router.push(nextPath ?? "/dashboard"); errors surface in the form error strip; disabled while pending.
+- dashboard/page.tsx: when session email === DEMO_EMAIL, ember-tinted disclosure strip between command header and stat tiles (tag + sample-data copy + "Make it yours" -> /login?mode=register). Real accounts see nothing.
+- VERIFY (agent-browser): one-click demo -> /dashboard with greeting "Good morning, Demo.", DAY 7 tenure, demo badge, gauges landed 2 / 100% / 7 / 3, system map routed all 3 frictions (05, 01, 04), 2 conversations newest-first, profile 6 of 6 fields, path 3/3 + fit-call CTA. Log out -> demo again: still exactly 2 submissions (idempotent). Manual login with typed demo credentials works. Register mode shows the demo panel too. Mobile 375px: scrollWidth 375 on /login and /dashboard; badge stacks full-width. POST /api/demo 200, /api/me 200, zero page errors (only pre-existing LCP-eager + scroll-behavior warnings). bun run lint clean; tsc clean for src/.
+
+Stage Summary:
+- The dashboard now has a zero-friction front door: one click on /login provisions (idempotently) and signs into demo@orbyt.com, a fully lived-in workspace with sample profile, sample briefs and Day 7 tenure. Honesty is preserved: the workspace itself carries a DEMO WORKSPACE disclosure with a path to create a real account. Credentials are public by design and documented in src/lib/demo.ts.

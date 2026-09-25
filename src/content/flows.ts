@@ -46,6 +46,14 @@ export const AUTH = {
     backHome: "Back to the homepage",
     welcomeNew: "Account created. Let's set up your workspace.",
   },
+  demo: {
+    eyebrow: "JUST LOOKING?",
+    label: "Explore the demo workspace",
+    submitting: "Opening the demo",
+    ready: "Demo workspace ready.",
+    note: "Sample profile, sample conversations, the real layout. No signup, no email, nothing to clean up after.",
+    error: "The demo didn't open. Try again in a minute.",
+  },
 } as const;
 
 export const ONBOARDING = {
@@ -221,6 +229,11 @@ export const DASHBOARD = {
     start: { label: "Start a project", href: "/contact" },
     profile: { label: "Update profile", href: "/onboarding" },
     insights: { label: "Read the insights", href: "/insights" },
+  },
+  demo: {
+    tag: "DEMO WORKSPACE",
+    body: "You're looking at sample data so you can see how the workspace behaves with a project in it. Create an account and this screen fills with yours.",
+    cta: "Make it yours",
   },
   signOut: "Log out",
   signedInAs: "Signed in as",
