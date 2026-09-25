@@ -35,6 +35,7 @@ export const AUTH = {
     label: "Explore the demo portal",
     submitting: "Opening the demo",
     ready: "Demo portal ready.",
+    credentialsLabel: "Demo login",
     note: "Sample client, sample project, sample updates, the real layout. No signup, no email, nothing to clean up after.",
     error: "The demo didn't open. Try again in a minute.",
   },
@@ -123,7 +124,9 @@ export const DASHBOARD = {
   console: {
     workspace: "ORBYT // WORKSPACE",
     active: "SYSTEM: ACTIVE",
+    standby: "SYSTEM: STANDING BY",
     verified: "SESSION: VERIFIED",
+    locked: "SESSION: LOCKED",
     zone: "DHAKA",
   },
   tenure: {
@@ -242,6 +245,14 @@ export const PORTAL = {
 
 export const PROTECTED = {
   redirecting: "Checking your session",
+  gate: {
+    eyebrow: "PORTAL ACCESS",
+    sub: "The workspace opens right here once you're in. No redirect, no detour.",
+    noId: "No client ID yet?",
+    noIdCta: "Start a project",
+    noIdTail:
+      "Portal access starts with a project, and your ID arrives with the welcome email.",
+  },
   needLogin: {
     title: "This portal needs a client account.",
     body: "Project updates, your system profile and every brief you've sent live here. Log in with the client ID from your welcome email.",

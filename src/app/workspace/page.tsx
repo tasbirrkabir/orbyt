@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Magnetic } from "@/components/orbyt/magnetic";
 import { Scramble } from "@/components/orbyt/scramble";
 import { SiteShell } from "@/components/orbyt/site-shell";
+import { PortalGate } from "@/components/orbyt/portal/portal-gate";
 import { ConsoleFrame } from "@/components/orbyt/dashboard/console-frame";
 import { StatTiles, type StatItem } from "@/components/orbyt/dashboard/stat-tiles";
 import { SystemMap } from "@/components/orbyt/dashboard/system-map";
@@ -43,27 +44,6 @@ function SessionSpinner() {
       <p className="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
         {PROTECTED.redirecting}
       </p>
-    </div>
-  );
-}
-
-function NeedLoginCard({ next }: { next: string }) {
-  return (
-    <div className="mx-auto max-w-md rounded-md border border-border bg-card p-8 text-center sm:p-10">
-      <h2 className="font-display text-2xl font-bold tracking-tight">
-        {PROTECTED.needLogin.title}
-      </h2>
-      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-        {PROTECTED.needLogin.body}
-      </p>
-      <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-        <Button asChild className="h-11 font-semibold">
-          <Link href={`/login?next=${next}`}>{PROTECTED.needLogin.login}</Link>
-        </Button>
-        <Button asChild variant="outline" className="h-11 font-semibold">
-          <Link href="/contact">{PROTECTED.needLogin.project}</Link>
-        </Button>
-      </div>
     </div>
   );
 }
@@ -179,7 +159,7 @@ function WorkspaceBody({ data }: { data: MePayload }) {
               variant="outline"
               className="h-10 shrink-0 font-semibold"
             >
-              <Link href="/login?mode=register">{DASHBOARD.demo.cta}</Link>
+              <Link href="/contact">{DASHBOARD.demo.cta}</Link>
             </Button>
           </div>
         ) : null}
@@ -238,7 +218,7 @@ function WorkspaceBody({ data }: { data: MePayload }) {
 }
 
 export default function WorkspacePage() {
-  const { status } = useSession();
+  const { status, update } = useSession();
   const [data, setData] = useState<MePayload | null>(null);
   const [needLogin, setNeedLogin] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -284,7 +264,14 @@ export default function WorkspacePage() {
           {status === "loading" ? <SessionSpinner /> : null}
 
           {status === "unauthenticated" || needLogin ? (
-            <NeedLoginCard next="/workspace" />
+            <PortalGate
+              next="/workspace"
+              onSignedIn={() => {
+                // Refresh the session in place; the portal replaces the
+                // gate on this same page, no redirect.
+                void update();
+              }}
+            />
           ) : null}
 
           {status === "authenticated" && !needLogin ? (

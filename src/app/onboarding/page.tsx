@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { SiteShell } from "@/components/orbyt/site-shell";
+import { PortalGate } from "@/components/orbyt/portal/portal-gate";
 import { cn } from "@/lib/utils";
 
 type WizardData = {
@@ -78,27 +79,6 @@ function SessionSpinner() {
       <p className="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
         {PROTECTED.redirecting}
       </p>
-    </div>
-  );
-}
-
-function NeedLoginCard({ next }: { next: string }) {
-  return (
-    <div className="mx-auto max-w-md rounded-md border border-border bg-card p-8 text-center sm:p-10">
-      <h2 className="font-display text-2xl font-bold tracking-tight">
-        {PROTECTED.needLogin.title}
-      </h2>
-      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-        {PROTECTED.needLogin.body}
-      </p>
-      <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-        <Button asChild className="h-11 font-semibold">
-          <Link href={`/login?next=${next}`}>{PROTECTED.needLogin.login}</Link>
-        </Button>
-        <Button asChild variant="outline" className="h-11 font-semibold">
-          <Link href="/contact">{PROTECTED.needLogin.project}</Link>
-        </Button>
-      </div>
     </div>
   );
 }
@@ -277,7 +257,7 @@ function Wizard() {
       : []),
   ];
 
-  if (authFailed) return <NeedLoginCard next="/onboarding" />;
+  if (authFailed) return <PortalGate next="/onboarding" />;
 
   if (done) {
     return (
@@ -638,7 +618,7 @@ export default function OnboardingPage() {
         <div className="mx-auto w-full max-w-3xl px-4 py-14 sm:px-6 md:py-20 lg:px-8">
           {status === "loading" ? <SessionSpinner /> : null}
           {status === "unauthenticated" ? (
-            <NeedLoginCard next="/onboarding" />
+            <PortalGate next="/onboarding" />
           ) : null}
           {status === "authenticated" ? (
             <>

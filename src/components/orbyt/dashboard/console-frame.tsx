@@ -43,7 +43,17 @@ const CORNER = "pointer-events-none absolute font-mono text-sm leading-none text
  * mono status bar (live system dot, session state, ticking Dhaka clock).
  * Everything inside the dashboard renders on this plate.
  */
-export function ConsoleFrame({ children }: { children: ReactNode }) {
+export function ConsoleFrame({
+  children,
+  activeLabel = DASHBOARD.console.active,
+  sessionLabel = DASHBOARD.console.verified,
+}: {
+  children: ReactNode;
+  /** Status bar left slot. The locked gate shows a standby state here. */
+  activeLabel?: string;
+  /** Status bar right slot. Pass null to hide the session state. */
+  sessionLabel?: string | null;
+}) {
   return (
     <div className="relative border border-border bg-card/40 bg-blueprint">
       {/* Corner ticks: registration marks, not decoration */}
@@ -56,10 +66,10 @@ export function ConsoleFrame({ children }: { children: ReactNode }) {
       <div className="flex items-center justify-between gap-4 border-b border-border px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground sm:px-6">
         <span className="flex items-center gap-2">
           <span aria-hidden="true" className="size-1.5 animate-blink bg-primary" />
-          {DASHBOARD.console.active}
+          {activeLabel}
         </span>
         <span className="flex items-center gap-4">
-          <span className="hidden sm:inline">{DASHBOARD.console.verified}</span>
+          {sessionLabel ? <span className="hidden sm:inline">{sessionLabel}</span> : null}
           <DhakaClock />
         </span>
       </div>

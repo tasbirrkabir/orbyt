@@ -367,3 +367,21 @@ Work Log:
 
 Stage Summary:
 - The workspace is now a true client portal: three-factor login (client ID + email + password) where the client ID is only issued when ORBYT takes on a service engagement, and the portal's centerpiece is a per-project updates feed with stage-rail progress through the six-step loop. Public self-signup is gone; the nav carries a single session-aware account link. Demo remains one click away with ORB-DEMO fully seeded.
+
+---
+Task ID: 21
+Agent: main (Z.ai Code)
+Task: Make /workspace feel like a login portal first (gate renders in place, workspace appears after sign-in), surface the demo client portal with visible login credentials.
+
+Work Log:
+- Shared login form extracted from /login into src/components/orbyt/portal/portal-login-form.tsx (3-factor fields, validation, demo one-click, demo credentials line, optional heading/no-ID panel/boxed variants). /login page refactored to use it; brand rail unchanged.
+- New src/components/orbyt/portal/portal-gate.tsx: /workspace logged-out state now renders the login portal itself on the console plate (corner ticks, live Dhaka clock) with SYSTEM: STANDING BY / SESSION: LOCKED status; sign-in flips the session via useSession().update() and the portal replaces the gate on the SAME page (zero redirect).
+- ConsoleFrame gained optional activeLabel/sessionLabel props (locked gate reuses the same plate).
+- flows.ts: PROTECTED.gate copy (PORTAL ACCESS eyebrow, "opens right here", no-ID line), DASHBOARD.console.standby/locked, AUTH.demo.credentialsLabel. needLogin copy kept (unused by page code now).
+- Onboarding need-login card swapped to the same PortalGate (next=/onboarding) for consistency.
+- Fixed stale demo-disclosure CTA href (/login?mode=register -> /contact) on the portal.
+- Demo credentials now visible on every login surface: "Demo login ORB-DEMO · demo@orbyt.com · orbyt-demo".
+- E2E (agent-browser, preview domain): gate renders logged out with PORTAL ACCESS + credentials; demo one-click opens the portal IN PLACE (URL stays /workspace) with CLIENT ID ORB-DEMO, project "The acquisition system" BUILD 3/6 and all 4 updates newest-first; wrong client ID rejected with honest copy; lowercase "orb-demo" accepted via normalization, in-place manual login works; logout -> gate returns; nav shows LOG IN / WORKSPACE session-aware; 375px scrollWidth 375 on /login and /workspace; zero page errors; bun run lint clean; dev.log all 200s.
+
+Stage Summary:
+- /workspace is now a true two-state portal: locked login console -> live client dashboard, in place, no redirect. Demo portal is one click away everywhere login renders, credentials shown in the open (ORB-DEMO / demo@orbyt.com / orbyt-demo).
