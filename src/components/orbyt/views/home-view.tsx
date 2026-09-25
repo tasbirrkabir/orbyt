@@ -14,25 +14,33 @@ import {
   WHY_SECTION,
 } from "@/content/orbyt";
 import { Button } from "@/components/ui/button";
+import { BootSequence } from "../boot-sequence";
 import { ChainDiagram } from "../chain-diagram";
 import { CtaStrip } from "../cta-strip";
 import { emphasize } from "../emphasize";
 import { Hero } from "../hero";
 import { Reveal } from "../reveal";
 import { Section } from "../section";
+import { SpotlightCard } from "../spotlight-card";
+import { TeamSection } from "../team-section";
+import { WorkedWith } from "../worked-with";
 
 /**
  * Home. Rich but composed: every section here is a teaser that hands off
- * to its detail route. Copy comes exclusively from src/content.
+ * to its detail route. Copy comes exclusively from src/content. The boot
+ * sequence plays once per session, before anything else.
  */
 export function HomeView() {
   return (
     <>
+      <BootSequence />
       <Hero />
+      <WorkedWith />
       <ProblemTeaser />
       <ServicesOverview />
       <ProcessStrip />
       <SystemsTeaser />
+      <TeamSection />
       <PrinciplesSection />
       <InsightsTeaser />
       <CtaStrip />
@@ -157,10 +165,10 @@ function ProcessStrip() {
           <Reveal
             key={step.step}
             delay={i * 0.05}
-            className="min-w-0 bg-background p-6"
+            className="group min-w-0 bg-background p-6 transition-colors duration-200 hover:bg-card"
           >
             <p className="font-mono text-xs text-primary">{step.step}</p>
-            <p className="mt-3 font-display text-lg font-bold uppercase tracking-wide">
+            <p className="mt-3 font-display text-lg font-bold uppercase tracking-wide transition-colors duration-200 group-hover:text-primary">
               {step.name}
             </p>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
@@ -192,17 +200,17 @@ function SystemsTeaser() {
       <div className="mt-14 grid grid-cols-1 gap-4 md:grid-cols-3">
         {SYSTEM_BLUEPRINTS.map((blueprint, i) => (
           <Reveal key={blueprint.id} delay={i * 0.06} className="min-w-0">
-            <article className="h-full border border-border bg-card p-6 transition-all duration-200 hover:-translate-y-0.5 hover:[box-shadow:5px_5px_0_0_var(--primary)]">
-              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+            <SpotlightCard className="p-6">
+              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground transition-colors duration-200 group-hover/spot:text-primary">
                 {blueprint.id}
               </p>
-              <h3 className="mt-3 font-display text-xl font-bold tracking-tight">
+              <h3 className="mt-3 font-display text-xl font-bold tracking-tight transition-colors duration-200 group-hover/spot:text-primary">
                 {blueprint.title}
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                 {blueprint.for}
               </p>
-            </article>
+            </SpotlightCard>
           </Reveal>
         ))}
       </div>

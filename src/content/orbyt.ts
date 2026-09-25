@@ -3,7 +3,8 @@
  * - Talk to one reader ("you"). Name what they actually feel.
  * - Concrete over abstract. Specific beats impressive.
  * - Short sentences, varied rhythm, zero hype, zero em-dashes.
- * - Nothing invented: no clients, no numbers, no testimonials.
+ * - Nothing invented: no clients, no numbers, no testimonials,
+ *   no fake headshots. The crew is presented as roles, honestly.
  */
 
 export const NAV_LINKS = [
@@ -11,6 +12,7 @@ export const NAV_LINKS = [
   { label: "Process", href: "/process" },
   { label: "Work", href: "/work" },
   { label: "About", href: "/about" },
+  { label: "Team", href: "/team" },
   { label: "Insights", href: "/insights" },
 ] as const;
 
@@ -387,6 +389,161 @@ export const WHY_SECTION = {
   about:
     "ORBYT works at the intersection of technology, marketing and operations. Not another vendor holding a single piece, but the partner who owns how the pieces fit together.",
   detailCta: { label: "More about ORBYT", href: "/about" },
+} as const;
+
+/* ── Worked With ──────────────────────────────────────── */
+
+export const WORKED_WITH = {
+  eyebrow: "WORKED WITH",
+  title: "The stack we build on.",
+  lede:
+    "We don't drop client logos we haven't earned. What we can show you is the ground we build on: the platforms we wire together, run and maintain every week.",
+  note: "Tools change. The thinking doesn't.",
+  detailCta: { label: "See what we build", href: "/work" },
+  rows: [
+    [
+      "GA4",
+      "GOOGLE TAG MANAGER",
+      "META ADS",
+      "GOOGLE ADS",
+      "SEARCH CONSOLE",
+      "LOOKER STUDIO",
+      "HUBSPOT",
+      "SHOPIFY",
+      "STRIPE",
+      "NEXT.JS",
+      "VERCEL",
+      "SUPABASE",
+    ],
+    [
+      "AIRTABLE",
+      "NOTION",
+      "SLACK",
+      "ZAPIER",
+      "MAKE",
+      "N8N",
+      "TWILIO",
+      "WHATSAPP API",
+      "OPENAI API",
+      "POSTGRES",
+      "CLOUDFLARE",
+      "RESEND",
+    ],
+  ],
+} as const;
+
+/* ── Team ─────────────────────────────────────────────── */
+
+export const TEAM = {
+  eyebrow: "THE CREW",
+  title: "Small team.",
+  titleAccent: "Senior hands.",
+  lede:
+    "ORBYT runs on a deliberately small crew of operators. No bench. No juniors learning on your budget. No layers between you and the work.",
+  promise:
+    "The person on your first call is the person who builds your system.",
+  promiseWord: "builds",
+  crew: [
+    {
+      id: "T-01",
+      role: "THE STRATEGIST",
+      tagline: "Maps the system before anyone touches a tool.",
+      owns: "Owns discovery, system maps and priorities.",
+      answers: [
+        "What do we build first?",
+        "What do we deliberately leave alone?",
+        "Where is growth actually leaking?",
+      ],
+    },
+    {
+      id: "T-02",
+      role: "THE ENGINEER",
+      tagline: "Builds the thing and makes it stay built.",
+      owns: "Owns websites, automations, AI agents and internal tools.",
+      answers: [
+        "How does this actually run?",
+        "What happens when it breaks?",
+        "What does maintenance really cost?",
+      ],
+    },
+    {
+      id: "T-03",
+      role: "THE MEDIA OPERATOR",
+      tagline: "Treats ad spend like infrastructure, not luck.",
+      owns: "Owns campaigns, creative, landing pages and follow-up.",
+      answers: [
+        "What did the spend return?",
+        "Why did this ad win?",
+        "Where do leads go after the click?",
+      ],
+    },
+    {
+      id: "T-04",
+      role: "THE ANALYST",
+      tagline: "Makes the number trustworthy, then makes it useful.",
+      owns: "Owns tracking, dashboards, attribution and the weekly read.",
+      answers: [
+        "Can we trust this number?",
+        "What is it telling us to do next?",
+        "What should we stop measuring?",
+      ],
+    },
+  ],
+  how: {
+    eyebrow: "HOW THE CREW RUNS",
+    title: "Four rules that keep the work honest.",
+    items: [
+      {
+        k: "You talk to builders",
+        v: "Every call includes the people doing the work. A status meeting with someone who can't answer questions is a waste of your week.",
+      },
+      {
+        k: "One crew, one system",
+        v: "Strategy, build, media and measurement sit at the same table. Nobody waits for a handoff memo to find out what changed.",
+      },
+      {
+        k: "Weekly shows, not reveals",
+        v: "You see progress while it happens, in tools you can open. The big finale version of a project usually hides problems until it's too late.",
+      },
+      {
+        k: "Small on purpose",
+        v: "Capacity is protected before it's sold. If we can't take the work seriously, we tell you instead of squeezing you in.",
+      },
+    ],
+  },
+  ways: {
+    eyebrow: "WAYS WE PLUG IN",
+    title: "Three ways to work with the crew.",
+    items: [
+      {
+        name: "PROJECT BUILD",
+        v: "A defined system with a start, an end and a blueprint. Discovery, build, connect, measure, handover.",
+      },
+      {
+        name: "EMBEDDED",
+        v: "The crew works inside your tools and your week, like a systems department you never had to hire.",
+      },
+      {
+        name: "ONGOING TENDING",
+        v: "After launch, someone keeps reading the data, removing bottlenecks and tightening the loop. Systems compound when tended.",
+      },
+    ],
+  },
+  note:
+    "No org chart theater. If a project needs a specialist we don't have in-house, we say so early and help you find one.",
+  detailCta: { label: "Work with the crew", href: "/contact" },
+  homeCta: { label: "Meet the crew", href: "/team" },
+} as const;
+
+/* ── Boot ─────────────────────────────────────────────── */
+
+export const BOOT = {
+  lines: [
+    "MAPPING THE SYSTEM",
+    "CONNECTING THE PIECES",
+    "MEASURING EVERYTHING",
+  ],
+  skip: "Click to skip",
 } as const;
 
 /* ── Insights ─────────────────────────────────────────── */

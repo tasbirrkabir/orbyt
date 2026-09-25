@@ -90,6 +90,20 @@
   0%, 100% { transform: translateY(0); }
   50%      { transform: translateY(-10px); }
 }
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+
+/* Slow orbital ring: a structural dashed circle that crawls around the mark. */
+.animate-spin-slow {
+  animation: spin-slow var(--spin-duration, 32s) linear infinite;
+}
+
+/* Edge fade for full-bleed strips (worked-with rows): masks the loop seam. */
+.mask-fade-x {
+  -webkit-mask-image: linear-gradient(to right, transparent, black 7%, black 93%, transparent);
+  mask-image: linear-gradient(to right, transparent, black 7%, black 93%, transparent);
+}
 
 /* ── Orbyt · Theme: "Ink & Ember" ──────────────────────────
    The logo is loud: the interface is quiet.
@@ -214,7 +228,8 @@
   .animate-orbit-reverse,
   .animate-twinkle,
   .animate-pulse-glow,
-  .animate-float {
+  .animate-float,
+  .animate-spin-slow {
     animation: none !important;
   }
 }
