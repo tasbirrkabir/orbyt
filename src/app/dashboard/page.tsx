@@ -4,44 +4,24 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { format } from "date-fns";
+import { motion, useReducedMotion } from "framer-motion";
+import { ArrowUpRight } from "lucide-react";
 import { DASHBOARD, PROTECTED } from "@/content/flows";
-import { CONTACT, FOOTER } from "@/content/orbyt";
-import { Badge } from "@/components/ui/badge";
+import { CONTACT } from "@/content/orbyt";
 import { Button } from "@/components/ui/button";
+import { Magnetic } from "@/components/orbyt/magnetic";
+import { Scramble } from "@/components/orbyt/scramble";
 import { SiteShell } from "@/components/orbyt/site-shell";
-
-type MeProfile = {
-  company: string;
-  industry: string;
-  stage: string;
-  challenges: string[] | null;
-  tools: string | null;
-  goal: string;
-};
-
-type MeSubmission = {
-  id: string;
-  topic: string | null;
-  message: string;
-  createdAt: string;
-};
-
-type MePayload = {
-  user: { name: string | null; email: string };
-  profile: MeProfile | null;
-  submissions: MeSubmission[] | null;
-};
-
-const MESSAGE_PREVIEW_CHARS = 140;
+import { ConsoleFrame } from "@/components/orbyt/dashboard/console-frame";
+import { StatTiles, type StatItem } from "@/components/orbyt/dashboard/stat-tiles";
+import { SystemMap } from "@/components/orbyt/dashboard/system-map";
+import { ConversationLog } from "@/components/orbyt/dashboard/conversation-log";
+import { ProfilePanel, profileCompletion } from "@/components/orbyt/dashboard/profile-panel";
+import { NextSteps } from "@/components/orbyt/dashboard/next-steps";
+import type { MePayload } from "@/components/orbyt/dashboard/types";
 
 /** Mono status token, same language as the contact success panel. */
 const ERROR_LABEL = "ERROR";
-
-function truncateMessage(message: string) {
-  return message.length > MESSAGE_PREVIEW_CHARS
-    ? `${message.slice(0, MESSAGE_PREVIEW_CHARS).trimEnd()}…`
-    : message;
-}
 
 function greetingFor(hour: number) {
   if (hour < 12) return DASHBOARD.greeting.morning;
@@ -49,15 +29,10 @@ function greetingFor(hour: number) {
   return DASHBOARD.greeting.evening;
 }
 
-function ProfileRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <dt className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-        {label}
-      </dt>
-      <dd className="mt-1 text-sm leading-relaxed">{value}</dd>
-    </div>
-  );
+/** Join day counts as day one. */
+function daysSince(iso: string) {
+  const diff = Date.now() - new Date(iso).getTime();
+  return Math.max(1, Math.floor(diff / 86_400_000) + 1);
 }
 
 function SessionSpinner() {
@@ -110,181 +85,126 @@ function SkeletonCards() {
 }
 
 function DashboardBody({ data }: { data: MePayload }) {
-  const profileCopy = DASHBOARD.cards.profile;
-  const messagesCopy = DASHBOARD.cards.messages;
-  const nextCopy = DASHBOARD.cards.next;
+  const reduced = useReducedMotion();
 
   const greeting = greetingFor(new Date().getHours());
-  const displayName = data.user.name || data.user.email;
+  const email = data.user.email;
+  const displayName = data.user.name || email.split("@")[0];
   const submissions = data.submissions ?? [];
+  const days = daysSince(data.user.createdAt);
+
+  const completion = profileCompletion(data.profile);
+  const frictionCount = (data.profile?.challenges ?? []).length;
+
+  const stats: StatItem[] = [
+    { value: submissions.length, label: DASHBOARD.stats.messages.label, hint: DASHBOARD.stats.messages.hint },
+    { value: completion, suffix: "%", label: DASHBOARD.stats.completion.label, hint: DASHBOARD.stats.completion.hint },
+    { value: days, label: DASHBOARD.stats.days.label, hint: DASHBOARD.stats.days.hint },
+    { value: frictionCount, label: DASHBOARD.stats.friction.label, hint: DASHBOARD.stats.friction.hint },
+  ];
 
   return (
-    <>
-      {/* Header: greeting, identity, sign out */}
-      <header className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-        <div className="min-w-0">
-          <p className="font-mono text-xs uppercase tracking-[0.18em] text-primary">
-            {FOOTER.accountLinks[1].label}
-          </p>
-          <h1 className="mt-4 font-display text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
-            {greeting}, {displayName}
-          </h1>
-          <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground">
-            {DASHBOARD.sub}
-          </p>
-          <p className="mt-4 font-mono text-xs text-muted-foreground">
-            {DASHBOARD.signedInAs}{" "}
-            <span className="text-foreground">{data.user.email}</span>
-          </p>
-        </div>
-        <Button
-          variant="outline"
-          onClick={() => signOut({ callbackUrl: "/" })}
-          className="h-11 shrink-0 font-semibold"
-        >
-          {DASHBOARD.signOut}
-        </Button>
-      </header>
-
-      {/* Cards */}
-      <div className="mt-10 grid items-start gap-6 lg:grid-cols-3">
-        {/* Profile */}
-        <section
-          aria-label={profileCopy.title}
-          className="flex flex-col rounded-xl border bg-card p-6 transition-shadow hover:shadow-pixel-orange"
-        >
-          <h2 className="font-display text-lg font-bold tracking-tight">
-            {profileCopy.title}
-          </h2>
-          <p className="mt-1 text-sm text-muted-foreground">{profileCopy.sub}</p>
-
-          {data.profile ? (
-            <>
-              <dl className="mt-5 space-y-4">
-                <ProfileRow
-                  label={profileCopy.fields.company}
-                  value={data.profile.company}
-                />
-                <ProfileRow
-                  label={profileCopy.fields.industry}
-                  value={data.profile.industry}
-                />
-                <ProfileRow
-                  label={profileCopy.fields.stage}
-                  value={data.profile.stage}
-                />
-                <div>
-                  <dt className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                    {profileCopy.fields.challenges}
-                  </dt>
-                  <dd className="mt-1.5 flex flex-wrap gap-1.5">
-                    {(data.profile.challenges ?? []).map((challenge) => (
-                      <Badge key={challenge} variant="secondary">
-                        {challenge}
-                      </Badge>
-                    ))}
-                  </dd>
-                </div>
-                <ProfileRow
-                  label={profileCopy.fields.tools}
-                  value={data.profile.tools ?? profileCopy.notSet}
-                />
-                <ProfileRow
-                  label={profileCopy.fields.goal}
-                  value={data.profile.goal}
-                />
-              </dl>
-              <Button
-                asChild
-                variant="outline"
-                className="mt-6 h-11 self-start font-semibold"
-              >
-                <Link href="/onboarding">{profileCopy.edit}</Link>
-              </Button>
-            </>
-          ) : (
-            <>
-              <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
-                {profileCopy.empty}
-              </p>
-              <Button asChild className="mt-6 h-11 self-start font-semibold">
-                <Link href="/onboarding">{profileCopy.emptyCta}</Link>
-              </Button>
-            </>
-          )}
-        </section>
-
-        {/* Messages */}
-        <section
-          aria-label={messagesCopy.title}
-          className="flex flex-col rounded-xl border bg-card p-6 transition-shadow hover:shadow-pixel-orange"
-        >
-          <h2 className="font-display text-lg font-bold tracking-tight">
-            {messagesCopy.title}
-          </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {messagesCopy.sub}
-          </p>
-
-          {submissions.length > 0 ? (
-            <ul className="mt-5 divide-y divide-border">
-              {submissions.map((submission) => (
-                <li key={submission.id} className="py-4 first:pt-0 last:pb-0">
-                  {submission.topic ? (
-                    <Badge variant="outline">{submission.topic}</Badge>
-                  ) : null}
-                  <p className="mt-2 line-clamp-2 text-sm leading-relaxed">
-                    {truncateMessage(submission.message)}
-                  </p>
-                  <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                    {messagesCopy.sentLabel} ·{" "}
-                    {format(new Date(submission.createdAt), "MMM d, yyyy")}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <>
-              <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
-                {messagesCopy.empty}
-              </p>
-              <Button asChild className="mt-6 h-11 self-start font-semibold">
-                <Link href="/contact">{messagesCopy.emptyCta}</Link>
-              </Button>
-            </>
-          )}
-        </section>
-
-        {/* Next steps */}
-        <section
-          aria-label={nextCopy.title}
-          className="flex flex-col rounded-xl border bg-card p-6 transition-shadow hover:shadow-pixel-orange"
-        >
-          <h2 className="font-display text-lg font-bold tracking-tight">
-            {nextCopy.title}
-          </h2>
-          <p className="mt-1 text-sm text-muted-foreground">{nextCopy.sub}</p>
-          <ol className="mt-5 space-y-4">
-            {nextCopy.steps.map((step, index) => (
-              <li key={step} className="flex gap-3">
-                <span
-                  aria-hidden="true"
-                  className="font-mono text-xs leading-5 text-primary"
-                >
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <p className="text-sm leading-relaxed text-muted-foreground">
-                  {step}
-                </p>
-              </li>
-            ))}
-          </ol>
-          <Button asChild className="mt-6 h-11 self-start font-semibold">
-            <Link href={nextCopy.cta.href}>{nextCopy.cta.label}</Link>
+    <motion.div
+      initial={reduced ? false : { opacity: 0, y: 18 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.55, ease: "easeOut" }}
+    >
+      <ConsoleFrame>
+        {/* Command header */}
+        <header className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+          <div className="min-w-0">
+            <div className="max-w-full truncate">
+              <Scramble
+                text={`${DASHBOARD.console.workspace} // ${email.toUpperCase()}`}
+                className="font-mono text-[11px] uppercase tracking-[0.22em] text-primary"
+              />
+            </div>
+            <h1 className="mt-4 font-display text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
+              <span className="block overflow-hidden pb-1">
+                {reduced ? (
+                  <span className="block">
+                    {greeting}, {displayName}.
+                  </span>
+                ) : (
+                  <motion.span
+                    className="block"
+                    initial={{ y: "112%" }}
+                    animate={{ y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
+                  >
+                    {greeting}, {displayName}.
+                  </motion.span>
+                )}
+              </span>
+            </h1>
+            <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground">
+              {DASHBOARD.sub}
+            </p>
+            <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+              <span className="text-primary">{DASHBOARD.tenure.prefix} {days}</span>
+              {" · "}
+              {DASHBOARD.tenure.since}{" "}
+              {format(new Date(data.user.createdAt), "MMMM d, yyyy")}
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => signOut({ callbackUrl: "/" })}
+            className="h-11 shrink-0 font-semibold"
+          >
+            {DASHBOARD.signOut}
           </Button>
-        </section>
-      </div>
-    </>
+        </header>
+
+        {/* Gauges */}
+        <StatTiles items={stats} />
+
+        {/* Workspace grid */}
+        <div className="mt-6 grid items-start gap-6 lg:grid-cols-5">
+          <div className="flex flex-col gap-6 lg:col-span-3">
+            <SystemMap profile={data.profile} />
+            <ConversationLog submissions={submissions} />
+          </div>
+          <div className="flex flex-col gap-6 lg:col-span-2">
+            <ProfilePanel profile={data.profile} updatedAt={data.profile?.updatedAt ?? null} />
+            <NextSteps data={data} />
+          </div>
+        </div>
+
+        {/* Quick moves */}
+        <div className="mt-8 flex flex-col gap-4 border-t border-border pt-6 lg:flex-row lg:items-center">
+          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground lg:mr-auto">
+            {DASHBOARD.actions.label}
+          </p>
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <Magnetic strength={0.25}>
+              <Button asChild className="h-11 w-full font-semibold sm:w-auto">
+                <Link href={DASHBOARD.actions.start.href} className="gap-2">
+                  {DASHBOARD.actions.start.label}
+                  <ArrowUpRight aria-hidden="true" className="size-4" />
+                </Link>
+              </Button>
+            </Magnetic>
+            <Magnetic strength={0.25}>
+              <Button asChild variant="outline" className="h-11 w-full font-semibold sm:w-auto">
+                <Link href={DASHBOARD.actions.profile.href} className="gap-2">
+                  {DASHBOARD.actions.profile.label}
+                  <ArrowUpRight aria-hidden="true" className="size-4" />
+                </Link>
+              </Button>
+            </Magnetic>
+            <Magnetic strength={0.25}>
+              <Button asChild variant="outline" className="h-11 w-full font-semibold sm:w-auto">
+                <Link href={DASHBOARD.actions.insights.href} className="gap-2">
+                  {DASHBOARD.actions.insights.label}
+                  <ArrowUpRight aria-hidden="true" className="size-4" />
+                </Link>
+              </Button>
+            </Magnetic>
+          </div>
+        </div>
+      </ConsoleFrame>
+    </motion.div>
   );
 }
 
@@ -331,7 +251,7 @@ export default function DashboardPage() {
   return (
     <SiteShell>
       <main className="flex-1">
-        <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-20 lg:px-8">
+        <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 md:py-16 lg:px-8">
           {status === "loading" ? <SessionSpinner /> : null}
 
           {status === "unauthenticated" || needLogin ? (

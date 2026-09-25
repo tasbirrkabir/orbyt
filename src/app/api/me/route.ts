@@ -5,7 +5,7 @@ import { db } from '@/lib/db'
 
 /**
  * GET /api/me (protected)
- * Contract: -> 200 { user: { id, name, email }, profile, submissions }
+ * Contract: -> 200 { user: { id, name, email, createdAt }, profile, submissions }
  *           | 401 { error: 'Unauthorized' } (no session / account deleted)
  *           | 500 { error } (unexpected internal error, details never leaked)
  *
@@ -69,7 +69,12 @@ export async function GET() {
       : null
 
     return NextResponse.json({
-      user: { id: user.id, name: user.name, email: user.email },
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        createdAt: user.createdAt,
+      },
       profile,
       submissions: user.submissions.map((submission) => ({
         id: submission.id,
