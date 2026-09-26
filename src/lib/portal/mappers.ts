@@ -31,6 +31,9 @@ export function mapProjectSummary(
     type: string;
     goal: string;
     ownerLabel: string;
+    health?: string;
+    healthNote?: string;
+    healthUpdatedAt?: Date | null;
     startedAt: Date;
     targetLaunchAt: Date | null;
     milestones: { status: string; title: string; dueDate: Date | null }[];
@@ -66,6 +69,9 @@ export function mapProjectSummary(
     nextMilestone,
     openApprovals,
     lastUpdateAt: lastUpdateAt?.toISOString() ?? null,
+    health: project.health ?? "",
+    healthNote: project.healthNote ?? "",
+    healthUpdatedAt: project.healthUpdatedAt?.toISOString() ?? null,
   };
 }
 

@@ -40,6 +40,7 @@ const TONE_CLASSES: Record<string, { chip: string; glyph: string; dot: string }>
   MEASURE: { chip: "bg-foreground/[0.06] text-foreground border-border", glyph: "●", dot: "bg-foreground/60" },
   IMPROVE: { chip: "bg-foreground/[0.06] text-foreground border-border", glyph: "●", dot: "bg-foreground/60" },
   IN_REVIEW: { chip: "bg-foreground/[0.06] text-foreground border-border", glyph: "●", dot: "bg-foreground/60" },
+  PLANNED: { chip: "bg-foreground/[0.06] text-foreground border-border", glyph: "●", dot: "bg-foreground/60" },
 
   // Attention
   WAITING_FOR_CLIENT: { chip: "bg-primary text-[#1B1B1A] border-primary", glyph: "!", dot: "bg-primary" },
@@ -51,6 +52,17 @@ const TONE_CLASSES: Record<string, { chip: string; glyph: string; dot: string }>
   CHANGES_REQUESTED: { chip: "bg-foreground/[0.06] text-foreground border-border", glyph: "!", dot: "bg-muted-foreground" },
   URGENT: { chip: "bg-primary text-[#1B1B1A] border-primary", glyph: "!", dot: "bg-primary" },
   WARNING: { chip: "bg-primary/15 text-foreground border-primary/40", glyph: "!", dot: "bg-primary" },
+
+  // Project operations
+  PROPOSED: { chip: "bg-primary text-[#1B1B1A] border-primary", glyph: "!", dot: "bg-primary" },
+  ACCEPTED: { chip: "bg-primary/10 text-foreground border-primary/30", glyph: "✓", dot: "bg-primary" },
+  DECLINED: { chip: "bg-foreground/[0.06] text-foreground border-border", glyph: "×", dot: "bg-muted-foreground" },
+  WITHDRAWN: { chip: "bg-muted text-muted-foreground border-border", glyph: "‖", dot: "bg-muted-foreground" },
+  ON_TRACK: { chip: "bg-primary/10 text-foreground border-primary/30", glyph: "✓", dot: "bg-primary" },
+  AT_RISK: { chip: "bg-primary/15 text-foreground border-primary/40", glyph: "!", dot: "bg-primary" },
+  OFF_TRACK: { chip: "bg-destructive/15 text-foreground border-destructive/40", glyph: "×", dot: "bg-destructive" },
+  ON_HOLD: { chip: "bg-muted text-muted-foreground border-border", glyph: "‖", dot: "bg-muted-foreground" },
+  EXCLUSION: { chip: "bg-muted text-muted-foreground border-border", glyph: "‖", dot: "bg-muted-foreground" },
 };
 
 const FALLBACK = { chip: "bg-muted text-muted-foreground border-border", glyph: "○", dot: "bg-muted-foreground" };

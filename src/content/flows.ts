@@ -202,6 +202,7 @@ export const PORTAL = {
   },
   approve: {
     error: "Couldn't save the approval. Try again in a minute.",
+    cancel: "Keep it as is",
   },
 } as const;
 

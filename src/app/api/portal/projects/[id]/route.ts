@@ -24,6 +24,9 @@ export async function GET(
         milestones: { orderBy: { position: "asc" } },
         updates: { orderBy: { createdAt: "desc" } },
         deliverables: { orderBy: { createdAt: "desc" } },
+        scopeItems: { orderBy: [{ kind: "asc" }, { position: "asc" }] },
+        changeRequests: { orderBy: { createdAt: "desc" } },
+        decisions: { orderBy: { decidedAt: "desc" } },
       },
     });
     if (!project) {
@@ -84,6 +87,38 @@ export async function GET(
         projectTitle: project.title,
       })),
       threadCount,
+      scope: project.scopeItems.map((item) => ({
+        id: item.id,
+        title: item.title,
+        detail: item.detail,
+        kind: item.kind,
+        status: item.status,
+      })),
+      changeRequests: project.changeRequests.map((cr) => ({
+        id: cr.id,
+        code: cr.code,
+        title: cr.title,
+        description: cr.description,
+        impactNote: cr.impactNote,
+        raisedBy: cr.raisedBy,
+        raisedByName: cr.raisedByName,
+        status: cr.status,
+        decidedAt: cr.decidedAt?.toISOString() ?? null,
+        decidedByName: cr.decidedByName,
+        decidedByRole: cr.decidedByRole,
+        decisionNote: cr.decisionNote,
+        createdAt: cr.createdAt.toISOString(),
+      })),
+      decisions: project.decisions.map((entry) => ({
+        id: entry.id,
+        title: entry.title,
+        context: entry.context,
+        decidedByRole: entry.decidedByRole,
+        decidedByName: entry.decidedByName,
+        sourceType: entry.sourceType,
+        sourceLabel: entry.sourceLabel,
+        decidedAt: entry.decidedAt.toISOString(),
+      })),
     };
 
     return NextResponse.json(payload);

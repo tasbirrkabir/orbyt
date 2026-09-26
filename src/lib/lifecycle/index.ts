@@ -230,10 +230,18 @@ export async function provisionTenant(input: ProvisionInput): Promise<ProvisionR
 
 const CONVERTIBLE = new Set(["NEW", "CONTACTED", "QUALIFIED"]);
 
-/** Convert a ContactSubmission lead into a tenant. */
+/** Convert a ContactSubmission lead into a tenant. Staff fills the gaps; the lead covers the rest. */
 export async function convertLead(
   leadId: string,
-  input: Omit<ProvisionInput, "leadId">,
+  input: {
+    tier: string;
+    companyName?: string;
+    ownerEmail?: string;
+    ownerName?: string;
+    country?: string;
+    projectTitle?: string;
+    projectType?: string;
+  },
 ): Promise<ProvisionResult> {
   const lead = await db.contactSubmission.findUnique({
     where: { id: leadId },

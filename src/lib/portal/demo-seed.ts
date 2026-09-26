@@ -161,6 +161,118 @@ async function ensureNotifications(
   }
 }
 
+// ── project operations: scope, change requests, decisions, health ──
+type ProjectOpsSeed = {
+  scope: {
+    title: string;
+    detail?: string;
+    kind: "INCLUSION" | "EXCLUSION";
+    status?: string;
+  }[];
+  changeRequests: {
+    code: string;
+    title: string;
+    description: string;
+    impactNote?: string;
+    raisedBy: "CLIENT" | "ORBYT";
+    raisedByName: string;
+    status: string;
+    decidedAt?: Date | null;
+    decidedByName?: string;
+    decidedByRole?: string;
+    decisionNote?: string;
+    createdAt: Date;
+  }[];
+  decisions: {
+    title: string;
+    context?: string;
+    decidedByRole: "CLIENT" | "ORBYT";
+    decidedByName: string;
+    sourceType?: string;
+    sourceLabel?: string;
+    decidedAt: Date;
+  }[];
+  health?: { health: string; note: string; at: Date };
+};
+
+/** Idempotent per project: each block only writes when its table is empty. */
+async function ensureProjectOps(
+  projectId: string,
+  organizationId: string,
+  seed: ProjectOpsSeed,
+) {
+  const scopeCount = await db.scopeItem.count({ where: { projectId } });
+  if (scopeCount === 0) {
+    for (const [index, item] of seed.scope.entries()) {
+      await db.scopeItem.create({
+        data: {
+          projectId,
+          title: item.title,
+          detail: item.detail ?? "",
+          kind: item.kind,
+          status: item.status ?? "PLANNED",
+          position: index,
+          createdAt: ago(DEMO_AGE_DAYS),
+        },
+      });
+    }
+  }
+
+  const crCount = await db.changeRequest.count({ where: { projectId } });
+  if (crCount === 0) {
+    for (const cr of seed.changeRequests) {
+      await db.changeRequest.create({
+        data: {
+          organizationId,
+          projectId,
+          code: cr.code,
+          title: cr.title,
+          description: cr.description,
+          impactNote: cr.impactNote ?? "",
+          raisedBy: cr.raisedBy,
+          raisedByName: cr.raisedByName,
+          status: cr.status,
+          decidedAt: cr.decidedAt ?? null,
+          decidedByName: cr.decidedByName ?? "",
+          decidedByRole: cr.decidedByRole ?? "",
+          decisionNote: cr.decisionNote ?? "",
+          createdAt: cr.createdAt,
+        },
+      });
+    }
+  }
+
+  const decisionCount = await db.decisionLogEntry.count({ where: { projectId } });
+  if (decisionCount === 0) {
+    for (const entry of seed.decisions) {
+      await db.decisionLogEntry.create({
+        data: {
+          organizationId,
+          projectId,
+          title: entry.title,
+          context: entry.context ?? "",
+          decidedByRole: entry.decidedByRole,
+          decidedByName: entry.decidedByName,
+          sourceType: entry.sourceType ?? "OTHER",
+          sourceLabel: entry.sourceLabel ?? "",
+          decidedAt: entry.decidedAt,
+        },
+      });
+    }
+  }
+
+  if (seed.health) {
+    await db.project.update({
+      where: { id: projectId },
+      data: {
+        health: seed.health.health,
+        healthNote: seed.health.note,
+        healthUpdatedAt: seed.health.at,
+      },
+    });
+  }
+}
+
 // ═════════════════════════════════════════════════════════════
 // A. DEMO ROASTERS: website-only engagement
 // The existing acquisition-system story, now with milestones,
@@ -232,6 +344,67 @@ async function seedDemoRoasters() {
         targetLaunchAt: ahead(16),
       },
     }));
+
+  await ensureProjectOps(project.id, org.id, {
+    scope: [
+      { title: "Storefront rebuild", detail: "Five pages, mobile-first, on the brand system.", kind: "INCLUSION", status: "IN_PROGRESS" },
+      { title: "Checkout and order flow", detail: "Shopify checkout, kept standard, tuned for speed.", kind: "INCLUSION", status: "IN_PROGRESS" },
+      { title: "Local SEO groundwork", detail: "Meta, sitemap, speed pass, Google Business profile.", kind: "INCLUSION" },
+      { title: "Handover session", detail: "One recorded walkthrough for the Roasters team.", kind: "INCLUSION" },
+      { title: "Paid ad management", detail: "Quoted separately when the store is live.", kind: "EXCLUSION" },
+      { title: "Product copywriting", detail: "The Roasters team writes; we review structure.", kind: "EXCLUSION" },
+    ],
+    changeRequests: [
+      {
+        code: "CR-0001",
+        title: "Add a WhatsApp order button",
+        description: "Most of our regulars order on WhatsApp anyway. Put the button where the checkout button is.",
+        impactNote: "Half a day of build time. No date change.",
+        raisedBy: "CLIENT",
+        raisedByName: account.name,
+        status: "ACCEPTED",
+        decidedAt: ago(2),
+        decidedByName: "ORBYT crew",
+        decidedByRole: "ORBYT",
+        decisionNote: "Fits the build. The button joins the checkout page scope.",
+        createdAt: ago(3),
+      },
+      {
+        code: "CR-0002",
+        title: "Move launch by one week",
+        description: "The Ramadan banner set deserves a proper pass. We want one more week before launch, with the store fully configured.",
+        impactNote: "Launch moves one week later. Nothing else changes.",
+        raisedBy: "ORBYT",
+        raisedByName: "ORBYT crew",
+        status: "PROPOSED",
+        createdAt: ago(1),
+      },
+    ],
+    decisions: [
+      {
+        title: "CR-0001 accepted",
+        context: "Fits the build. The WhatsApp order button joins the checkout page scope.",
+        decidedByRole: "ORBYT",
+        decidedByName: "ORBYT crew",
+        sourceType: "CHANGE_REQUEST",
+        sourceLabel: "CR-0001",
+        decidedAt: ago(2),
+      },
+      {
+        title: "Checkout stays on Shopify",
+        context: "A custom checkout was discussed and dropped: maintenance cost beats the benefit at this volume.",
+        decidedByRole: "ORBYT",
+        decidedByName: "ORBYT crew",
+        sourceType: "MEETING",
+        decidedAt: ago(4),
+      },
+    ],
+    health: {
+      health: "ON_TRACK",
+      note: "Build is on plan. The one open question is the launch-week shift in CR-0002.",
+      at: ago(1),
+    },
+  });
 
   const milestoneCount = await db.milestone.count({ where: { projectId: project.id } });
   if (milestoneCount === 0) {
@@ -690,6 +863,42 @@ async function seedNovaFoods() {
       },
     }));
 
+  await ensureProjectOps(storefront.id, org.id, {
+    scope: [
+      { title: "Store design and build", detail: "Home, collection, product, cart, story. Mobile-first.", kind: "INCLUSION", status: "IN_PROGRESS" },
+      { title: "Product data migration", detail: "Top 100 SKUs migrated and spot-checked.", kind: "INCLUSION" },
+      { title: "Analytics baseline", detail: "GA4 and conversion events before launch, so day one numbers are real.", kind: "INCLUSION" },
+      { title: "Ongoing marketing management", detail: "Lives in the Q3 campaign sprint, not this build.", kind: "EXCLUSION" },
+    ],
+    changeRequests: [
+      {
+        code: "CR-0001",
+        title: "Add a recipes page template",
+        description: "A place for the chef's recipes doubles as organic search bait. One template, reused per recipe.",
+        impactNote: "Adds three build days. Launch holds if decided this week.",
+        raisedBy: "ORBYT",
+        raisedByName: "ORBYT crew",
+        status: "PROPOSED",
+        createdAt: ago(1),
+      },
+    ],
+    decisions: [
+      {
+        title: "Navigation reduced to four items",
+        context: "Heatmaps showed menu paralysis on mobile. Fewer paths, clearer next step.",
+        decidedByRole: "ORBYT",
+        decidedByName: "ORBYT crew",
+        sourceType: "MEETING",
+        decidedAt: ago(6),
+      },
+    ],
+    health: {
+      health: "ON_TRACK",
+      note: "Storefront on plan. Migration starts once the demo products are final.",
+      at: ago(2),
+    },
+  });
+
   // ── Project 2: campaign sprint ──
   const campaign =
     (await db.project.findFirst({
@@ -1124,6 +1333,42 @@ async function seedAtlasClinics() {
         targetLaunchAt: ahead(9),
       },
     }));
+
+  await ensureProjectOps(project.id, org.id, {
+    scope: [
+      { title: "Intake form and triage flow", detail: "From public form to the right department queue.", kind: "INCLUSION", status: "IN_PROGRESS" },
+      { title: "WhatsApp reminder bot", detail: "Appointment reminders with a reply-to-confirm loop.", kind: "INCLUSION", status: "IN_PROGRESS" },
+      { title: "Reception dashboard", detail: "Today's appointments, confirmations and gaps on one screen.", kind: "INCLUSION" },
+      { title: "Telemedicine platform", detail: "Out of scope for this engagement.", kind: "EXCLUSION" },
+    ],
+    changeRequests: [
+      {
+        code: "CR-0001",
+        title: "Add a Bangla-language intake form",
+        description: "A large share of patients are more comfortable in Bangla. Same triage flow, second language layer.",
+        impactNote: "Two extra build days and one review pass with the front desk.",
+        raisedBy: "CLIENT",
+        raisedByName: account.name,
+        status: "PROPOSED",
+        createdAt: ago(1),
+      },
+    ],
+    decisions: [
+      {
+        title: "Reminders move to WhatsApp first",
+        context: "Email open rates at the clinic were too low to trust for appointment reminders.",
+        decidedByRole: "ORBYT",
+        decidedByName: "ORBYT crew",
+        sourceType: "MEETING",
+        decidedAt: ago(5),
+      },
+    ],
+    health: {
+      health: "AT_RISK",
+      note: "The WhatsApp template approval is pending with the provider. If it slips past Thursday, the launch date moves with it.",
+      at: ago(1),
+    },
+  });
 
   const milestoneCount = await db.milestone.count({ where: { projectId: project.id } });
   if (milestoneCount === 0) {

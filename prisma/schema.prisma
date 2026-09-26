@@ -47,6 +47,8 @@ model Organization {
   meetings      Meeting[]
   invoices      Invoice[]
   notifications Notification[]
+  changeRequests ChangeRequest[]
+  decisions     DecisionLogEntry[]
 
   @@index([clientId])
 }
@@ -121,6 +123,14 @@ model Project {
   goal           String        @default("")
   /// Who on the ORBYT side owns it day to day (a label, not a user row).
   ownerLabel     String        @default("ORBYT crew")
+  // Recorded project health, set by ORBYT with a note. Empty means
+  // "not assessed yet" and the UI says exactly that; it is never
+  // derived from progress or dates.
+  // ON_TRACK, AT_RISK, OFF_TRACK, ON_HOLD
+  health         String        @default("")
+  /// One honest sentence explaining the health, set together with it.
+  healthNote     String        @default("")
+  healthUpdatedAt DateTime?
   startedAt      DateTime      @default(now())
   targetLaunchAt DateTime?
   createdAt      DateTime      @default(now())
@@ -135,6 +145,9 @@ model Project {
   threads      MessageThread[]
   meetings     Meeting[]
   messages     ContactSubmission[]
+  scopeItems   ScopeItem[]
+  changeRequests ChangeRequest[]
+  decisions    DecisionLogEntry[]
 
   @@index([organizationId, status])
   @@index([organizationId])
@@ -641,4 +654,87 @@ model ContactSubmission {
   @@index([userId])
   @@index([projectId])
   @@index([status, createdAt])
+}
+
+/// One line of project scope: what the engagement includes, and just
+/// as important, what it explicitly excludes. Managed by the ORBYT
+/// crew; visible to the client. Scope changes go through change
+/// requests, not silent edits.
+model ScopeItem {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title     String
+  detail    String   @default("")
+  // INCLUSION, EXCLUSION
+  kind      String   @default("INCLUSION")
+  // PLANNED, IN_PROGRESS, DONE, DROPPED
+  status    String   @default("PLANNED")
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId, position])
+}
+
+/// A formal change to scope. Either side can raise it: the client asks
+/// for something new, ORBYT proposes a change with its impact spelled
+/// out. The other side decides. Decisions are one-way records and land
+/// in the project decision log automatically. Closed set:
+///   PROPOSED, ACCEPTED, DECLINED, WITHDRAWN
+model ChangeRequest {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  projectId      String
+  project        Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  /// Human reference, CR-0001, unique within the organization.
+  code           String
+  title          String
+  description    String
+  // CLIENT, ORBYT
+  raisedBy       String       @default("CLIENT")
+  raisedByName   String       @default("")
+  /// The honest cost of the change, in words: effort, dates, price.
+  impactNote     String       @default("")
+  // PROPOSED, ACCEPTED, DECLINED, WITHDRAWN
+  status         String       @default("PROPOSED")
+  decidedAt      DateTime?
+  decidedByName  String       @default("")
+  // CLIENT, ORBYT
+  decidedByRole  String       @default("")
+  decisionNote   String       @default("")
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([organizationId, status])
+  @@index([projectId, createdAt])
+}
+
+/// The project decision log: what was decided, why, by whom, when.
+/// Immutable from the portal interface: entries are created (also
+/// automatically, from change-request decisions) and never edited or
+/// deleted. This is the "why does it work this way" record.
+model DecisionLogEntry {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  projectId      String
+  project        Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  /// The decision, in one line, past tense.
+  title          String
+  /// Why it was decided; the context a reader needs later.
+  context        String       @default("")
+  // CLIENT, ORBYT
+  decidedByRole  String       @default("ORBYT")
+  decidedByName  String
+  // CHANGE_REQUEST, REQUEST, MEETING, APPROVAL, OTHER
+  sourceType     String       @default("OTHER")
+  /// Human reference of the source, e.g. CR-0002.
+  sourceLabel    String       @default("")
+  decidedAt      DateTime     @default(now())
+  createdAt      DateTime     @default(now())
+
+  @@index([projectId, decidedAt])
+  @@index([organizationId, decidedAt])
 }

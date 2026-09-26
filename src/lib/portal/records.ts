@@ -130,10 +130,10 @@ export async function recordNotification(
   }
 }
 
-/** Next sequential human code for requests/invoices, scoped per kind. */
+/** Next sequential human code for requests/invoices/projects/CRs, scoped per kind. */
 export async function nextCode(
   organizationId: string,
-  kind: "REQ" | "INV" | "PRJ",
+  kind: "REQ" | "INV" | "PRJ" | "CR",
 ): Promise<string> {
   if (kind === "REQ") {
     const count = await db.request.count({ where: { organizationId } });
@@ -142,6 +142,10 @@ export async function nextCode(
   if (kind === "INV") {
     const count = await db.invoice.count({ where: { organizationId } });
     return `INV-${String(count + 1).padStart(4, "0")}`;
+  }
+  if (kind === "CR") {
+    const count = await db.changeRequest.count({ where: { organizationId } });
+    return `CR-${String(count + 1).padStart(4, "0")}`;
   }
   const count = await db.project.count({ where: { organizationId } });
   return `PRJ-${String(count + 1).padStart(3, "0")}`;

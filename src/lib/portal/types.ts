@@ -45,6 +45,46 @@ export type ProjectSummary = {
   nextMilestone: string | null;
   openApprovals: number;
   lastUpdateAt: string | null;
+  // Recorded health. Empty string = not assessed yet.
+  health: string;
+  healthNote: string;
+  healthUpdatedAt: string | null;
+};
+
+// ── Project operations: scope, changes, decisions ────────────
+export type ScopeItemItem = {
+  id: string;
+  title: string;
+  detail: string;
+  kind: string; // INCLUSION, EXCLUSION
+  status: string; // PLANNED, IN_PROGRESS, DONE, DROPPED
+};
+
+export type ChangeRequestItem = {
+  id: string;
+  code: string;
+  title: string;
+  description: string;
+  impactNote: string;
+  raisedBy: string; // CLIENT, ORBYT
+  raisedByName: string;
+  status: string; // PROPOSED, ACCEPTED, DECLINED, WITHDRAWN
+  decidedAt: string | null;
+  decidedByName: string;
+  decidedByRole: string;
+  decisionNote: string;
+  createdAt: string;
+};
+
+export type DecisionLogItem = {
+  id: string;
+  title: string;
+  context: string;
+  decidedByRole: string;
+  decidedByName: string;
+  sourceType: string;
+  sourceLabel: string;
+  decidedAt: string;
 };
 
 export type AttentionItem = {
@@ -137,6 +177,9 @@ export type ProjectDetailPayload = {
   updates: ProjectUpdateItem[];
   files: FileItem[];
   threadCount: number;
+  scope: ScopeItemItem[];
+  changeRequests: ChangeRequestItem[];
+  decisions: DecisionLogItem[];
 };
 
 // ── Requests ─────────────────────────────────────────────────

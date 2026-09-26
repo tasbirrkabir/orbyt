@@ -149,6 +149,19 @@ export const STATUS_LABELS: Record<string, string> = {
   PAID: "Paid",
   OVERDUE: "Overdue",
   CANCELLED: "Cancelled",
+  // project operations: scope, change requests, health
+  INCLUSION: "Included",
+  EXCLUSION: "Not included",
+  PLANNED: "Planned",
+  DROPPED: "Dropped",
+  PROPOSED: "Needs decision",
+  ACCEPTED: "Accepted",
+  DECLINED: "Declined",
+  WITHDRAWN: "Withdrawn",
+  ON_TRACK: "On track",
+  AT_RISK: "At risk",
+  OFF_TRACK: "Off track",
+  ON_HOLD: "On hold",
 };
 
 /** Request categories with the plain-language name the client picked. */
