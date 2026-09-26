@@ -362,9 +362,17 @@ export type NotificationPrefs = {
   meetings: boolean;
 };
 
+/** Account security facts for the settings room. */
+export type SecurityState = {
+  mfaEnabled: boolean;
+  /** Owner seats manage MFA; demo workspaces never do. */
+  canManageMfa: boolean;
+};
+
 export type SettingsPayload = {
   identity: PortalIdentity;
   prefs: NotificationPrefs;
+  security: SecurityState;
 };
 
 // ── Activity ─────────────────────────────────────────────────

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { seedCommandCenter } from '@/lib/portal/demo-seed'
+import { checkRateLimit, clientIp } from '@/lib/rate-limit'
 
 /**
  * POST /api/demo
@@ -14,9 +15,20 @@ import { seedCommandCenter } from '@/lib/portal/demo-seed'
  * any number of times is safe, and a wiped database is repaired on the
  * next click. No request body, no user input to validate.
  *
- * Contract: -> 200 { ok: true } | 500 { error } (details never leaked)
+ * The endpoint is public but throttled: it is a DB-heavy seeder and
+ * an unthrottled hammer would be a denial-of-wallet against the one
+ * server. Ten provisions per IP per 10 minutes is far more than any
+ * human exploring three workspaces needs.
+ *
+ * Contract: -> 200 { ok: true } | 429 | 500 { error } (details never leaked)
  */
-export async function POST() {
+export async function POST(request: Request) {
+  if (!checkRateLimit('demo-provision', clientIp(request), 10, 10 * 60 * 1000).ok) {
+    return NextResponse.json(
+      { error: 'Too many attempts. Give it a few minutes.' },
+      { status: 429 },
+    )
+  }
   try {
     await seedCommandCenter()
     return NextResponse.json({ ok: true })

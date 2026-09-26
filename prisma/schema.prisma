@@ -47,6 +47,8 @@ model Organization {
   meetings      Meeting[]
   invoices      Invoice[]
   notifications Notification[]
+
+  @@index([clientId])
 }
 
 model User {
@@ -78,6 +80,23 @@ model User {
   projects          Project[]
   approvalDecisions Approval[]          @relation("ApprovalDecisions")
   requestsFiled     Request[]           @relation("RequestsFiled")
+
+  // Session security. Bumped whenever credentials or MFA change; any
+  // JWT carrying an older tokenVersion stops resolving to a portal
+  // context, which is how "sign out everywhere" actually works.
+  tokenVersion     Int       @default(0)
+  lastLoginAt      DateTime?
+  // TOTP MFA. mfaPendingSecret holds the secret while setup is being
+  // verified; once verified it moves to mfaSecret and mfaEnabledAt is
+  // stamped. A user with only a pending secret has MFA off.
+  mfaPendingSecret String?
+  mfaSecret        String?
+  mfaEnabledAt     DateTime?
+
+  resetTokens PasswordResetToken[]
+  backupCodes MfaBackupCode[]
+
+  @@index([organizationId])
 }
 
 model Project {
@@ -116,6 +135,9 @@ model Project {
   threads      MessageThread[]
   meetings     Meeting[]
   messages     ContactSubmission[]
+
+  @@index([organizationId, status])
+  @@index([organizationId])
 }
 
 /// Client-visible milestone on the project rail. Progress is computed
@@ -132,6 +154,8 @@ model Milestone {
   dueDate     DateTime?
   completedAt DateTime?
   createdAt   DateTime  @default(now())
+
+  @@index([projectId, position])
 }
 
 /// A dated note from the crew on the project log. SHIPPED rows carry
@@ -147,6 +171,8 @@ model ProjectUpdate {
   body           String
   acknowledgedAt DateTime?
   createdAt      DateTime  @default(now())
+
+  @@index([projectId, createdAt])
 }
 
 model Deliverable {
@@ -173,6 +199,8 @@ model Deliverable {
   updatedAt     DateTime  @updatedAt
 
   approvals Approval[]
+
+  @@index([projectId])
 }
 
 /// A formal sign-off request. Approvals are one-way: once a version is
@@ -200,6 +228,9 @@ model Approval {
   decisionComment String       @default("")
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
+
+  @@index([organizationId, status])
+  @@index([deliverableId])
 }
 
 /// A structured client request (ticket). The client files it; ORBYT
@@ -227,6 +258,9 @@ model Request {
   updatedAt      DateTime     @updatedAt
 
   comments RequestComment[]
+
+  @@index([organizationId, updatedAt])
+  @@index([projectId])
 }
 
 model RequestComment {
@@ -238,6 +272,8 @@ model RequestComment {
   authorRole String   @default("CLIENT")
   body       String
   createdAt  DateTime @default(now())
+
+  @@index([requestId, createdAt])
 }
 
 /// The secure file index. Files travel by email; this is the tenant-
@@ -263,6 +299,9 @@ model PortalFile {
   // Optional. Only set when a real, client-reachable URL exists.
   link           String?
   uploadedAt     DateTime     @default(now())
+
+  @@index([organizationId, uploadedAt])
+  @@index([projectId])
 }
 
 /// A project-linked conversation, not a chat clone. Threads attach to
@@ -280,6 +319,8 @@ model MessageThread {
   updatedAt      DateTime     @updatedAt
 
   messages Message[]
+
+  @@index([organizationId, updatedAt])
 }
 
 model Message {
@@ -292,6 +333,8 @@ model Message {
   body         String
   readByClient Boolean       @default(true)
   createdAt    DateTime      @default(now())
+
+  @@index([threadId, createdAt])
 }
 
 /// The immutable chronological record of what happened, client-visible.
@@ -313,6 +356,9 @@ model ActivityEvent {
   /// Deep link into the portal, when one exists.
   link           String?
   createdAt      DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
+  @@index([organizationId, type])
 }
 
 /// A system ORBYT builds, runs or monitors for the client. Full-service
@@ -341,6 +387,8 @@ model SystemEntry {
 
   checks SystemCheck[]
   runs   AutomationRun[]
+
+  @@index([organizationId])
 }
 
 /// One recorded health check for a system. Status closed set mirrors
@@ -353,6 +401,8 @@ model SystemCheck {
   status    String      @default("HEALTHY")
   note      String      @default("")
   checkedAt DateTime    @default(now())
+
+  @@index([systemId, checkedAt])
 }
 
 /// One execution of an automation, for the run history.
@@ -364,6 +414,8 @@ model AutomationRun {
   // OK, FAILED
   status   String      @default("OK")
   ranAt    DateTime    @default(now())
+
+  @@index([systemId, ranAt])
 }
 
 /// A published performance report. Metrics and series are stored as
@@ -387,6 +439,8 @@ model Report {
   note           String       @default("")
   updatedAt      DateTime     @updatedAt
   createdAt      DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
 }
 
 model Meeting {
@@ -404,6 +458,8 @@ model Meeting {
   notes          String       @default("")
   decisions      String       @default("")
   createdAt      DateTime     @default(now())
+
+  @@index([organizationId, startsAt])
 }
 
 model Invoice {
@@ -427,6 +483,8 @@ model Invoice {
   createdAt      DateTime     @default(now())
 
   payments Payment[]
+
+  @@index([organizationId, issueDate])
 }
 
 model Payment {
@@ -438,6 +496,8 @@ model Payment {
   method      String   @default("BANK_TRANSFER")
   reference   String   @default("")
   paidAt      DateTime @default(now())
+
+  @@index([invoiceId])
 }
 
 model Notification {
@@ -451,6 +511,9 @@ model Notification {
   link           String?
   readAt         DateTime?
   createdAt      DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
+  @@index([organizationId, readAt])
 }
 
 /// Server-side audit log for security-relevant client actions.
@@ -465,6 +528,63 @@ model AuditLog {
   targetLabel  String   @default("")
   metadataJson String   @default("{}")
   createdAt    DateTime @default(now())
+
+  @@index([actorEmail, createdAt])
+  @@index([createdAt])
+}
+
+/// One outbound email: the durable record of everything ORBYT sends.
+/// Rows are written before the provider dispatch and move QUEUED ->
+/// SENT | FAILED after it, so delivery state is always a stored fact.
+/// The EmailService (src/lib/email) owns this lifecycle.
+model EmailMessage {
+  id        String    @id @default(cuid())
+  toEmail   String
+  subject   String
+  textBody  String
+  htmlBody  String?
+  /// Template identifier, e.g. auth.password_reset.
+  template  String    @default("")
+  // QUEUED, SENT, FAILED
+  status    String    @default("QUEUED")
+  /// Which provider handled it: console (dev) or a real one (resend).
+  provider  String    @default("console")
+  error     String    @default("")
+  sentAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([status, createdAt])
+  @@index([toEmail])
+}
+
+/// Single-use, hashed password reset token. The raw token only ever
+/// exists inside the email link; the database stores a SHA-256 digest.
+/// Expired or used tokens are dead on arrival.
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  requestIp String    @default("")
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+/// One MFA recovery code, SHA-256 hashed like every other secret.
+/// A code is consumed by a successful use and never regenerated in
+/// place; a new batch invalidates the old one.
+model MfaBackupCode {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeHash  String    @unique
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
 }
 
 model OnboardingProfile {
@@ -504,4 +624,7 @@ model ContactSubmission {
   projectId String?
   project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
   createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([projectId])
 }

@@ -54,6 +54,16 @@ export async function getPortalContext(): Promise<PortalContext | null> {
   });
   if (!user) return null;
 
+  // Session invalidation: the JWT stamps the token version it was
+  // issued with. Any password change or MFA change bumps the user's
+  // version, and every older JWT stops resolving here. This is what
+  // makes "sign out everywhere" a fact, not a promise.
+  const tokenTv =
+    sessionUser && typeof sessionUser.tv === "number" ? sessionUser.tv : null;
+  if (tokenTv !== null && tokenTv !== user.tokenVersion) {
+    return null;
+  }
+
   let organization = user.organization;
 
   // Bridge pre-org accounts: give them their own organization.

@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { getServerSession } from 'next-auth/next'
 import { authOptions, type SessionUserWithId } from '@/lib/auth'
 import { db } from '@/lib/db'
+import { checkRateLimit, clientIp } from '@/lib/rate-limit'
 
 /**
  * POST /api/contact
@@ -28,39 +29,13 @@ const contactSchema = z.object({
     .transform((t) => (t && t.length > 0 ? t : null)),
 })
 
-// Lightweight in-memory rate limit: max 5 requests per 10 minutes per client IP
-// (module-scope Map: fine for a single server process; resets on redeploy).
-// Verified Task 14-b: requests 1..5 -> 201, request 6 in the window -> 429.
-// NOTE: editing this file recompiles the route and resets the Map (dev only).
-const RATE_LIMIT_MAX = 5
-const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000
-
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
-
-function isRateLimited(key: string): boolean {
-  const now = Date.now()
-  const entry = rateLimitMap.get(key)
-
-  if (!entry || now >= entry.resetAt) {
-    // Periodically sweep expired entries so the Map cannot grow unbounded.
-    if (rateLimitMap.size > 1000) {
-      for (const [k, v] of rateLimitMap) {
-        if (now >= v.resetAt) rateLimitMap.delete(k)
-      }
-    }
-    rateLimitMap.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS })
-    return false
-  }
-
-  entry.count += 1
-  return entry.count > RATE_LIMIT_MAX
-}
+// Shared limiter (src/lib/rate-limit.ts): max 5 requests per 10 minutes
+// per client IP. Verified Task 14-b: requests 1..5 -> 201, request 6 in
+// the window -> 429.
 
 export async function POST(request: Request) {
   // Rate limit first (cheap rejection before any parsing/DB work).
-  const clientKey =
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
-  if (isRateLimited(clientKey)) {
+  if (!checkRateLimit('contact', clientIp(request), 5, 10 * 60 * 1000).ok) {
     return NextResponse.json(
       { error: 'Too many requests. Try again later.' },
       { status: 429 },

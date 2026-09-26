@@ -3,7 +3,9 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { identityOf, portalRoute, readJson } from "@/lib/portal/api";
 import { recordAudit } from "@/lib/portal/records";
+import { DEMO_ACCOUNTS } from "@/lib/demo";
 import type { NotificationPrefs, SettingsPayload } from "@/lib/portal/types";
+import type { PortalContext } from "@/lib/portal/session";
 
 /**
  * GET   /api/portal/settings (protected)
@@ -51,16 +53,27 @@ function parsePrefs(json: string): NotificationPrefs {
   }
 }
 
+/** Security facts for the settings room, computed in one place. */
+function securityState(context: PortalContext, mfaEnabledAt: Date | null) {
+  return {
+    mfaEnabled: Boolean(mfaEnabledAt),
+    canManageMfa:
+      context.role === "CLIENT_OWNER" &&
+      !DEMO_ACCOUNTS.some((account) => account.clientId === context.clientId),
+  };
+}
+
 export async function GET() {
   return portalRoute(
       async (context) => {
     const user = await db.user.findUnique({
       where: { id: context.userId },
-      select: { notificationPrefsJson: true },
+      select: { notificationPrefsJson: true, mfaEnabledAt: true },
     });
     const payload: SettingsPayload = {
       identity: identityOf(context),
       prefs: parsePrefs(user?.notificationPrefsJson ?? "{}"),
+      security: securityState(context, user?.mfaEnabledAt ?? null),
     };
     return NextResponse.json(payload);
   });
@@ -79,9 +92,10 @@ export async function PATCH(request: Request) {
     );
 
     const merged = { ...current, ...input };
-    await db.user.update({
+    const updated = await db.user.update({
       where: { id: context.userId },
       data: { notificationPrefsJson: JSON.stringify(merged) },
+      select: { mfaEnabledAt: true },
     });
     await recordAudit(context, {
       action: "settings.prefs_update",
@@ -90,7 +104,11 @@ export async function PATCH(request: Request) {
       metadata: merged,
     });
 
-    const payload: SettingsPayload = { identity: identityOf(context), prefs: merged };
+    const payload: SettingsPayload = {
+      identity: identityOf(context),
+      prefs: merged,
+      security: securityState(context, updated.mfaEnabledAt),
+    };
     return NextResponse.json(payload);
   }, { write: true });
 }

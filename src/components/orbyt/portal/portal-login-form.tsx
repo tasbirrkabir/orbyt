@@ -21,6 +21,7 @@ type FieldErrors = {
   clientId?: string;
   email?: string;
   password?: string;
+  code?: string;
   form?: string;
 };
 
@@ -63,6 +64,11 @@ export function PortalLoginForm({
   const [clientId, setClientId] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [code, setCode] = useState("");
+  // Two-step verification: once the server answers MFA_REQUIRED, the
+  // form flips to the code step in place and resubmits with the
+  // original three fields plus the code.
+  const [mfaStep, setMfaStep] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [pending, setPending] = useState(false);
@@ -79,6 +85,49 @@ export function PortalLoginForm({
     const trimmedId = normalizeClientId(clientId);
     const trimmedEmail = email.trim();
     const nextErrors: FieldErrors = {};
+
+    if (mfaStep) {
+      const trimmedCode = code.trim().replace(/\s/g, "");
+      if (!trimmedCode) {
+        nextErrors.code = AUTH.login.mfaLabel + " is needed";
+      }
+      if (Object.keys(nextErrors).length > 0) {
+        setErrors(nextErrors);
+        return;
+      }
+      setErrors({});
+      setPending(true);
+      try {
+        const signInResult = await signIn("credentials", {
+          redirect: false,
+          clientId: trimmedId,
+          email: trimmedEmail,
+          password,
+          totp: trimmedCode,
+        });
+        if (signInResult?.ok) {
+          if (onSignedIn) {
+            onSignedIn();
+          } else {
+            router.push(nextPath ?? "/workspace");
+          }
+          return;
+        }
+        // Wrong code keeps the account invisible behind the same step.
+        setErrors({
+          code:
+            signInResult?.error === "MFA_REQUIRED" ||
+            signInResult?.error === "CredentialsSignin"
+              ? AUTH.login.mfaWrong
+              : AUTH.login.error,
+        });
+        setPending(false);
+      } catch {
+        setErrors({ form: AUTH.login.error });
+        setPending(false);
+      }
+      return;
+    }
 
     if (!trimmedId) {
       nextErrors.clientId = "Your client ID opens the portal";
@@ -110,6 +159,12 @@ export function PortalLoginForm({
         } else {
           router.push(nextPath ?? "/workspace");
         }
+        return;
+      }
+      if (signInResult?.error === "MFA_REQUIRED") {
+        // Right password, second factor expected: show the code step.
+        setMfaStep(true);
+        setPending(false);
         return;
       }
       setErrors({
@@ -182,6 +237,48 @@ export function PortalLoginForm({
       ) : null}
 
       <form onSubmit={handleSubmit} noValidate className={showHeading ? "mt-8" : ""}>
+        {mfaStep ? (
+          <div className="space-y-5">
+            <div>
+              <p className="font-display text-lg font-bold leading-snug tracking-tight">
+                {AUTH.login.mfaTitle}
+              </p>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                {AUTH.login.mfaSub}
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="auth-code">{AUTH.login.mfaLabel}</Label>
+              <Input
+                id="auth-code"
+                name="totp"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                placeholder={AUTH.login.mfaPlaceholder}
+                autoFocus
+                value={code}
+                onChange={(event) => {
+                  setCode(event.target.value);
+                  clearError("code");
+                }}
+                className="h-12 font-mono tracking-[0.4em]"
+                aria-invalid={errors.code ? true : undefined}
+              />
+              <FieldError id="auth-code-error" message={errors.code} />
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setMfaStep(false);
+                setCode("");
+                setErrors({});
+              }}
+              className="text-xs font-medium text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+            >
+              {AUTH.login.mfaBack}
+            </button>
+          </div>
+        ) : (
         <div className="space-y-5">
           <div className="space-y-2">
             <Label htmlFor="auth-client-id">{AUTH.login.clientIdLabel}</Label>
@@ -272,6 +369,7 @@ export function PortalLoginForm({
             <FieldError id="auth-password-error" message={errors.password} />
           </div>
         </div>
+        )}
 
         {errors.form ? (
           <p
@@ -290,13 +388,25 @@ export function PortalLoginForm({
           {pending ? (
             <Loader2 aria-hidden="true" className="animate-spin" />
           ) : null}
-          {pending ? AUTH.login.submitting : AUTH.login.submit}
+          {pending
+            ? AUTH.login.submitting
+            : mfaStep
+              ? AUTH.login.mfaSubmit
+              : AUTH.login.submit}
         </Button>
       </form>
 
-      <p className="mt-5 text-xs leading-relaxed text-muted-foreground">
-        {AUTH.login.forgot}
-      </p>
+      {mfaStep ? null : (
+        <p className="mt-5 text-xs leading-relaxed text-muted-foreground">
+          {AUTH.login.forgot}{" "}
+          <Link
+            href="/login/reset"
+            className="font-medium text-foreground underline underline-offset-4 transition-colors hover:text-primary"
+          >
+            {AUTH.login.forgotLink}
+          </Link>
+        </p>
+      )}
 
       <div className="mt-6 flex items-center gap-4" aria-hidden="true">
         <span className="h-px flex-1 bg-border" />

@@ -1,0 +1,1535 @@
+     1→import { db } from "@/lib/db";
+     2→import { hashPassword } from "@/lib/password";
+     3→import { DEMO_ACCOUNTS, DEMO_AGE_DAYS, DEMO_PROFILE, DEMO_SUBMISSIONS } from "@/lib/demo";
+     4→
+     5→/**
+     6→ * The Command Center seeder. Builds three complete demo tenants with
+     7→ * coherent, honest stories. Every block is idempotent: upserts keyed
+     8→ * by natural ids (clientId, email, code, number) or count-guards, so
+     9→ * re-running repairs and never duplicates.
+    10→ *
+    11→ * Honesty rules baked in: files travel by email (no fake download
+    12→ * links), report numbers are labeled sample data, invoices describe
+    13→ * real transfer methods, and no metric or health state is invented
+    14→ * beyond the sample story the demo openly is.
+    15→ */
+    16→
+    17→const DAY = 86_400_000;
+    18→const HOUR = 3_600_000;
+    19→const ago = (days: number, hours = 0) => new Date(Date.now() - days * DAY - hours * HOUR);
+    20→const ahead = (days: number, hours = 0) => new Date(Date.now() + days * DAY + hours * HOUR);
+    21→
+    22→function parse<T>(json: string, fallback: T): T {
+    23→  try {
+    24→    return JSON.parse(json) as T;
+    25→  } catch {
+    26→    return fallback;
+    27→  }
+    28→}
+    29→
+    30→export async function seedCommandCenter(): Promise<void> {
+    31→  await seedDemoRoasters();
+    32→  await seedNovaFoods();
+    33→  await seedAtlasClinics();
+    34→}
+    35→
+    36→// ── shared member list per org ───────────────────────────────
+    37→type MemberSeed = {
+    38→  name: string;
+    39→  email: string;
+    40→  role: "CLIENT_MEMBER" | "CLIENT_VIEWER";
+    41→  active: boolean;
+    42→};
+    43→
+    44→async function ensureOrganization(account: (typeof DEMO_ACCOUNTS)[number]) {
+    45→  return db.organization.upsert({
+    46→    where: { clientId: account.clientId },
+    47→    update: { name: account.organizationName, tier: account.tier },
+    48→    create: {
+    49→      name: account.organizationName,
+    50→      clientId: account.clientId,
+    51→      tier: account.tier,
+    52→      country: "BD",
+    53→    },
+    54→  });
+    55→}
+    56→
+    57→async function ensureOwner(
+    58→  account: (typeof DEMO_ACCOUNTS)[number],
+    59→  organizationId: string,
+    60→) {
+    61→  const owner = await db.user.upsert({
+    62→    where: { email: account.email },
+    63→    update: { organizationId, role: "CLIENT_OWNER", clientId: account.clientId },
+    64→    create: {
+    65→      email: account.email,
+    66→      name: account.name,
+    67→      passwordHash: hashPassword(account.password),
+    68→      clientId: account.clientId,
+    69→      organizationId,
+    70→      role: "CLIENT_OWNER",
+    71→      activatedAt: ago(DEMO_AGE_DAYS),
+    72→      // Created "a week ago" so the workspace shows a believable tenure.
+    73→      createdAt: ago(DEMO_AGE_DAYS),
+    74→    },
+    75→  });
+    76→  if (!owner.passwordHash) {
+    77→    await db.user.update({
+    78→      where: { id: owner.id },
+    79→      data: { passwordHash: hashPassword(account.password), activatedAt: new Date() },
+    80→    });
+    81→  }
+    82→  return owner;
+    83→}
+    84→
+    85→async function ensureMembers(
+    86→  members: MemberSeed[],
+    87→  organizationId: string,
+    88→  clientId: string,
+    89→  password: string,
+    90→) {
+    91→  for (const member of members) {
+    92→    await db.user.upsert({
+    93→      where: { email: member.email },
+    94→      update: { organizationId },
+    95→      create: {
+    96→        email: member.email,
+    97→        name: member.name,
+    98→        organizationId,
+    99→        role: member.role,
+   100→        // Invited members get a working password; viewers stay pending.
+   101→        passwordHash: member.active ? hashPassword(password) : null,
+   102→        activatedAt: member.active ? ago(DEMO_AGE_DAYS) : null,
+   103→        // Pending members have no portal key of their own yet.
+   104→        clientId: null,
+   105→      },
+   106→    });
+   107→  }
+   108→  void clientId;
+   109→}
+   110→
+   111→async function ensureActivity(
+   112→  organizationId: string,
+   113→  events: {
+   114→    type: string;
+   115→    title: string;
+   116→    actorName: string;
+   117→    actorRole: string;
+   118→    targetType?: string;
+   119→    targetLabel?: string;
+   120→    link?: string;
+   121→    createdAt: Date;
+   122→  }[],
+   123→) {
+   124→  const count = await db.activityEvent.count({ where: { organizationId } });
+   125→  if (count > 0) return;
+   126→  for (const event of events) {
+   127→    await db.activityEvent.create({
+   128→      data: {
+   129→        organizationId,
+   130→        type: event.type,
+   131→        title: event.title,
+   132→        actorName: event.actorName,
+   133→        actorRole: event.actorRole,
+   134→        targetType: event.targetType ?? "",
+   135→        targetLabel: event.targetLabel ?? "",
+   136→        link: event.link ?? null,
+   137→        createdAt: event.createdAt,
+   138→      },
+   139→    });
+   140→  }
+   141→}
+   142→
+   143→async function ensureNotifications(
+   144→  organizationId: string,
+   145→  items: { type: string; title: string; body?: string; link?: string; read?: boolean; createdAt?: Date }[],
+   146→) {
+   147→  const count = await db.notification.count({ where: { organizationId } });
+   148→  if (count > 0) return;
+   149→  for (const item of items) {
+   150→    await db.notification.create({
+   151→      data: {
+   152→        organizationId,
+   153→        type: item.type,
+   154→        title: item.title,
+   155→        body: item.body ?? "",
+   156→        link: item.link ?? null,
+   157→        readAt: item.read ? (item.createdAt ?? new Date()) : null,
+   158→        createdAt: item.createdAt ?? new Date(),
+   159→      },
+   160→    });
+   161→  }
+   162→}
+   163→
+   164→// ═════════════════════════════════════════════════════════════
+   165→// A. DEMO ROASTERS: website-only engagement
+   166→// The existing acquisition-system story, now with milestones,
+   167→// approvals, requests, files, threads, meetings and invoices.
+   168→// ═════════════════════════════════════════════════════════════
+   169→async function seedDemoRoasters() {
+   170→  const account = DEMO_ACCOUNTS[0];
+   171→  const org = await ensureOrganization(account);
+   172→  const owner = await ensureOwner(account, org.id);
+   173→
+   174→  await ensureMembers(
+   175→    [
+   176→      { name: "Rahim Ahmed", email: "rahim@demoroasters.com", role: "CLIENT_MEMBER", active: true },
+   177→      { name: "Sadia Noor", email: "sadia@demoroasters.com", role: "CLIENT_VIEWER", active: false },
+   178→    ],
+   179→    org.id,
+   180→    account.clientId,
+   181→    account.password,
+   182→  );
+   183→
+   184→  await db.onboardingProfile.upsert({
+   185→    where: { userId: owner.id },
+   186→    update: {},
+   187→    create: {
+   188→      userId: owner.id,
+   189→      company: DEMO_PROFILE.company,
+   190→      industry: DEMO_PROFILE.industry,
+   191→      stage: DEMO_PROFILE.stage,
+   192→      challengesJson: JSON.stringify(DEMO_PROFILE.challenges),
+   193→      tools: DEMO_PROFILE.tools,
+   194→      goal: DEMO_PROFILE.goal,
+   195→      completedAt: ago(DEMO_AGE_DAYS - 1),
+   196→    },
+   197→  });
+   198→
+   199→  const submissionCount = await db.contactSubmission.count({ where: { userId: owner.id } });
+   200→  if (submissionCount === 0) {
+   201→    for (const submission of DEMO_SUBMISSIONS) {
+   202→      await db.contactSubmission.create({
+   203→        data: {
+   204→          userId: owner.id,
+   205→          name: account.name,
+   206→          email: account.email,
+   207→          topic: submission.topic,
+   208→          message: submission.message,
+   209→          createdAt: ago(submission.daysAgo),
+   210→        },
+   211→      });
+   212→    }
+   213→  }
+   214→
+   215→  // ── Project: the acquisition system ──
+   216→  const project =
+   217→    (await db.project.findFirst({
+   218→      where: { organizationId: org.id, title: "The acquisition system" },
+   219→    })) ??
+   220→    (await db.project.create({
+   221→      data: {
+   222→        userId: owner.id,
+   223→        organizationId: org.id,
+   224→        title: "The acquisition system",
+   225→        code: "PRJ-001",
+   226→        type: "WEBSITE",
+   227→        stage: "BUILD",
+   228→        status: "IN_PROGRESS",
+   229→        goal: "Every lead gets a reply within the hour, and the Monday report builds itself.",
+   230→        ownerLabel: "ORBYT crew",
+   231→        startedAt: ago(5),
+   232→        targetLaunchAt: ahead(16),
+   233→      },
+   234→    }));
+   235→
+   236→  const milestoneCount = await db.milestone.count({ where: { projectId: project.id } });
+   237→  if (milestoneCount === 0) {
+   238→    const milestones = [
+   239→      { title: "Discovery", description: "Where the leads actually come from, and where they die.", status: "DONE", due: ago(5), done: ago(5) },
+   240→      { title: "System map", description: "The click-to-repeat-purchase path, mapped and agreed.", status: "DONE", due: ago(4), done: ago(4) },
+   241→      { title: "Lead routing build", description: "One queue, one owner, a one hour timer.", status: "DONE", due: ago(1), done: ago(1) },
+   242→      { title: "GA4 instrumentation", description: "Full funnel from first view to purchase.", status: "DONE", due: ago(2), done: ago(2) },
+   243→      { title: "Conversions API", description: "Server-side purchase events into testing.", status: "ACTIVE", due: ahead(4), done: null },
+   244→      { title: "QA handover", description: "Pass or fail on every tracked event and form.", status: "UPCOMING", due: ahead(9), done: null },
+   245→      { title: "Launch support", description: "Two weeks of watch after go-live.", status: "UPCOMING", due: ahead(16), done: null },
+   246→    ];
+   247→    for (const [index, milestone] of milestones.entries()) {
+   248→      await db.milestone.create({
+   249→        data: {
+   250→          projectId: project.id,
+   251→          title: milestone.title,
+   252→          description: milestone.description,
+   253→          status: milestone.status,
+   254→          position: index,
+   255→          dueDate: milestone.due,
+   256→          completedAt: milestone.done,
+   257→        },
+   258→      });
+   259→    }
+   260→  }
+   261→
+   262→  const updateCount = await db.projectUpdate.count({ where: { projectId: project.id } });
+   263→  if (updateCount === 0) {
+   264→    const updates = [
+   265→      {
+   266→        tag: "SHIPPED",
+   267→        title: "Lead routing is live",
+   268→        body: "Every form submission now lands in one queue with an owner and a one hour timer. The three inboxes and the spreadsheet are retired.",
+   269→        daysAgo: 1,
+   270→        ackDaysAgo: null as number | null,
+   271→      },
+   272→      {
+   273→        tag: "SHIPPED",
+   274→        title: "GA4 events rebuilt",
+   275→        body: "The full funnel is instrumented from first view to purchase. Ads and the store finally tell the same story.",
+   276→        daysAgo: 2,
+   277→        ackDaysAgo: 1,
+   278→      },
+   279→      {
+   280→        tag: "IN PROGRESS",
+   281→        title: "Conversions API wiring",
+   282→        body: "Server-side purchase events go into testing this week, so the ad platforms see every order even when cookies don't.",
+   283→        daysAgo: 3,
+   284→        ackDaysAgo: null,
+   285→      },
+   286→      {
+   287→        tag: "NOTE",
+   288→        title: "System map approved",
+   289→        body: "We mapped the path from ad click to repeat purchase and agreed where the first bottlenecks live: lead follow-up and weekly reporting.",
+   290→        daysAgo: 5,
+   291→        ackDaysAgo: null,
+   292→      },
+   293→    ];
+   294→    for (const update of updates) {
+   295→      await db.projectUpdate.create({
+   296→        data: {
+   297→          projectId: project.id,
+   298→          tag: update.tag,
+   299→          title: update.title,
+   300→          body: update.body,
+   301→          acknowledgedAt: update.ackDaysAgo === null ? null : ago(update.ackDaysAgo),
+   302→          createdAt: ago(update.daysAgo),
+   303→        },
+   304→      });
+   305→    }
+   306→  }
+   307→
+   308→  // ── Deliverables ──
+   309→  const deliverableCount = await db.deliverable.count({ where: { project: { organizationId: org.id } } });
+   310→  if (deliverableCount === 0) {
+   311→    const deliverables = [
+   312→      {
+   313→        title: "Working agreement and scope",
+   314→        detail: "The engagement on one page: what we're building, the six stages, the cadence, and what we need from you and when.",
+   315→        status: "DELIVERED",
+   316→        approvalState: "FINAL",
+   317→        category: "STRATEGY",
+   318→        version: "v1",
+   319→        daysAgo: 5,
+   320→      },
+   321→      {
+   322→        title: "Lead routing blueprint",
+   323→        detail: "The routing map behind the new lead queue: owners, the one hour timer, and what happens when nobody picks up.",
+   324→        status: "DELIVERED",
+   325→        approvalState: "IN REVIEW",
+   326→        category: "AUTOMATION",
+   327→        version: "v2",
+   328→        daysAgo: 1,
+   329→      },
+   330→      {
+   331→        title: "GA4 event map",
+   332→        detail: "Every tracked event from first view to purchase, plus the test sheet we used to verify each one before sign-off.",
+   333→        status: "DELIVERED",
+   334→        approvalState: "APPROVED",
+   335→        category: "REPORTS",
+   336→        version: "v2",
+   337→        daysAgo: 2,
+   338→      },
+   339→      {
+   340→        title: "Conversions API test checklist",
+   341→        detail: "The pass or fail list the server-side events have to clear before they go live. Lands in your inbox when testing starts.",
+   342→        status: "IN PREP",
+   343→        approvalState: "DRAFT",
+   344→        category: "TRACKING",
+   345→        version: "v1",
+   346→        daysAgo: null as number | null,
+   347→      },
+   348→    ];
+   349→    for (const deliverable of deliverables) {
+   350→      await db.deliverable.create({
+   351→        data: {
+   352→          projectId: project.id,
+   353→          title: deliverable.title,
+   354→          detail: deliverable.detail,
+   355→          status: deliverable.status,
+   356→          channel: "EMAIL",
+   357→          approvalState: deliverable.approvalState,
+   358→          category: deliverable.category,
+   359→          version: deliverable.version,
+   360→          link: null,
+   361→          deliveredAt: deliverable.daysAgo === null ? null : ago(deliverable.daysAgo),
+   362→          createdAt: deliverable.daysAgo === null ? new Date() : ago(deliverable.daysAgo),
+   363→        },
+   364→      });
+   365→    }
+   366→  }
+   367→
+   368→  // ── Approvals ──
+   369→  const approvalCount = await db.approval.count({ where: { organizationId: org.id } });
+   370→  if (approvalCount === 0) {
+   371→    await db.approval.create({
+   372→      data: {
+   373→        organizationId: org.id,
+   374→        projectId: project.id,
+   375→        title: "Lead routing blueprint",
+   376→        type: "DELIVERABLE",
+   377→        version: "v2",
+   378→        description: "Second pass on the routing map. Adds the after-hours path and the escalation owner. Yours to sign off.",
+   379→        status: "PENDING",
+   380→        submittedAt: ago(1),
+   381→      },
+   382→    });
+   383→    await db.approval.create({
+   384→      data: {
+   385→        organizationId: org.id,
+   386→        projectId: project.id,
+   387→        title: "GA4 event map",
+   388→        type: "DOCUMENT",
+   389→        version: "v2",
+   390→        description: "Full funnel event map, verified against the test sheet.",
+   391→        status: "APPROVED",
+   392→        submittedAt: ago(2),
+   393→        decidedAt: ago(1, 4),
+   394→        decisionComment: "Matches what we agreed on the kickoff call. Good to go.",
+   395→        decidedById: owner.id,
+   396→      },
+   397→    });
+   398→  }
+   399→
+   400→  // ── Requests ──
+   401→  const requestCount = await db.request.count({ where: { organizationId: org.id } });
+   402→  if (requestCount === 0) {
+   403→    const request1 = await db.request.create({
+   404→      data: {
+   405→        organizationId: org.id,
+   406→        projectId: project.id,
+   407→        code: "REQ-0001",
+   408→        requesterId: owner.id,
+   409→        requesterName: account.name,
+   410→        title: "Add a WhatsApp button to the contact page",
+   411→        category: "WEBSITE",
+   412→        priority: "NORMAL",
+   413→        status: "IN_PROGRESS",
+   414→        description: "Half our leads try to reach us on WhatsApp anyway. Can the contact page offer it next to the form?",
+   415→        createdAt: ago(3),
+   416→        updatedAt: ago(0, 5),
+   417→      },
+   418→    });
+   419→    await db.requestComment.create({
+   420→      data: {
+   421→        requestId: request1.id,
+   422→        authorName: "ORBYT crew",
+   423→        authorRole: "ORBYT",
+   424→        body: "Agreed it belongs there. We're placing it as a sticky button on mobile and inline beside the form on desktop. Draft lands this week.",
+   425→        createdAt: ago(2, 4),
+   426→      },
+   427→    });
+   428→    await db.requestComment.create({
+   429→      data: {
+   430→        requestId: request1.id,
+   431→        authorName: account.name,
+   432→        authorRole: "CLIENT",
+   433→        body: "Sticky on mobile sounds right. Please keep it away from the checkout steps.",
+   434→        createdAt: ago(2),
+   435→      },
+   436→    });
+   437→
+   438→    const request2 = await db.request.create({
+   439→      data: {
+   440→        organizationId: org.id,
+   441→        projectId: project.id,
+   442→        code: "REQ-0002",
+   443→        requesterId: owner.id,
+   444→        requesterName: account.name,
+   445→        title: "Monday report lost the purchase column",
+   446→        category: "TRACKING",
+   447→        priority: "IMPORTANT",
+   448→        status: "COMPLETED",
+   449→        description: "The weekly sheet we agreed on is missing purchases since the GA4 rebuild. Can it come back?",
+   450→        createdAt: ago(6),
+   451→        updatedAt: ago(4),
+   452→      },
+   453→    });
+   454→    await db.requestComment.create({
+   455→      data: {
+   456→        requestId: request2.id,
+   457→        authorName: "ORBYT crew",
+   458→        authorRole: "ORBYT",
+   459→        body: "Fixed. Purchases were mapping to the old event name. The Monday report now reads from the new funnel events, so it won't drift again.",
+   460→        createdAt: ago(4),
+   461→      },
+   462→    });
+   463→  }
+   464→
+   465→  // ── Files ──
+   466→  const fileCount = await db.portalFile.count({ where: { organizationId: org.id } });
+   467→  if (fileCount === 0) {
+   468→    const files = [
+   469→      { name: "working-agreement-scope.pdf", kind: "pdf", sizeKb: 412, version: "v1", category: "STRATEGY", status: "FINAL", uploadedBy: "ORBYT", note: "The engagement on one page.", daysAgo: 5 },
+   470→      { name: "lead-routing-blueprint-v2.pdf", kind: "pdf", sizeKb: 908, version: "v2", category: "AUTOMATION", status: "SHARED", uploadedBy: "ORBYT", note: "Waiting on your sign-off in Approvals.", daysAgo: 1 },
+   471→      { name: "ga4-event-map-v2.xlsx", kind: "xlsx", sizeKb: 268, version: "v2", category: "REPORTS", status: "FINAL", uploadedBy: "ORBYT", note: "Includes the test sheet tab.", daysAgo: 2 },
+   472→    ];
+   473→    for (const file of files) {
+   474→      await db.portalFile.create({
+   475→        data: {
+   476→          organizationId: org.id,
+   477→          projectId: project.id,
+   478→          name: file.name,
+   479→          kind: file.kind,
+   480→          sizeKb: file.sizeKb,
+   481→          version: file.version,
+   482→          category: file.category,
+   483→          status: file.status,
+   484→          uploadedBy: file.uploadedBy,
+   485→          note: file.note,
+   486→          link: null,
+   487→          uploadedAt: ago(file.daysAgo),
+   488→        },
+   489→      });
+   490→    }
+   491→  }
+   492→
+   493→  // ── Threads ──
+   494→  const threadCount = await db.messageThread.count({ where: { organizationId: org.id } });
+   495→  if (threadCount === 0) {
+   496→    const thread1 = await db.messageThread.create({
+   497→      data: {
+   498→        organizationId: org.id,
+   499→        projectId: project.id,
+   500→        subject: "Conversions API: what testing covers",
+   501→        context: "PROJECT",
+   502→        createdAt: ago(2),
+   503→        updatedAt: ago(1),
+   504→      },
+   505→    });
+   506→    await db.message.create({
+   507→      data: {
+   508→        threadId: thread1.id,
+   509→        senderName: account.name,
+   510→        senderRole: "CLIENT",
+   511→        body: "Before the test checklist lands: does testing cover repeat purchases, or only first orders?",
+   512→        createdAt: ago(2, 3),
+   513→      },
+   514→    });
+   515→    await db.message.create({
+   516→      data: {
+   517→        threadId: thread1.id,
+   518→        senderName: "ORBYT crew",
+   519→        senderRole: "ORBYT",
+   520→        body: "Both. The event map covers first purchase and repeat, and the checklist tests them separately so one passing doesn't hide the other.",
+   521→        createdAt: ago(1, 6),
+   522→        readByClient: false,
+   523→      },
+   524→    });
+   525→
+   526→    const thread2 = await db.messageThread.create({
+   527→      data: {
+   528→        organizationId: org.id,
+   529→        subject: "Friday notes",
+   530→        context: "GENERAL",
+   531→        createdAt: ago(5),
+   532→        updatedAt: ago(0, 2),
+   533→      },
+   534→    });
+   535→    await db.message.create({
+   536→      data: {
+   537→        threadId: thread2.id,
+   538→        senderName: "ORBYT crew",
+   539→        senderRole: "ORBYT",
+   540→        body: "Kickoff recap is in your email. Short version: lead follow-up first, weekly reporting second, everything else queues behind those two.",
+   541→        createdAt: ago(5),
+   542→      },
+   543→    });
+   544→    await db.message.create({
+   545→      data: {
+   546→        threadId: thread2.id,
+   547→        senderName: account.name,
+   548→        senderRole: "CLIENT",
+   549→        body: "Read it. One ask: when the queue pings, can it ping my phone and not just email?",
+   550→        createdAt: ago(4, 2),
+   551→      },
+   552→    });
+   553→    await db.message.create({
+   554→      data: {
+   555→        threadId: thread2.id,
+   556→        senderName: "ORBYT crew",
+   557→        senderRole: "ORBYT",
+   558→        body: "Yes. WhatsApp notification is part of the routing build. It's in the blueprint waiting on your approval.",
+   559→        createdAt: ago(4),
+   560→      },
+   561→    });
+   562→  }
+   563→
+   564→  // ── Meetings ──
+   565→  const meetingCount = await db.meeting.count({ where: { organizationId: org.id } });
+   566→  if (meetingCount === 0) {
+   567→    await db.meeting.create({
+   568→      data: {
+   569→        organizationId: org.id,
+   570→        projectId: project.id,
+   571→        title: "Friday check-in",
+   572→        startsAt: ahead(1, 7),
+   573→        durationMins: 30,
+   574→        agenda: "Conversions API test results, WhatsApp button draft, anything blocking you.",
+   575→        status: "UPCOMING",
+   576→      },
+   577→    });
+   578→    await db.meeting.create({
+   579→      data: {
+   580→        organizationId: org.id,
+   581→        projectId: project.id,
+   582→        title: "Kickoff",
+   583→        startsAt: ago(5, 2),
+   584→        durationMins: 45,
+   585→        agenda: "The system map, priorities, and the working agreement.",
+   586→        status: "COMPLETED",
+   587→        notes: "Walked the click-to-purchase path. Agreed lead follow-up is the first bottleneck, weekly reporting the second.",
+   588→        decisions: "One queue for all leads. One hour reply timer. GA4 before ad work.",
+   589→      },
+   590→    });
+   591→  }
+   592→
+   593→  // ── Invoices ──
+   594→  const invoiceCount = await db.invoice.count({ where: { organizationId: org.id } });
+   595→  if (invoiceCount === 0) {
+   596→    const invoice1 = await db.invoice.create({
+   597→      data: {
+   598→        organizationId: org.id,
+   599→        number: "INV-0001",
+   600→        issueDate: ago(5),
+   601→        dueDate: ago(-2),
+   602→        description: "Engagement start: discovery, system map, lead routing build.",
+   603→        subtotalCents: 12000000,
+   604→        taxCents: 0,
+   605→        totalCents: 12000000,
+   606→        status: "PAID",
+   607→        paidAt: ago(4),
+   608→        method: "BANK_TRANSFER",
+   609→      },
+   610→    });
+   611→    await db.payment.create({
+   612→      data: {
+   613→        invoiceId: invoice1.id,
+   614→        amountCents: 12000000,
+   615→        method: "BANK_TRANSFER",
+   616→        reference: "TRF-88412",
+   617→        paidAt: ago(4),
+   618→      },
+   619→    });
+   620→    await db.invoice.create({
+   621→      data: {
+   622→        organizationId: org.id,
+   623→        number: "INV-0002",
+   624→        issueDate: ago(1),
+   625→        dueDate: ahead(6),
+   626→        description: "GA4 instrumentation and Conversions API wiring, milestone 3 and 4.",
+   627→        subtotalCents: 9000000,
+   628→        taxCents: 0,
+   629→        totalCents: 9000000,
+   630→        status: "PENDING",
+   631→      },
+   632→    });
+   633→  }
+   634→
+   635→  // ── Activity + notifications ──
+   636→  await ensureActivity(org.id, [
+   637→    { type: "PROJECT", title: "Project started: The acquisition system", actorName: "ORBYT crew", actorRole: "ORBYT", targetType: "PROJECT", targetLabel: "The acquisition system", link: "/workspace/projects", createdAt: ago(5) },
+   638→    { type: "MEETING", title: "Kickoff completed, decisions on record", actorName: "ORBYT crew", actorRole: "ORBYT", targetType: "MEETING", targetLabel: "Kickoff", link: "/workspace/meetings", createdAt: ago(5, 2) },
+   639→    { type: "BILLING", title: "Invoice INV-0001 paid, thank you", actorName: "ORBYT crew", actorRole: "ORBYT", targetType: "INVOICE", targetLabel: "INV-0001", link: "/workspace/billing", createdAt: ago(4) },
+   640→    { type: "DELIVERABLE", title: "GA4 event map delivered by email", actorName: "ORBYT crew", actorRole: "ORBYT", targetType: "DELIVERABLE", targetLabel: "GA4 event map", link: "/workspace/deliverables", createdAt: ago(2) },
+   641→    { type: "APPROVAL", title: "GA4 event map v2 approved", actorName: account.name, actorRole: "CLIENT", targetType: "APPROVAL", targetLabel: "GA4 event map", link: "/workspace/approvals", createdAt: ago(1, 4) },
+   642→    { type: "REQUEST", title: "REQ-0001 moved to In progress", actorName: "ORBYT crew", actorRole: "ORBYT", targetType: "REQUEST", targetLabel: "REQ-0001", link: "/workspace/requests", createdAt: ago(2, 4) },
+   643→    { type: "DELIVERABLE", title: "Lead routing blueprint v2 delivered by email", actorName: "ORBYT crew", actorRole: "ORBYT", targetType: "DELIVERABLE", targetLabel: "Lead routing blueprint", link: "/workspace/deliverables", createdAt: ago(1) },
+   644→    { type: "APPROVAL", title: "Approval requested: Lead routing blueprint v2", actorName: "ORBYT crew", actorRole: "ORBYT", targetType: "APPROVAL", targetLabel: "Lead routing blueprint", link: "/workspace/approvals", createdAt: ago(1) },
+   645→  ]);
+   646→
+   647→  await ensureNotifications(org.id, [
+   648→    { type: "APPROVAL", title: "Approval requested: Lead routing blueprint v2", body: "Second pass on the routing map is ready for your sign-off.", link: "/workspace/approvals", createdAt: ago(1) },
+   649→    { type: "BILLING", title: "Invoice INV-0002 is due in 6 days", body: "৳90,000. Bank transfer details are on the invoice.", link: "/workspace/billing", createdAt: ago(0, 8) },
+   650→    { type: "PROJECT", title: "Lead routing is live", body: "One queue, one owner, a one hour timer. Read the update and sign off.", link: "/workspace/projects", read: true, createdAt: ago(1) },
+   651→  ]);
+   652→}
+   653→
+   654→// ═════════════════════════════════════════════════════════════
+   655→// B. NOVA FOODS: website + marketing. Adds Reports.
+   656→// ═════════════════════════════════════════════════════════════
+   657→async function seedNovaFoods() {
+   658→  const account = DEMO_ACCOUNTS[1];
+   659→  const org = await ensureOrganization(account);
+   660→  const owner = await ensureOwner(account, org.id);
+   661→
+   662→  await ensureMembers(
+   663→    [
+   664→      { name: "Arif Chowdhury", email: "arif@novafoods.com", role: "CLIENT_MEMBER", active: true },
+   665→      { name: "Maya Islam", email: "maya@novafoods.com", role: "CLIENT_VIEWER", active: false },
+   666→    ],
+   667→    org.id,
+   668→    account.clientId,
+   669→    account.password,
+   670→  );
+   671→
+   672→  // ── Project 1: storefront rebuild ──
+   673→  const storefront =
+   674→    (await db.project.findFirst({
+   675→      where: { organizationId: org.id, title: "Storefront rebuild" },
+   676→    })) ??
+   677→    (await db.project.create({
+   678→      data: {
+   679→        userId: owner.id,
+   680→        organizationId: org.id,
+   681→        title: "Storefront rebuild",
+   682→        code: "PRJ-001",
+   683→        type: "WEBSITE",
+   684→        stage: "BUILD",
+   685→        status: "IN_PROGRESS",
+   686→        goal: "A store that loads fast, tells the story in three scrolls, and stops leaking mobile carts.",
+   687→        ownerLabel: "ORBYT crew",
+   688→        startedAt: ago(24),
+   689→        targetLaunchAt: ahead(11),
+   690→      },
+   691→    }));
+   692→
+   693→  // ── Project 2: campaign sprint ──
+   694→  const campaign =
+   695→    (await db.project.findFirst({
+   696→      where: { organizationId: org.id, title: "Q3 campaign sprint" },
+   697→    })) ??
+   698→    (await db.project.create({
+   699→      data: {
+   700→        userId: owner.id,
+   701→        organizationId: org.id,
+   702→        title: "Q3 campaign sprint",
+   703→        code: "PRJ-002",
+   704→        type: "MARKETING",
+   705→        stage: "CONNECT",
+   706→        status: "IN_REVIEW",
+   707→        goal: "One creative set, one landing page, numbers clean enough to trust by August.",
+   708→        ownerLabel: "ORBYT crew",
+   709→        startedAt: ago(12),
+   710→        targetLaunchAt: ahead(5),
+   711→      },
+   712→    }));
+   713→
+   714→  // ── Milestones ──
+   715→  const milestoneCount = await db.milestone.count({ where: { project: { organizationId: org.id } } });
+   716→  if (milestoneCount === 0) {
+   717→    const storefrontMilestones = [
+   718→      { title: "Discovery", description: "Cart funnel analytics and the five leak points.", status: "DONE", due: ago(24), done: ago(23) },
+   719→      { title: "UX and wireframes", description: "New path from landing to checkout in three scrolls.", status: "DONE", due: ago(17), done: ago(16) },
+   720→      { title: "Design system", description: "Type, color and product photography rules.", status: "DONE", due: ago(10), done: ago(9) },
+   721→      { title: "Build", description: "Storefront templates and checkout rebuild.", status: "ACTIVE", due: ahead(3), done: null },
+   722→      { title: "QA and content load", description: "Every template on every screen size, real products loaded.", status: "UPCOMING", due: ahead(8), done: null },
+   723→      { title: "Launch", description: "DNS cutover and launch-day watch.", status: "UPCOMING", due: ahead(11), done: null },
+   724→    ];
+   725→    for (const [index, milestone] of storefrontMilestones.entries()) {
+   726→      await db.milestone.create({
+   727→        data: {
+   728→          projectId: storefront.id,
+   729→          title: milestone.title,
+   730→          description: milestone.description,
+   731→          status: milestone.status,
+   732→          position: index,
+   733→          dueDate: milestone.due,
+   734→          completedAt: milestone.done,
+   735→        },
+   736→      });
+   737→    }
+   738→    const campaignMilestones = [
+   739→      { title: "Offer and audience", description: "Bundle offer, two audience tracks, budget split.", status: "DONE", due: ago(12), done: ago(11) },
+   740→      { title: "Creative set 01", description: "Static and video variants for the bundle.", status: "DONE", due: ago(7), done: ago(6) },
+   741→      { title: "Landing page", description: "Bundle page with the new checkout path.", status: "DONE", due: ago(3), done: ago(2) },
+   742→      { title: "Tracking sign-off", description: "Campaign events verified against the storefront map.", status: "ACTIVE", due: ahead(2), done: null },
+   743→    ];
+   744→    for (const [index, milestone] of campaignMilestones.entries()) {
+   745→      await db.milestone.create({
+   746→        data: {
+   747→          projectId: campaign.id,
+   748→          title: milestone.title,
+   749→          description: milestone.description,
+   750→          status: milestone.status,
+   751→          position: index,
+   752→          dueDate: milestone.due,
+   753→          completedAt: milestone.done,
+   754→        },
+   755→      });
+   756→    }
+   757→  }
+   758→
+   759→  // ── Updates ──
+   760→  const updateCount = await db.projectUpdate.count({ where: { project: { organizationId: org.id } } });
+   761→  if (updateCount === 0) {
+   762→    await db.projectUpdate.create({
+   763→      data: {
+   764→        projectId: campaign.id,
+   765→        tag: "SHIPPED",
+   766→        title: "Campaign landing page is up on staging",
+   767→        body: "Bundle page loads in under two seconds on 4G, checkout hand-off verified. Creative set 02 review comes with it.",
+   768→        createdAt: ago(1),
+   769→      },
+   770→    });
+   771→    await db.projectUpdate.create({
+   772→      data: {
+   773→        projectId: storefront.id,
+   774→        tag: "IN PROGRESS",
+   775→        title: "Checkout rebuild, mobile first",
+   776→        body: "Address and delivery steps are merged. Cart abandonment testing starts once the sandbox products are in.",
+   777→        createdAt: ago(2),
+   778→      },
+   779→    });
+   780→    await db.projectUpdate.create({
+   781→      data: {
+   782→        projectId: storefront.id,
+   783→        tag: "SHIPPED",
+   784→        title: "Product template approved",
+   785→        body: "The product page template is signed off and locked. Gallery, reviews and bundle slots are in place.",
+   786→        acknowledgedAt: ago(4),
+   787→        createdAt: ago(5),
+   788→      },
+   789→    });
+   790→  }
+   791→
+   792→  // ── Deliverables ──
+   793→  const deliverableCount = await db.deliverable.count({ where: { project: { organizationId: org.id } } });
+   794→  if (deliverableCount === 0) {
+   795→    await db.deliverable.create({
+   796→      data: {
+   797→        projectId: campaign.id,
+   798→        title: "Campaign creative set 02",
+   799→        detail: "Six statics and two cutdowns for the bundle push. Approved set locks the Q3 look.",
+   800→        status: "DELIVERED",
+   801→        channel: "EMAIL",
+   802→        approvalState: "IN REVIEW",
+   803→        category: "MARKETING",
+   804→        version: "v1",
+   805→        deliveredAt: ago(1),
+   806→        createdAt: ago(1),
+   807→      },
+   808→    });
+   809→    await db.deliverable.create({
+   810→      data: {
+   811→        projectId: campaign.id,
+   812→        title: "Landing page copy",
+   813→        detail: "Bundle page copy, second pass with your notes on the shipping line.",
+   814→        status: "DELIVERED",
+   815→        channel: "EMAIL",
+   816→        approvalState: "IN REVIEW",
+   817→        category: "MARKETING",
+   818→        version: "v2",
+   819→        deliveredAt: ago(2),
+   820→        createdAt: ago(2),
+   821→      },
+   822→    });
+   823→    await db.deliverable.create({
+   824→      data: {
+   825→        projectId: storefront.id,
+   826→        title: "Design system document",
+   827→        detail: "The storefront rules: type scale, color, spacing, and photo treatment.",
+   828→        status: "DELIVERED",
+   829→        channel: "EMAIL",
+   830→        approvalState: "APPROVED",
+   831→        category: "DESIGN",
+   832→        version: "v1",
+   833→        deliveredAt: ago(9),
+   834→        createdAt: ago(9),
+   835→      },
+   836→    });
+   837→  }
+   838→
+   839→  // ── Approvals ──
+   840→  const approvalCount = await db.approval.count({ where: { organizationId: org.id } });
+   841→  if (approvalCount === 0) {
+   842→    await db.approval.create({
+   843→      data: {
+   844→        organizationId: org.id,
+   845→        projectId: campaign.id,
+   846→        title: "Campaign creative set 02",
+   847→        type: "CREATIVE",
+   848→        version: "v1",
+   849→        description: "Six statics and two video cutdowns. Approve to lock the Q3 look and start the spend plan.",
+   850→        status: "PENDING",
+   851→        submittedAt: ago(1),
+   852→      },
+   853→    });
+   854→    await db.approval.create({
+   855→      data: {
+   856→        organizationId: org.id,
+   857→        projectId: campaign.id,
+   858→        title: "Landing page copy",
+   859→        type: "COPY",
+   860→        version: "v2",
+   861→        description: "Second pass with your notes on the shipping line.",
+   862→        status: "CHANGES_REQUESTED",
+   863→        submittedAt: ago(2),
+   864→        decidedAt: ago(1, 6),
+   865→        decisionComment: "Shipping line still reads stiff. Keep the rest, rewrite that one sentence.",
+   866→        decidedById: owner.id,
+   867→      },
+   868→    });
+   869→  }
+   870→
+   871→  // ── Requests ──
+   872→  const requestCount = await db.request.count({ where: { organizationId: org.id } });
+   873→  if (requestCount === 0) {
+   874→    const request1 = await db.request.create({
+   875→      data: {
+   876→        organizationId: org.id,
+   877→        projectId: campaign.id,
+   878→        code: "REQ-0001",
+   879→        requesterId: owner.id,
+   880→        requesterName: account.name,
+   881→        title: "Set up the Meta catalog feed",
+   882→        category: "MARKETING",
+   883→        priority: "IMPORTANT",
+   884→        status: "REVIEWING",
+   885→        description: "Retail team wants dynamic product ads running the same week the campaign starts. Feed needs to come from the new store.",
+   886→        createdAt: ago(4),
+   887→        updatedAt: ago(1, 3),
+   888→      },
+   889→    });
+   890→    await db.requestComment.create({
+   891→      data: {
+   892→        requestId: request1.id,
+   893→        authorName: "ORBYT crew",
+   894→        authorRole: "ORBYT",
+   895→        body: "On review. Feed comes free with the storefront build, so we'll wire it during QA week and test with ten products first.",
+   896→        createdAt: ago(1, 3),
+   897→      },
+   898→    });
+   899→    const request2 = await db.request.create({
+   900→      data: {
+   901→        organizationId: org.id,
+   902→        code: "REQ-0002",
+   903→        requesterId: owner.id,
+   904→        requesterName: account.name,
+   905→        title: "Wholesale price list page",
+   906→        category: "WEBSITE",
+   907→        priority: "NORMAL",
+   908→        status: "CLOSED",
+   909→        description: "One gated page with the trade price list, password from the sales team.",
+   910→        createdAt: ago(20),
+   911→        updatedAt: ago(15),
+   912→      },
+   913→    });
+   914→    await db.requestComment.create({
+   915→      data: {
+   916→        requestId: request2.id,
+   917→        authorName: "ORBYT crew",
+   918→        authorRole: "ORBYT",
+   919→        body: "Done and shipped on the old site. It moves over with the storefront rebuild, no extra work.",
+   920→        createdAt: ago(15),
+   921→      },
+   922→    });
+   923→  }
+   924→
+   925→  // ── Files ──
+   926→  const fileCount = await db.portalFile.count({ where: { organizationId: org.id } });
+   927→  if (fileCount === 0) {
+   928→    await db.portalFile.create({ data: { organizationId: org.id, projectId: campaign.id, name: "creative-set-02.zip", kind: "zip", sizeKb: 18400, version: "v1", category: "MARKETING", status: "SHARED", uploadedBy: "ORBYT", note: "Waiting on sign-off in Approvals.", uploadedAt: ago(1) } });
+   929→    await db.portalFile.create({ data: { organizationId: org.id, projectId: storefront.id, name: "storefront-design-system.pdf", kind: "pdf", sizeKb: 2400, version: "v1", category: "DESIGN", status: "FINAL", uploadedBy: "ORBYT", note: "Approved design rules.", uploadedAt: ago(9) } });
+   930→    await db.portalFile.create({ data: { organizationId: org.id, projectId: storefront.id, name: "cart-funnel-audit.xlsx", kind: "xlsx", sizeKb: 388, version: "v1", category: "REPORTS", status: "FINAL", uploadedBy: "ORBYT", note: "The five leak points, with numbers.", uploadedAt: ago(23) } });
+   931→  }
+   932→
+   933→  // ── Threads ──
+   934→  const threadCount = await db.messageThread.count({ where: { organizationId: org.id } });
+   935→  if (threadCount === 0) {
+   936→    const thread = await db.messageThread.create({
+   937→      data: {
+   938→        organizationId: org.id,
+   939→        projectId: campaign.id,
+   940→        subject: "Creative set 02: video cutdown lengths",
+   941→        context: "APPROVAL",
+   942→        createdAt: ago(1),
+   943→        updatedAt: ago(0, 4),
+   944→      },
+   945→    });
+   946→    await db.message.create({
+   947→      data: {
+   948→        threadId: thread.id,
+   949→        senderName: account.name,
+   950→        senderRole: "CLIENT",
+   951→        body: "Retail wants the 15s cutdown first on reels. Any reason the 6s is second?",
+   952→        createdAt: ago(1),
+   953→      },
+   954→    });
+   955→    await db.message.create({
+   956→      data: {
+   957→        threadId: thread.id,
+   958→        senderName: "ORBYT crew",
+   959→        senderRole: "ORBYT",
+   960→        body: "No reason it can't lead. We'll set 15s primary and 6s as the bumper when we schedule. Approve the set and we'll lock both.",
+   961→        createdAt: ago(0, 4),
+   962→        readByClient: false,
+   963→      },
+   964→    });
+   965→  }
+   966→
+   967→  // ── Meetings ──
+   968→  const meetingCount = await db.meeting.count({ where: { organizationId: org.id } });
+   969→  if (meetingCount === 0) {
+   970→    await db.meeting.create({
+   971→      data: {
+   972→        organizationId: org.id,
+   973→        projectId: campaign.id,
+   974→        title: "Creative review with retail",
+   975→        startsAt: ahead(1, 5),
+   976→        durationMins: 45,
+   977→        agenda: "Walk the set 02 statics and cutdowns before sign-off.",
+   978→        status: "UPCOMING",
+   979→      },
+   980→    });
+   981→    await db.meeting.create({
+   982→      data: {
+   983→        organizationId: org.id,
+   984→        projectId: storefront.id,
+   985→        title: "Design handover review",
+   986→        startsAt: ago(9, 3),
+   987→        durationMins: 30,
+   988→        agenda: "Design system walkthrough.",
+   989→        status: "COMPLETED",
+   990→        notes: "Walked the type scale and photo rules. Retail team joins campaign reviews from now on.",
+   991→        decisions: "Design system approved as delivered.",
+   992→      },
+   993→    });
+   994→  }
+   995→
+   996→  // ── Invoices ──
+   997→  const invoiceCount = await db.invoice.count({ where: { organizationId: org.id } });
+   998→  if (invoiceCount === 0) {
+   999→    const invoice1 = await db.invoice.create({
+  1000→      data: {
+  1001→        organizationId: org.id,
+  1002→        number: "INV-0001",
+  1003→        issueDate: ago(18),
+  1004→        dueDate: ago(11),
+  1005→        description: "Storefront rebuild, milestones 1 to 2: discovery and UX.",
+  1006→        subtotalCents: 15000000,
+  1007→        taxCents: 0,
+  1008→        totalCents: 15000000,
+  1009→        status: "PAID",
+  1010→        paidAt: ago(12),
+  1011→        method: "BANK_TRANSFER",
+  1012→      },
+  1013→    });
+  1014→    await db.payment.create({ data: { invoiceId: invoice1.id, amountCents: 15000000, method: "BANK_TRANSFER", reference: "TRF-90233", paidAt: ago(12) } });
+  1015→    await db.invoice.create({
+  1016→      data: {
+  1017→        organizationId: org.id,
+  1018→        number: "INV-0002",
+  1019→        issueDate: ago(2),
+  1020→        dueDate: ahead(9),
+  1021→        description: "Campaign sprint setup and creative set 01, milestone 1 to 2.",
+  1022→        subtotalCents: 7500000,
+  1023→        taxCents: 0,
+  1024→        totalCents: 7500000,
+  1025→        status: "PENDING",
+  1026→      },
+  1027→    });
+  1028→  }
+  1029→
+  1030→  // ── Report: 30D sample + a not-connected source ──
+  1031→  const reportCount = await db.report.count({ where: { organizationId: org.id } });
+  1032→  if (reportCount === 0) {
+  1033→    await db.report.create({
+  1034→      data: {
+  1035→        organizationId: org.id,
+  1036→        title: "Campaign performance",
+  1037→        period: "30D",
+  1038→        status: "READY",
+  1039→        dataSource: "Sample report, labeled demo data",
+  1040→        note: "Sample data so you can see how reports read. Live numbers appear here once your ad account is connected by the crew.",
+  1041→        metricsJson: JSON.stringify([
+  1042→          { key: "SPEND", label: "Spend", value: 210000, prev: 180000, unit: "BDT", question: "How much did we put in?" },
+  1043→          { key: "REVENUE", label: "Revenue", value: 689000, prev: 402000, unit: "BDT", question: "What came out?" },
+  1044→          { key: "ROAS", label: "ROAS", value: 3.28, prev: 2.23, unit: "x", question: "For every taka, how many came back?" },
+  1045→          { key: "CPA", label: "Cost per order", value: 341, prev: 467, unit: "BDT", question: "What does each order cost to win?" },
+  1046→        ]),
+  1047→        seriesJson: JSON.stringify([
+  1048→          { key: "REVENUE", label: "Revenue", unit: "BDT", points: [
+  1049→            { label: "W1", value: 89000 }, { label: "W2", value: 121000 }, { label: "W3", value: 178000 }, { label: "W4", value: 301000 },
+  1050→          ] },
+  1051→          { key: "SPEND", label: "Spend", unit: "BDT", points: [
+  1052→            { label: "W1", value: 62000 }, { label: "W2", value: 55000 }, { label: "W3", value: 48000 }, { label: "W4", value: 45000 },
+  1053→          ] },
+  1054→        ]),
+  1055→        updatedAt: ago(0, 6),
+  1056→        createdAt: ago(7),
+  1057→      },
+  1058→    });
+  1059→    await db.report.create({
+  1060→      data: {
+  1061→        organizationId: org.id,
+  1062→        title: "Store analytics",
+  1063→        period: "30D",
+  1064→        status: "NOT_CONNECTED",
+  1065→        dataSource: "",
+  1066→        note: "Reports become available once reporting data is connected. The crew wires this during storefront QA week.",
+  1067→        metricsJson: "[]",
+  1068→        seriesJson: "[]",
+  1069→        createdAt: ago(7),
+  1070→      },
+  1071→    });
+  1072→  }
+  1073→
+  1074→  // ── Activity + notifications ──
+  1075→  await ensureActivity(org.id, [
+  1076→    { type: "PROJECT", title: "Project started: Storefront rebuild", actorName: "ORBYT crew", actorRole: "ORBYT", targetType: "PROJECT", targetLabel: "Storefront rebuild", link: "/workspace/projects", createdAt: ago(24) },
+  1077→    { type: "BILLING", title: "Invoice INV-0001 paid", actorName: "ORBYT crew", actorRole: "ORBYT", targetType: "INVOICE", targetLabel: "INV-0001", link: "/workspace/billing", createdAt: ago(12) },
+  1078→    { type: "PROJECT", title: "Project started: Q3 campaign sprint", actorName: "ORBYT crew", actorRole: "ORBYT", targetType: "PROJECT", targetLabel: "Q3 campaign sprint", link: "/workspace/projects", createdAt: ago(12) },
+  1079→    { type: "APPROVAL", title: "Landing page copy: changes requested", actorName: account.name, actorRole: "CLIENT", targetType: "APPROVAL", targetLabel: "Landing page copy", link: "/workspace/approvals", createdAt: ago(1, 6) },
+  1080→    { type: "DELIVERABLE", title: "Campaign creative set 02 delivered by email", actorName: "ORBYT crew", actorRole: "ORBYT", targetType: "DELIVERABLE", targetLabel: "Campaign creative set 02", link: "/workspace/deliverables", createdAt: ago(1) },
+  1081→    { type: "REPORT", title: "Campaign performance report updated", actorName: "ORBYT crew", actorRole: "ORBYT", targetType: "REPORT", targetLabel: "Campaign performance", link: "/workspace/reports", createdAt: ago(0, 6) },
+  1082→  ]);
+  1083→
+  1084→  await ensureNotifications(org.id, [
+  1085→    { type: "APPROVAL", title: "Approval requested: Campaign creative set 02", body: "Six statics and two cutdowns. Approve to lock the Q3 look.", link: "/workspace/approvals", createdAt: ago(1) },
+  1086→    { type: "BILLING", title: "Invoice INV-0002 is due in 9 days", body: "৳75,000. Bank transfer details are on the invoice.", link: "/workspace/billing", createdAt: ago(2) },
+  1087→  ]);
+  1088→}
+  1089→
+  1090→// ═════════════════════════════════════════════════════════════
+  1091→// C. ATLAS CLINICS: full service. Adds Systems (ORBYT Pulse).
+  1092→// ═════════════════════════════════════════════════════════════
+  1093→async function seedAtlasClinics() {
+  1094→  const account = DEMO_ACCOUNTS[2];
+  1095→  const org = await ensureOrganization(account);
+  1096→  const owner = await ensureOwner(account, org.id);
+  1097→
+  1098→  await ensureMembers(
+  1099→    [
+  1100→      { name: "Imran Sarker", email: "imran@atlasclinics.com", role: "CLIENT_MEMBER", active: true },
+  1101→    ],
+  1102→    org.id,
+  1103→    account.clientId,
+  1104→    account.password,
+  1105→  );
+  1106→
+  1107→  // ── Project ──
+  1108→  const project =
+  1109→    (await db.project.findFirst({
+  1110→      where: { organizationId: org.id, title: "Patient intake automation" },
+  1111→    })) ??
+  1112→    (await db.project.create({
+  1113→      data: {
+  1114→        userId: owner.id,
+  1115→        organizationId: org.id,
+  1116→        title: "Patient intake automation",
+  1117→        code: "PRJ-001",
+  1118→        type: "AUTOMATION",
+  1119→        stage: "BUILD",
+  1120→        status: "IN_PROGRESS",
+  1121→        goal: "From form fill to confirmed appointment without a receptionist touching a spreadsheet.",
+  1122→        ownerLabel: "ORBYT crew",
+  1123→        startedAt: ago(18),
+  1124→        targetLaunchAt: ahead(9),
+  1125→      },
+  1126→    }));
+  1127→
+  1128→  const milestoneCount = await db.milestone.count({ where: { projectId: project.id } });
+  1129→  if (milestoneCount === 0) {
+  1130→    const milestones = [
+  1131→      { title: "Discovery", description: "Shadowed two reception days, mapped every handoff.", status: "DONE", due: ago(18), done: ago(17) },
+  1132→      { title: "Intake flow design", description: "Form, triage questions, booking rules.", status: "DONE", due: ago(12), done: ago(11) },
+  1133→      { title: "Qualification agent build", description: "The AI pass that sorts urgent from routine.", status: "DONE", due: ago(5), done: ago(4) },
+  1134→      { title: "Reminder system", description: "SMS and WhatsApp confirmations with reschedule link.", status: "ACTIVE", due: ahead(2), done: null },
+  1135→      { title: "Staff training", description: "One session, one page of instructions, live practice.", status: "UPCOMING", due: ahead(6), done: null },
+  1136→      { title: "Go-live", description: "Switch the old form off, watch for a week.", status: "UPCOMING", due: ahead(9), done: null },
+  1137→    ];
+  1138→    for (const [index, milestone] of milestones.entries()) {
+  1139→      await db.milestone.create({
+  1140→        data: {
+  1141→          projectId: project.id,
+  1142→          title: milestone.title,
+  1143→          description: milestone.description,
+  1144→          status: milestone.status,
+  1145→          position: index,
+  1146→          dueDate: milestone.due,
+  1147→          completedAt: milestone.done,
+  1148→        },
+  1149→      });
+  1150→    }
+  1151→  }
+  1152→
+  1153→  const updateCount = await db.projectUpdate.count({ where: { projectId: project.id } });
+  1154→  if (updateCount === 0) {
+  1155→    await db.projectUpdate.create({
+  1156→      data: {
+  1157→        projectId: project.id,
+  1158→        tag: "SHIPPED",
+  1159→        title: "Qualification agent is live",
+  1160→        body: "Every intake submission now gets read, sorted urgent or routine, and routed. Reception sees only what needs a human.",
+  1161→        createdAt: ago(4),
+  1162→      },
+  1163→    });
+  1164→    await db.projectUpdate.create({
+  1165→      data: {
+  1166→        projectId: project.id,
+  1167→        tag: "IN PROGRESS",
+  1168→        title: "Reminder cadence tuning",
+  1169→        body: "First reminder at booking, second 24 hours out, reschedule link on both. Testing tone with three patient scripts.",
+  1170→        createdAt: ago(2),
+  1171→      },
+  1172→    });
+  1173→  }
+  1174→
+  1175→  // ── Systems ──
+  1176→  const systemCount = await db.systemEntry.count({ where: { organizationId: org.id } });
+  1177→  if (systemCount === 0) {
+  1178→    const website = await db.systemEntry.create({
+  1179→      data: {
+  1180→        organizationId: org.id,
+  1181→        name: "Clinic website",
+  1182→        category: "WEBSITE",
+  1183→        status: "HEALTHY",
+  1184→        description: "The public site: services, doctors, and the intake form entry point.",
+  1185→        ownerLabel: "ORBYT",
+  1186→        lastCheckedAt: ago(0, 1),
+  1187→        lastUpdatedAt: ago(8),
+  1188→      },
+  1189→    });
+  1190→    await db.systemCheck.create({ data: { systemId: website.id, name: "Uptime", status: "HEALTHY", note: "99.98% over 30 days.", checkedAt: ago(0, 1) } });
+  1191→    await db.systemCheck.create({ data: { systemId: website.id, name: "SSL certificate", status: "HEALTHY", note: "Renews in 62 days.", checkedAt: ago(0, 1) } });
+  1192→
+  1193→    const forms = await db.systemEntry.create({
+  1194→      data: {
+  1195→        organizationId: org.id,
+  1196→        name: "Booking form pipeline",
+  1197→        category: "FORMS",
+  1198→        status: "HEALTHY",
+  1199→        description: "Intake form on the website, validated and spam-filtered, feeding the automation.",
+  1200→        ownerLabel: "ORBYT",
+  1201→        lastCheckedAt: ago(0, 2),
+  1202→        lastUpdatedAt: ago(4),
+  1203→      },
+  1204→    });
+  1205→    await db.systemCheck.create({ data: { systemId: forms.id, name: "Submission test", status: "HEALTHY", note: "Test submission reached the queue in 4 seconds.", checkedAt: ago(0, 2) } });
+  1206→
+  1207→    const agent = await db.systemEntry.create({
+  1208→      data: {
+  1209→        organizationId: org.id,
+  1210→        name: "Lead qualification agent",
+  1211→        category: "AI",
+  1212→        status: "ACTIVE",
+  1213→        description: "Automatically reads every intake submission, sorts urgent from routine, and routes to the right desk before anyone replies.",
+  1214→        trigger: "Every intake form submission",
+  1215→        actions: "Reads the submission, classifies urgency, creates the record, notifies the right desk, starts the reply timer.",
+  1216→        connectedJson: JSON.stringify(["Booking form pipeline", "Google Sheets roster", "WhatsApp notifications"]),
+  1217→        ownerLabel: "ORBYT",
+  1218→        lastCheckedAt: ago(0, 1),
+  1219→        lastUpdatedAt: ago(4),
+  1220→      },
+  1221→    });
+  1222→    await db.systemCheck.create({ data: { systemId: agent.id, name: "Classification accuracy", status: "HEALTHY", note: "Spot-checked 20 records this week: 20 correct.", checkedAt: ago(1) } });
+  1223→    await db.automationRun.create({ data: { systemId: agent.id, summary: "New intake received, classified urgent: chest pain history. Reception notified.", status: "OK", ranAt: ago(0, 2) } });
+  1224→    await db.automationRun.create({ data: { systemId: agent.id, summary: "New intake received, classified routine: follow-up visit. Record created.", status: "OK", ranAt: ago(0, 3) } });
+  1225→    await db.automationRun.create({ data: { systemId: agent.id, summary: "Classification timeout on one submission, retried and completed.", status: "FAILED", ranAt: ago(1, 5) } });
+  1226→    await db.automationRun.create({ data: { systemId: agent.id, summary: "New intake received, classified routine: prescription refill. Record created.", status: "OK", ranAt: ago(1, 8) } });
+  1227→
+  1228→    const tracking = await db.systemEntry.create({
+  1229→      data: {
+  1230→        organizationId: org.id,
+  1231→        name: "Analytics and call tracking",
+  1232→        category: "TRACKING",
+  1233→        status: "HEALTHY",
+  1234→        description: "Which pages and numbers actually drive bookings.",
+  1235→        ownerLabel: "ORBYT",
+  1236→        lastCheckedAt: ago(1),
+  1237→        lastUpdatedAt: ago(10),
+  1238→      },
+  1239→    });
+  1240→    await db.systemCheck.create({ data: { systemId: tracking.id, name: "Event stream", status: "HEALTHY", note: "Booking events flowing from all three entry pages.", checkedAt: ago(1) } });
+  1241→
+  1242→    await db.systemEntry.create({
+  1243→      data: {
+  1244→        organizationId: org.id,
+  1245→        name: "Reminder notifications",
+  1246→        category: "NOTIFICATIONS",
+  1247→        status: "MONITORING",
+  1248→        description: "SMS and WhatsApp confirmations with a reschedule link. In supervised rollout before go-live.",
+  1249→        ownerLabel: "ORBYT",
+  1250→        lastCheckedAt: ago(1),
+  1251→        lastUpdatedAt: ago(2),
+  1252→      },
+  1253→    });
+  1254→
+  1255→    await db.systemEntry.create({
+  1256→      data: {
+  1257→        organizationId: org.id,
+  1258→        name: "Meta campaigns",
+  1259→        category: "MARKETING",
+  1260→        status: "PAUSED",
+  1261→        description: "Paused on purpose while the intake system settles. Relaunch decision after go-live week.",
+  1262→        ownerLabel: "ORBYT",
+  1263→        lastCheckedAt: ago(3),
+  1264→        lastUpdatedAt: ago(3),
+  1265→      },
+  1266→    });
+  1267→  }
+  1268→
+  1269→  // ── Report ──
+  1270→  const reportCount = await db.report.count({ where: { organizationId: org.id } });
+  1271→  if (reportCount === 0) {
+  1272→    await db.report.create({
+  1273→      data: {
+  1274→        organizationId: org.id,
+  1275→        title: "Intake funnel",
+  1276→        period: "30D",
+  1277→        status: "READY",
+  1278→        dataSource: "Sample report, labeled demo data",
+  1279→        note: "Sample data so you can see how reports read. Live counts appear here after the intake system goes live.",
+  1280→        metricsJson: JSON.stringify([
+  1281→          { key: "INTAKES", label: "Intakes", value: 214, prev: 168, unit: "count", question: "How many patients started the process?" },
+  1282→          { key: "QUALIFIED", label: "Qualified leads", value: 187, prev: 121, unit: "count", question: "How many were real, reachable bookings?" },
+  1283→          { key: "REPLY_TIME", label: "Median reply time", value: 11, prev: 214, unit: "min", question: "How fast did the desk answer?" },
+  1284→          { key: "BOOKED", label: "Bookings", value: 121, prev: 84, unit: "count", question: "How many became appointments?" },
+  1285→        ]),
+  1286→        seriesJson: JSON.stringify([
+  1287→          { key: "BOOKED", label: "Bookings", unit: "count", points: [
+  1288→            { label: "W1", value: 18 }, { label: "W2", value: 26 }, { label: "W3", value: 34 }, { label: "W4", value: 43 },
+  1289→          ] },
+  1290→          { key: "INTAKES", label: "Intakes", unit: "count", points: [
+  1291→            { label: "W1", value: 38 }, { label: "W2", value: 51 }, { label: "W3", value: 58 }, { label: "W4", value: 67 },
+  1292→          ] },
+  1293→        ]),
+  1294→        updatedAt: ago(0, 5),
+  1295→        createdAt: ago(6),
+  1296→      },
+  1297→    });
+  1298→  }
+  1299→
+  1300→  // ── Deliverables ──
+  1301→  const deliverableCount = await db.deliverable.count({ where: { project: { organizationId: org.id } } });
+  1302→  if (deliverableCount === 0) {
+  1303→    await db.deliverable.create({
+  1304→      data: {
+  1305→        projectId: project.id,
+  1306→        title: "Intake flow diagram",
+  1307→        detail: "Every step from form fill to confirmed booking, including the urgent path. Yours to approve.",
+  1308→        status: "DELIVERED",
+  1309→        channel: "EMAIL",
+  1310→        approvalState: "IN REVIEW",
+  1311→        category: "AUTOMATION",
+  1312→        version: "v1",
+  1313→        deliveredAt: ago(1),
+  1314→        createdAt: ago(1),
+  1315→      },
+  1316→    });
+  1317→    await db.deliverable.create({
+  1318→      data: {
+  1319→        projectId: project.id,
+  1320→        title: "Agent rules document",
+  1321→        detail: "What the qualification agent may and may not do, in plain language. The safety rules for patient-facing text.",
+  1322→        status: "DELIVERED",
+  1323→        channel: "EMAIL",
+  1324→        approvalState: "APPROVED",
+  1325→        category: "AI",
+  1326→        version: "v1",
+  1327→        deliveredAt: ago(4),
+  1328→        createdAt: ago(4),
+  1329→      },
+  1330→    });
+  1331→    await db.deliverable.create({
+  1332→      data: {
+  1333→        projectId: project.id,
+  1334→        title: "Staff training one-pager",
+  1335→        detail: "The one page reception needs. Lands before the training session.",
+  1336→        status: "IN PREP",
+  1337→        channel: "EMAIL",
+  1338→        approvalState: "DRAFT",
+  1339→        category: "OTHER",
+  1340→        version: "v1",
+  1341→        createdAt: ago(0, 3),
+  1342→      },
+  1343→    });
+  1344→  }
+  1345→
+  1346→  // ── Approvals ──
+  1347→  const approvalCount = await db.approval.count({ where: { organizationId: org.id } });
+  1348→  if (approvalCount === 0) {
+  1349→    await db.approval.create({
+  1350→      data: {
+  1351→        organizationId: org.id,
+  1352→        projectId: project.id,
+  1353→        title: "Intake flow diagram",
+  1354→        type: "DOCUMENT",
+  1355→        version: "v1",
+  1356→        description: "Every step from form fill to confirmed booking, urgent path included. Approve to lock the flow before reminder build finishes.",
+  1357→        status: "PENDING",
+  1358→        submittedAt: ago(1),
+  1359→      },
+  1360→    });
+  1361→  }
+  1362→
+  1363→  // ── Requests ──
+  1364→  const requestCount = await db.request.count({ where: { organizationId: org.id } });
+  1365→  if (requestCount === 0) {
+  1366→    const request1 = await db.request.create({
+  1367→      data: {
+  1368→        organizationId: org.id,
+  1369→        projectId: project.id,
+  1370→        code: "REQ-0001",
+  1371→        requesterId: owner.id,
+  1372→        requesterName: account.name,
+  1373→        title: "Agent text: add Bangla greetings",
+  1374→        category: "AI",
+  1375→        priority: "NORMAL",
+  1376→        status: "WAITING_FOR_CLIENT",
+  1377→        description: "The agent greets in English only right now. Half our patients type in Bangla first. Can it match language?",
+  1378→        createdAt: ago(3),
+  1379→        updatedAt: ago(1, 2),
+  1380→      },
+  1381→    });
+  1382→    await db.requestComment.create({
+  1383→      data: {
+  1384→        requestId: request1.id,
+  1385→        authorName: "ORBYT crew",
+  1386→        authorRole: "ORBYT",
+  1387→        body: "Yes, and it should match the patient's language, not guess from the browser. Draft rules are in the flow diagram. Confirm the greeting wording when you approve the diagram.",
+  1388→        createdAt: ago(1, 2),
+  1389→      },
+  1390→    });
+  1391→  }
+  1392→
+  1393→  // ── Files ──
+  1394→  const fileCount = await db.portalFile.count({ where: { organizationId: org.id } });
+  1395→  if (fileCount === 0) {
+  1396→    await db.portalFile.create({ data: { organizationId: org.id, projectId: project.id, name: "intake-flow-diagram-v1.pdf", kind: "pdf", sizeKb: 1240, version: "v1", category: "UX", status: "SHARED", uploadedBy: "ORBYT", note: "Waiting on sign-off in Approvals.", uploadedAt: ago(1) } });
+  1397→    await db.portalFile.create({ data: { organizationId: org.id, projectId: project.id, name: "agent-rules-v1.pdf", kind: "pdf", sizeKb: 640, version: "v1", category: "BRAND", status: "FINAL", uploadedBy: "ORBYT", note: "The safety rules for patient-facing text.", uploadedAt: ago(4) } });
+  1398→    await db.portalFile.create({ data: { organizationId: org.id, name: "reception-handover-notes.pdf", kind: "pdf", sizeKb: 220, version: "v1", category: "STRATEGY", status: "SHARED", uploadedBy: "ORBYT", note: "From the two shadow days.", uploadedAt: ago(16) } });
+  1399→  }
+  1400→
+  1401→  // ── Threads ──
+  1402→  const threadCount = await db.messageThread.count({ where: { organizationId: org.id } });
+  1403→  if (threadCount === 0) {
+  1404→    const thread = await db.messageThread.create({
+  1405→      data: {
+  1406→        organizationId: org.id,
+  1407→        projectId: project.id,
+  1408→        subject: "Urgent case from Tuesday",
+  1409→        context: "PROJECT",
+  1410→        createdAt: ago(1),
+  1411→        updatedAt: ago(0, 7),
+  1412→      },
+  1413→    });
+  1414→    await db.message.create({
+  1415→      data: {
+  1416→        threadId: thread.id,
+  1417→        senderName: account.name,
+  1418→        senderRole: "CLIENT",
+  1419→        body: "The chest pain intake on Tuesday was flagged in under a minute. That alone justifies the whole project. How did the timer do?",
+  1420→        createdAt: ago(1),
+  1421→      },
+  1422→    });
+  1423→    await db.message.create({
+  1424→      data: {
+  1425→        threadId: thread.id,
+  1426→        senderName: "ORBYT crew",
+  1427→        senderRole: "ORBYT",
+  1428→        body: "Flagged in 38 seconds, reception called back in six minutes. The run history shows the full trace under Systems.",
+  1429→        createdAt: ago(0, 7),
+  1430→        readByClient: false,
+  1431→      },
+  1432→    });
+  1433→  }
+  1434→
+  1435→  // ── Meetings ──
+  1436→  const meetingCount = await db.meeting.count({ where: { organizationId: org.id } });
+  1437→  if (meetingCount === 0) {
+  1438→    await db.meeting.create({
+  1439→      data: {
+  1440→        organizationId: org.id,
+  1441→        projectId: project.id,
+  1442→        title: "Reminder rollout review",
+  1443→        startsAt: ahead(2, 6),
+  1444→        durationMins: 30,
+  1445→        agenda: "Pick the final reminder scripts, set the go-live date.",
+  1446→        status: "UPCOMING",
+  1447→      },
+  1448→    });
+  1449→    await db.meeting.create({
+  1450→      data: {
+  1451→        organizationId: org.id,
+  1452→        projectId: project.id,
+  1453→        title: "Agent rules walkthrough",
+  1454→        startsAt: ago(4, 4),
+  1455→        durationMins: 40,
+  1456→        agenda: "The safety rules for patient-facing text.",
+  1457→        status: "COMPLETED",
+  1458→        notes: "Walked every rule with the clinical lead. Two wording changes made on the call.",
+  1459→        decisions: "Agent never gives medical advice. Urgent cases always route to a human, no exceptions.",
+  1460→      },
+  1461→    });
+  1462→  }
+  1463→
+  1464→  // ── Invoices ──
+  1465→  const invoiceCount = await db.invoice.count({ where: { organizationId: org.id } });
+  1466→  if (invoiceCount === 0) {
+  1467→    const invoice1 = await db.invoice.create({
+  1468→      data: {
+  1469→        organizationId: org.id,
+  1470→        number: "INV-0001",
+  1471→        issueDate: ago(14),
+  1472→        dueDate: ago(7),
+  1473→        description: "Intake automation, milestones 1 to 2: discovery and flow design.",
+  1474→        subtotalCents: 18000000,
+  1475→        taxCents: 0,
+  1476→        totalCents: 18000000,
+  1477→        status: "PAID",
+  1478→        paidAt: ago(8),
+  1479→        method: "BANK_TRANSFER",
+  1480→      },
+  1481→    });
+  1482→    await db.payment.create({ data: { invoiceId: invoice1.id, amountCents: 18000000, method: "BANK_TRANSFER", reference: "TRF-77120", paidAt: ago(8) } });
+  1483→    const invoice2 = await db.invoice.create({
+  1484→      data: {
+  1485→        organizationId: org.id,
+  1486→        number: "INV-0002",
+  1487→        issueDate: ago(6),
+  1488→        dueDate: ahead(1),
+  1489→        description: "Qualification agent build, milestone 3.",
+  1490→        subtotalCents: 12000000,
+  1491→        taxCents: 0,
+  1492→        totalCents: 12000000,
+  1493→        status: "PENDING",
+  1494→      },
+  1495→    });
+  1496→    void invoice2;
+  1497→    const invoice3 = await db.invoice.create({
+  1498→      data: {
+  1499→        organizationId: org.id,
+  1500→        number: "INV-0003",
+  1501→        issueDate: ago(30),
+  1502→        dueDate: ago(23),
+  1503→        description: "Clinic website rebuild.",
+  1504→        subtotalCents: 21000000,
+  1505→        taxCents: 0,
+  1506→        totalCents: 21000000,
+  1507→        status: "PAID",
+  1508→        paidAt: ago(24),
+  1509→        method: "BKASH",
+  1510→      },
+  1511→    });
+  1512→    await db.payment.create({ data: { invoiceId: invoice3.id, amountCents: 21000000, method: "BKASH", reference: "BKX-55821", paidAt: ago(24) } });
+  1513→  }
+  1514→
+  1515→  // ── Activity + notifications ──
+  1516→  await ensureActivity(org.id, [
+  1517→    { type: "PROJECT", title: "Project started: Patient intake automation", actorName: "ORBYT crew", actorRole: "ORBYT", targetType: "PROJECT", targetLabel: "Patient intake automation", link: "/workspace/projects", createdAt: ago(18) },
+  1518→    { type: "SYSTEM", title: "Lead qualification agent went live", actorName: "ORBYT crew", actorRole: "ORBYT", targetType: "SYSTEM", targetLabel: "Lead qualification agent", link: "/workspace/systems", createdAt: ago(4) },
+  1519→    { type: "MEETING", title: "Agent rules walkthrough completed, decisions on record", actorName: "ORBYT crew", actorRole: "ORBYT", targetType: "MEETING", targetLabel: "Agent rules walkthrough", link: "/workspace/meetings", createdAt: ago(4, 4) },
+  1520→    { type: "SYSTEM", title: "Automation run retried after a timeout, completed", actorName: "ORBYT crew", actorRole: "ORBYT", targetType: "SYSTEM", targetLabel: "Lead qualification agent", link: "/workspace/systems", createdAt: ago(1, 5) },
+  1521→    { type: "DELIVERABLE", title: "Intake flow diagram delivered by email", actorName: "ORBYT crew", actorRole: "ORBYT", targetType: "DELIVERABLE", targetLabel: "Intake flow diagram", link: "/workspace/deliverables", createdAt: ago(1) },
+  1522→    { type: "APPROVAL", title: "Approval requested: Intake flow diagram v1", actorName: "ORBYT crew", actorRole: "ORBYT", targetType: "APPROVAL", targetLabel: "Intake flow diagram", link: "/workspace/approvals", createdAt: ago(1) },
+  1523→    { type: "REPORT", title: "Intake funnel report updated", actorName: "ORBYT crew", actorRole: "ORBYT", targetType: "REPORT", targetLabel: "Intake funnel", link: "/workspace/reports", createdAt: ago(0, 5) },
+  1524→  ]);
+  1525→
+  1526→  await ensureNotifications(org.id, [
+  1527→    { type: "APPROVAL", title: "Approval requested: Intake flow diagram v1", body: "Approve to lock the flow before the reminder build finishes.", link: "/workspace/approvals", createdAt: ago(1) },
+  1528→    { type: "BILLING", title: "Invoice INV-0002 is due tomorrow", body: "৳120,000. Bank transfer details are on the invoice.", link: "/workspace/billing", createdAt: ago(0, 6) },
+  1529→    { type: "SYSTEM", title: "Reminder notifications now in supervised rollout", body: "Three scripts testing with live bookings this week.", link: "/workspace/systems", read: true, createdAt: ago(2) },
+  1530→  ]);
+  1531→}
+  1532→
+  1533→/** Small helper re-exported for the API route. */
+  1534→export { parse as parseJsonSafe };
+  1535→

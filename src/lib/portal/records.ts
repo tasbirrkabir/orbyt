@@ -48,6 +48,36 @@ export type AuditInput = {
   metadata?: Record<string, unknown>;
 };
 
+/**
+ * Pre-authentication audit: login attempts, reset requests and other
+ * events that happen before (or without) a portal context. The actor
+ * is the email string the visitor typed, never trusted beyond that.
+ * Same append-only ledger, same failure isolation as recordAudit.
+ */
+export async function recordAuditRaw(input: {
+  actorEmail: string;
+  actorRole?: string;
+  action: string;
+  targetType?: string;
+  targetLabel?: string;
+  metadata?: Record<string, unknown>;
+}): Promise<void> {
+  try {
+    await db.auditLog.create({
+      data: {
+        actorEmail: input.actorEmail,
+        actorRole: input.actorRole ?? "ANONYMOUS",
+        action: input.action,
+        targetType: input.targetType ?? "",
+        targetLabel: input.targetLabel ?? "",
+        metadataJson: JSON.stringify(input.metadata ?? {}),
+      },
+    });
+  } catch (error) {
+    console.error("[records] raw audit write failed:", error);
+  }
+}
+
 export async function recordAudit(
   context: PortalContext,
   input: AuditInput,

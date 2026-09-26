@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { portalRoute, readJson } from "@/lib/portal/api";
 import { CATEGORY_LABELS, REQUEST_CATEGORIES, REQUEST_PRIORITIES } from "@/lib/portal/domain";
 import { nextCode, recordActivity, recordAudit, recordNotification } from "@/lib/portal/records";
+import { checkRateLimit, clientIp } from "@/lib/rate-limit";
 import type { RequestItem } from "@/lib/portal/types";
 
 /**
@@ -73,32 +74,11 @@ export async function GET() {
   });
 }
 
-// Same lightweight limiter as the contact route: max 5 per 10 minutes.
-const RATE_LIMIT_MAX = 5;
-const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
-
-function isRateLimited(key: string): boolean {
-  const now = Date.now();
-  const entry = rateLimitMap.get(key);
-  if (!entry || now >= entry.resetAt) {
-    if (rateLimitMap.size > 1000) {
-      for (const [k, v] of rateLimitMap) {
-        if (now >= v.resetAt) rateLimitMap.delete(k);
-      }
-    }
-    rateLimitMap.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    return false;
-  }
-  entry.count += 1;
-  return entry.count > RATE_LIMIT_MAX;
-}
+// Shared limiter (src/lib/rate-limit.ts): max 5 per 10 minutes per IP + user.
 
 export async function POST(request: Request) {
   return portalRoute(async (context) => {
-    const clientKey =
-      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-    if (isRateLimited(`${clientKey}:${context.userId}`)) {
+    if (!checkRateLimit("request-file", `${clientIp(request)}:${context.userId}`, 5, 10 * 60 * 1000).ok) {
       return NextResponse.json(
         { error: "Too many requests in a row. Give it a few minutes." },
         { status: 429 },
