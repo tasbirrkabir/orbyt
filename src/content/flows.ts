@@ -74,6 +74,23 @@ export const AUTH = {
     sendNew: "Send me a fresh link",
     confirmError: "That didn't go through. Try again in a minute.",
   },
+  activate: {
+    title: "Choose your password.",
+    sub: "Your workspace is ready. Pick a password to open the door. It needs at least 8 characters.",
+    passwordLabel: "Password",
+    passwordPlaceholder: "At least 8 characters",
+    confirmLabel: "Type it again",
+    mismatch: "The two passwords don't match.",
+    submit: "Open my workspace",
+    submitting: "Opening",
+    doneTitle: "You're in.",
+    doneBody: "Your password is set. Sign in with the client ID from your email, this email address and the password you just chose.",
+    yourClientId: "Your client ID",
+    expired: "This invite link has expired or was already used. Reply to the welcome email and we'll send a fresh one.",
+    linkExpired: "Expired or used invite.",
+    backToLogin: "Back to sign in",
+    error: "That didn't go through. Try again in a minute.",
+  },
 } as const;
 
 export const ONBOARDING = {

@@ -141,3 +141,70 @@ export function mfaDisabledEmail(): RenderedEmail {
   );
   return { subject, text, html };
 }
+
+export function inviteEmail(input: {
+  ownerName: string;
+  companyName: string;
+  clientId: string;
+  activationUrl: string;
+  expiresDays: number;
+}): RenderedEmail {
+  const subject = `Your ORBYT workspace for ${input.companyName} is ready`;
+  const text = [
+    `Hello ${input.ownerName},`,
+    "",
+    `Your ORBYT workspace for ${input.companyName} is ready.`,
+    "",
+    `Your client ID: ${input.clientId}`,
+    "You will sign in with this ID, your email and a password.",
+    "",
+    `Choose your password within ${input.expiresDays} days. The link works once:`,
+    input.activationUrl,
+    "",
+    "After you sign in, the workspace walks you through the rest.",
+    "",
+    "ORBYT",
+  ].join("\n");
+  const html = shell(
+    subject,
+    [
+      para(`Hello ${escapeHtml(input.ownerName)},`),
+      para(`Your ORBYT workspace for <strong>${escapeHtml(input.companyName)}</strong> is ready.`),
+      para(`Your client ID: <strong>${escapeHtml(input.clientId)}</strong><br>You will sign in with this ID, your email and a password.`),
+      para(`Choose your password within <strong>${input.expiresDays} days</strong>. The link works once.`),
+      button(input.activationUrl, "Choose your password"),
+      `<p style="margin:24px 0 0;font-size:12px;line-height:1.6;color:${BRAND.muted};">If the button does not work, paste this link into your browser:<br><span style="word-break:break-all;">${input.activationUrl}</span></p>`,
+    ].join(""),
+  );
+  return { subject, text, html };
+}
+
+export function leadReceivedEmail(input: { name: string }): RenderedEmail {
+  const subject = "We got your message";
+  const text = [
+    `Hello ${input.name},`,
+    "",
+    "Thanks for reaching out to ORBYT. Your message landed with us and a person reads every one.",
+    "",
+    "You will hear back from us by email within one business day. If it is urgent, reply to this email and say so.",
+    "",
+    "ORBYT",
+  ].join("\n");
+  const html = shell(
+    subject,
+    [
+      para(`Hello ${escapeHtml(input.name)},`),
+      para("Thanks for reaching out to ORBYT. Your message landed with us and a person reads every one."),
+      para("You will hear back from us by email within one business day. If it is urgent, reply to this email and say so."),
+    ].join(""),
+  );
+  return { subject, text, html };
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}

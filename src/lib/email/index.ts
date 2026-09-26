@@ -1,5 +1,7 @@
 import { db } from "@/lib/db";
 import {
+  inviteEmail,
+  leadReceivedEmail,
   mfaDisabledEmail,
   mfaEnabledEmail,
   passwordChangedEmail,
@@ -188,4 +190,33 @@ export function sendMfaEnabledEmail(to: string): void {
 
 export function sendMfaDisabledEmail(to: string): void {
   sendEmailInBackground({ to, template: "auth.mfa_disabled", rendered: mfaDisabledEmail() });
+}
+
+export function sendInviteEmail(input: {
+  to: string;
+  ownerName: string;
+  companyName: string;
+  clientId: string;
+  activationUrl: string;
+  expiresDays: number;
+}): void {
+  sendEmailInBackground({
+    to: input.to,
+    template: "lifecycle.invite",
+    rendered: inviteEmail({
+      ownerName: input.ownerName,
+      companyName: input.companyName,
+      clientId: input.clientId,
+      activationUrl: input.activationUrl,
+      expiresDays: input.expiresDays,
+    }),
+  });
+}
+
+export function sendLeadReceivedEmail(to: string, name: string): void {
+  sendEmailInBackground({
+    to,
+    template: "lifecycle.lead_received",
+    rendered: leadReceivedEmail({ name }),
+  });
 }

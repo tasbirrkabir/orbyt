@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions, type SessionUserWithId } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { checkRateLimit, clientIp } from '@/lib/rate-limit'
+import { sendLeadReceivedEmail } from '@/lib/email'
 
 /**
  * POST /api/contact
@@ -76,6 +77,14 @@ export async function POST(request: Request) {
         userId,
       },
     })
+
+    // Lead lifecycle starts here: every submission is a lead with
+    // status NEW (schema default). The auto-reply goes through the
+    // EmailService (outbox row first, console provider in dev), so
+    // the contact path stays fast and a provider failure cannot
+    // break the visitor's submission.
+    sendLeadReceivedEmail(parsed.data.email, parsed.data.name)
+
     return NextResponse.json({ ok: true, id: submission.id }, { status: 201 })
   } catch (error) {
     console.error('[api/contact] Failed to save contact submission:', error)

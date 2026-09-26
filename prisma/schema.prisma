@@ -557,14 +557,19 @@ model EmailMessage {
   @@index([toEmail])
 }
 
-/// Single-use, hashed password reset token. The raw token only ever
-/// exists inside the email link; the database stores a SHA-256 digest.
+/// Single-use, hashed one-time token. The raw token only ever exists
+/// inside the email link; the database stores a SHA-256 digest.
 /// Expired or used tokens are dead on arrival.
+/// kind closes the two uses of the same machinery:
+///   RESET  self-service password reset (30 minutes)
+///   INVITE first activation for a provisioned owner (7 days)
 model PasswordResetToken {
   id        String    @id @default(cuid())
   userId    String
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   tokenHash String    @unique
+  // RESET, INVITE
+  kind      String    @default("RESET")
   expiresAt DateTime
   usedAt    DateTime?
   requestIp String    @default("")
@@ -623,8 +628,17 @@ model ContactSubmission {
   // Optional project context when a note is posted from the portal.
   projectId String?
   project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  // Lead lifecycle. Every inbound contact is a lead; the closed set:
+  //   NEW, CONTACTED, QUALIFIED, CONVERTED, ARCHIVED
+  // CONVERTED is terminal and always carries convertedOrganizationId.
+  status String @default("NEW")
+  /// Set when lifecycle.convert turns this lead into a tenant.
+  convertedOrganizationId String?
+
   createdAt DateTime @default(now())
 
   @@index([userId])
   @@index([projectId])
+  @@index([status, createdAt])
 }
