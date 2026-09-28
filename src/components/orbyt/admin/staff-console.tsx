@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { STAFF_KEY_STORE, staffFetch, type StaffError } from "./admin-bits";
 import { OverviewTab } from "./overview-tab";
 import { LeadsTab } from "./leads-tab";
+import { TenantsTab } from "./tenants-tab";
 import { ProjectsTab } from "./projects-tab";
 import { ProvisionTab } from "./provision-tab";
 
@@ -164,12 +165,22 @@ export function StaffConsole() {
         <Tabs value={tab} onValueChange={setTab}>
           <TabsList className="mb-4 flex w-full justify-start gap-1 overflow-x-auto bg-stone-200/60 sm:w-auto">
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="tenants">Tenants</TabsTrigger>
             <TabsTrigger value="leads">Leads</TabsTrigger>
             <TabsTrigger value="projects">Projects</TabsTrigger>
             <TabsTrigger value="provision">Provision</TabsTrigger>
           </TabsList>
           <TabsContent value="overview">
             <OverviewTab
+              apiKey={apiKey}
+              onOpenProject={(projectId) => {
+                setFocusProjectId(projectId);
+                setTab("projects");
+              }}
+            />
+          </TabsContent>
+          <TabsContent value="tenants">
+            <TenantsTab
               apiKey={apiKey}
               onOpenProject={(projectId) => {
                 setFocusProjectId(projectId);

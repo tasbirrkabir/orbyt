@@ -15,6 +15,7 @@ export async function GET() {
     const invoices = await db.invoice.findMany({
       where: { organizationId: context.organizationId },
       orderBy: { issueDate: "desc" },
+      include: { _count: { select: { payments: true } } },
     });
 
     const map = (invoice: (typeof invoices)[number]) => ({
@@ -30,6 +31,7 @@ export async function GET() {
       status: invoice.status,
       paidAt: invoice.paidAt?.toISOString() ?? null,
       method: invoice.method,
+      paymentClaimCount: invoice._count.payments,
     });
 
     const pending = invoices.filter((invoice) =>

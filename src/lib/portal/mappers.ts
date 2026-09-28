@@ -124,6 +124,19 @@ export function buildAttention(items: {
   approvals: { id: string; title: string; version: string; submittedAt: Date }[];
   requests: { id: string; code: string; title: string; updatedAt: Date }[];
   invoices: { id: string; number: string; totalCents: number; dueDate: Date }[];
+  changeRequests?: {
+    id: string;
+    code: string;
+    title: string;
+    impactNote: string;
+    projectId: string;
+    createdAt: Date;
+  }[];
+  unreadThreads?: {
+    id: string;
+    subject: string;
+    lastMessageAt: Date;
+  }[];
 }): AttentionItem[] {
   const attention: AttentionItem[] = [];
 
@@ -137,6 +150,30 @@ export function buildAttention(items: {
       date: approval.submittedAt.toISOString(),
       ctaLabel: "Review",
       href: "/workspace/approvals",
+    });
+  }
+  for (const changeRequest of items.changeRequests ?? []) {
+    attention.push({
+      id: `cr-${changeRequest.id}`,
+      kind: "CHANGE_REQUEST",
+      title: `${changeRequest.code}: ${changeRequest.title}`,
+      detail: changeRequest.impactNote || "The crew proposed this change. Your decision settles it.",
+      status: "PROPOSED",
+      date: changeRequest.createdAt.toISOString(),
+      ctaLabel: "Decide",
+      href: `/workspace/projects/${changeRequest.projectId}?tab=changes`,
+    });
+  }
+  for (const thread of items.unreadThreads ?? []) {
+    attention.push({
+      id: `message-${thread.id}`,
+      kind: "MESSAGE",
+      title: thread.subject,
+      detail: "The crew replied to this conversation. Open it to catch up.",
+      status: "UNREAD",
+      date: thread.lastMessageAt.toISOString(),
+      ctaLabel: "Read",
+      href: `/workspace/messages/${thread.id}`,
     });
   }
   for (const request of items.requests) {

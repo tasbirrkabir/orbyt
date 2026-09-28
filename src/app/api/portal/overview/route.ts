@@ -22,7 +22,7 @@ export async function GET() {
   return portalRoute(async (context) => {
     const orgId = context.organizationId;
 
-    const [projects, pendingApprovals, waitingRequests, pendingInvoices, upcomingMeetings, events, systems, notifications, invoices] =
+    const [projects, pendingApprovals, waitingRequests, pendingInvoices, upcomingMeetings, events, systems, notifications, invoices, proposedCRs, unreadThreads] =
       await Promise.all([
         db.project.findMany({
           where: { organizationId: orgId, status: { notIn: ["ARCHIVED"] } },
@@ -44,6 +44,29 @@ export async function GET() {
         db.systemEntry.findMany({ where: { organizationId: orgId }, orderBy: { name: "asc" } }),
         db.notification.count({ where: { organizationId: orgId, readAt: null } }),
         db.invoice.findMany({ where: { organizationId: orgId, status: "PAID" }, orderBy: { paidAt: "desc" } }),
+        // Change requests the client owes a decision on: proposed by
+        // ORBYT, still undecided. Ones the client raised cannot be
+        // decided by the client — the service layer forbids it.
+        db.changeRequest.findMany({
+          where: { organizationId: orgId, status: "PROPOSED", raisedBy: "ORBYT" },
+          orderBy: { createdAt: "desc" },
+          select: { id: true, code: true, title: true, impactNote: true, projectId: true, createdAt: true },
+        }),
+        // Conversations where the newest message is from the crew and
+        // the client has not read it yet.
+        db.messageThread.findMany({
+          where: {
+            organizationId: orgId,
+            messages: { some: { senderRole: "ORBYT", readByClient: false } },
+          },
+          orderBy: { updatedAt: "desc" },
+          select: {
+            id: true,
+            subject: true,
+            updatedAt: true,
+            messages: { orderBy: { createdAt: "desc" }, take: 1, select: { senderRole: true, readByClient: true, createdAt: true } },
+          },
+        }),
       ]);
 
     // The project with the most momentum is "active": in progress or
@@ -59,6 +82,20 @@ export async function GET() {
       approvals: pendingApprovals.map((a) => ({ id: a.id, title: a.title, version: a.version, submittedAt: a.submittedAt })),
       requests: waitingRequests.map((r) => ({ id: r.id, code: r.code, title: r.title, updatedAt: r.updatedAt })),
       invoices: pendingInvoices.map((i) => ({ id: i.id, number: i.number, totalCents: i.totalCents, dueDate: i.dueDate })),
+      changeRequests: proposedCRs.map((cr) => ({
+        id: cr.id,
+        code: cr.code,
+        title: cr.title,
+        impactNote: cr.impactNote,
+        projectId: cr.projectId,
+        createdAt: cr.createdAt,
+      })),
+      unreadThreads: unreadThreads
+        .filter((thread) => {
+          const last = thread.messages[0];
+          return last && last.senderRole === "ORBYT" && !last.readByClient;
+        })
+        .map((thread) => ({ id: thread.id, subject: thread.subject, lastMessageAt: thread.updatedAt })),
     });
 
     const upcomingMilestones = projects.flatMap((p) =>

@@ -189,7 +189,7 @@ export function ConsoleSection({
   aside?: React.ReactNode;
 }) {
   return (
-    <section className="rounded-xl border border-stone-200 bg-white p-4 sm:p-6">
+    <section className="min-w-0 rounded-xl border border-stone-200 bg-white p-4 sm:p-6">
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 className="text-sm font-semibold tracking-tight text-stone-900">{title}</h3>

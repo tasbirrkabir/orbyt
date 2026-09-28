@@ -65,11 +65,18 @@ const TAG_TONE: Record<string, string> = {
 };
 const TAG_FALLBACK = "border-border bg-transparent text-foreground";
 
-export function CommandProjectDetail({ projectId }: { projectId: string }) {
+export function CommandProjectDetail({
+  projectId,
+  initialTab = "overview",
+}: {
+  projectId: string;
+  initialTab?: string;
+}) {
   const { data, loading, failed, retry, refresh } = usePortalFetch<ProjectDetailPayload>(
     `/api/portal/projects/${encodeURIComponent(projectId)}`,
   );
   const reduced = useReducedMotion();
+  const [tab, setTab] = useState(initialTab);
   const [approvingId, setApprovingId] = useState<string | null>(null);
   const [approveError, setApproveError] = useState(false);
 
@@ -153,7 +160,7 @@ export function CommandProjectDetail({ projectId }: { projectId: string }) {
       </motion.div>
 
       {/* Tabs */}
-      <Tabs defaultValue="overview">
+      <Tabs value={tab} onValueChange={setTab}>
         <div className="overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <TabsList className="max-w-full">
             <TabsTrigger value="overview">{DETAIL.tabs.overview}</TabsTrigger>

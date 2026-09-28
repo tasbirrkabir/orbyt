@@ -732,6 +732,37 @@ async function seedDemoRoasters() {
         createdAt: ago(4),
       },
     });
+
+    // A thread the client spoke last: it shows up in the staff console
+    // as needing a reply, closing the loop in both directions.
+    const thread3 = await db.messageThread.create({
+      data: {
+        organizationId: org.id,
+        projectId: project.id,
+        subject: "Pixel fired twice on the thank-you page",
+        context: "PROJECT",
+        createdAt: ago(0, 9),
+        updatedAt: ago(0, 3),
+      },
+    });
+    await db.message.create({
+      data: {
+        threadId: thread3.id,
+        senderName: "ORBYT crew",
+        senderRole: "ORBYT",
+        body: "We saw it too — dedupe is on the event map, so revenue is not double counted. Patch ships with today's deploy.",
+        createdAt: ago(0, 7),
+      },
+    });
+    await db.message.create({
+      data: {
+        threadId: thread3.id,
+        senderName: account.name,
+        senderRole: "CLIENT",
+        body: "Good news. One more: can the weekly report include the dedupe numbers so finance stops asking? Happy to sign off on the template.",
+        createdAt: ago(0, 3),
+      },
+    });
   }
 
   // ── Meetings ──

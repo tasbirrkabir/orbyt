@@ -30,6 +30,13 @@ type Overview = {
     }>;
   };
   email: Record<string, number>;
+  inbox: {
+    needsReply: number;
+    pendingApprovals: number;
+    openRequests: number;
+    dueInvoices: number;
+    dueInvoiceTotalCents: number;
+  };
   audit: Array<{
     id: string; actorEmail: string; actorRole: string; action: string;
     targetType: string; targetLabel: string; createdAt: string;
@@ -102,6 +109,23 @@ export function OverviewTab({ apiKey, onOpenProject }: { apiKey: string; onOpenP
           value={overview.work.pendingApprovals + overview.work.openRequests + overview.work.proposedChangeRequests.length}
           tone="warn"
           hint={`${overview.work.pendingApprovals} approvals · ${overview.work.openRequests} requests · ${overview.work.proposedChangeRequests.length} CRs`}
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <StatCard
+          label="Conversations to answer"
+          value={overview.inbox.needsReply}
+          tone={overview.inbox.needsReply > 0 ? "warn" : "good"}
+          hint="Threads where the client spoke last"
+        />
+        <StatCard label="Pending approvals" value={overview.inbox.pendingApprovals} tone={overview.inbox.pendingApprovals > 0 ? "warn" : "neutral"} hint="Client sign-offs in flight" />
+        <StatCard label="Open requests" value={overview.inbox.openRequests} tone={overview.inbox.openRequests > 0 ? "warn" : "neutral"} hint="Tickets being worked" />
+        <StatCard
+          label="Invoices due"
+          value={overview.inbox.dueInvoices}
+          tone={overview.inbox.dueInvoices > 0 ? "warn" : "good"}
+          hint={`${(overview.inbox.dueInvoiceTotalCents / 100).toLocaleString("en-US", { style: "currency", currency: "BDT", maximumFractionDigits: 0 })} outstanding`}
         />
       </div>
 

@@ -1,8 +1,15 @@
 "use client";
 
+import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
+import { Loader2, MessageSquarePlus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { COMMAND } from "@/content/command";
 import {
   formatAge,
@@ -11,11 +18,13 @@ import {
   formatMoney,
   greetingBucket,
   PROJECT_TYPE_LABELS,
+  REQUEST_CATEGORIES,
+  REQUEST_PRIORITIES,
 } from "@/lib/portal/domain";
-import type { OverviewPayload } from "@/lib/portal/types";
+import type { AttentionItem, OverviewPayload } from "@/lib/portal/types";
 import { usePortalFetch } from "./use-portal-fetch";
 import { LoadingState, ErrorState, ProgressBar, Section } from "./primitives";
-import { StatusBadge, StatusDot, statusGlyph } from "./status-badge";
+import { StatusBadge } from "./status-badge";
 import { StageRail } from "./stage-rail";
 
 const DEMO_CLIENT_IDS = ["ORB-DEMO", "ORB-NOVA", "ORB-ATLAS"];
@@ -26,9 +35,27 @@ function Panel({ children, className }: { children: React.ReactNode; className?:
   );
 }
 
+/** Kinds the client can settle right here, without navigating away. */
+type DecidableAttention = AttentionItem & { kind: "APPROVAL" | "CHANGE_REQUEST" };
+
+function isDecidable(item: AttentionItem): item is DecidableAttention {
+  return item.kind === "APPROVAL" || item.kind === "CHANGE_REQUEST";
+}
+
 export function CommandOverview() {
-  const { data, loading, failed, retry } = usePortalFetch<OverviewPayload>("/api/portal/overview");
+  const { data, loading, failed, retry, refresh } = usePortalFetch<OverviewPayload>("/api/portal/overview");
   const reduced = useReducedMotion();
+
+  // Inline decision state: one dialog at a time, keyed by attention id.
+  const [decideItem, setDecideItem] = useState<DecidableAttention | null>(null);
+  const [decideNote, setDecideNote] = useState("");
+  const [decideBusy, setDecideBusy] = useState(false);
+  const [decideError, setDecideError] = useState<string | null>(null);
+
+  // Quick action state.
+  const [quickOpen, setQuickOpen] = useState<"request" | "message" | null>(null);
+  const [quickBusy, setQuickBusy] = useState(false);
+  const [quickError, setQuickError] = useState<string | null>(null);
 
   if (loading && !data) return <LoadingState />;
   if (failed && !data) return <ErrorState onRetry={retry} />;
@@ -39,6 +66,86 @@ export function CommandOverview() {
     greeting === "morning" ? "Good morning" : greeting === "afternoon" ? "Good afternoon" : "Good evening";
   const isDemo = DEMO_CLIENT_IDS.includes(data.identity.clientId);
   const { activeProject: project } = data;
+
+  async function submitDecision(decision: "APPROVE" | "REQUEST_CHANGES" | "ACCEPTED" | "DECLINED") {
+    if (!decideItem || decideBusy) return;
+    const note = decideNote.trim();
+    if (decideItem.kind === "APPROVAL" && decision === "REQUEST_CHANGES" && note.length < 4) {
+      setDecideError("Say what should change — a comment is required.");
+      return;
+    }
+    if (decideItem.kind === "CHANGE_REQUEST" && decision === "DECLINED" && note.length < 4) {
+      setDecideError("Say why you are declining — a note is required.");
+      return;
+    }
+    setDecideBusy(true);
+    setDecideError(null);
+    try {
+      const url =
+        decideItem.kind === "APPROVAL"
+          ? `/api/portal/approvals/${decideItem.id.replace("approval-", "")}`
+          : `/api/portal/change-requests/${decideItem.id.replace("cr-", "")}`;
+      const body =
+        decideItem.kind === "APPROVAL"
+          ? { decision, comment: note }
+          : { decision, note: note || undefined };
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => ({}))) as { error?: string };
+        setDecideError(payload.error ?? "That did not go through. Try again.");
+        return;
+      }
+      setDecideItem(null);
+      setDecideNote("");
+      refresh();
+    } catch {
+      setDecideError("Network trouble. Try again.");
+    } finally {
+      setDecideBusy(false);
+    }
+  }
+
+  async function submitQuick(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!quickOpen || quickBusy) return;
+    const form = new FormData(event.currentTarget);
+    setQuickBusy(true);
+    setQuickError(null);
+    try {
+      const payload =
+        quickOpen === "request"
+          ? {
+              title: String(form.get("title") ?? ""),
+              category: String(form.get("category") ?? "OTHER"),
+              priority: String(form.get("priority") ?? "NORMAL"),
+              description: String(form.get("description") ?? ""),
+            }
+          : {
+              subject: String(form.get("subject") ?? ""),
+              body: String(form.get("body") ?? ""),
+            };
+      const response = await fetch(quickOpen === "request" ? "/api/portal/requests" : "/api/portal/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) {
+        const result = (await response.json().catch(() => ({}))) as { error?: string };
+        setQuickError(result.error ?? "That did not go through. Try again.");
+        return;
+      }
+      setQuickOpen(null);
+      refresh();
+    } catch {
+      setQuickError("Network trouble. Try again.");
+    } finally {
+      setQuickBusy(false);
+    }
+  }
 
   return (
     <div className="space-y-10">
@@ -65,6 +172,14 @@ export function CommandOverview() {
             <span>{COMMAND.overview.demoNote.body}</span>
           </p>
         ) : null}
+        <div className="mt-5 flex flex-wrap gap-2.5">
+          <Button size="sm" onClick={() => { setQuickOpen("request"); setQuickError(null); }}>
+            <Plus className="h-3.5 w-3.5" /> Raise a request
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => { setQuickOpen("message"); setQuickError(null); }}>
+            <MessageSquarePlus className="h-3.5 w-3.5" /> Message the crew
+          </Button>
+        </div>
       </motion.header>
 
       <div className="grid gap-10 lg:grid-cols-3 lg:gap-8">
@@ -153,7 +268,7 @@ export function CommandOverview() {
             )}
           </section>
 
-          {/* 2. Needs your attention */}
+          {/* 2. Needs your attention — with inline decisions */}
           <section aria-label={COMMAND.overview.attention.label}>
             <h2 className="mb-4 font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
               {COMMAND.overview.attention.label}
@@ -177,26 +292,52 @@ export function CommandOverview() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.35, delay: 0.03 * index, ease: "easeOut" }}
                   >
-                    <Link
-                      href={item.href}
-                      className="group flex items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-accent/50"
-                    >
-                      <div className="min-w-0">
+                    <div className="group flex flex-wrap items-center justify-between gap-x-4 gap-y-3 px-5 py-4 transition-colors hover:bg-accent/50">
+                      <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <p className="truncate text-sm font-semibold">{item.title}</p>
                           <StatusBadge status={item.status} />
                         </div>
-                        <p className="mt-0.5 truncate text-xs text-muted-foreground">{item.detail}</p>
+                        <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-muted-foreground">{item.detail}</p>
                       </div>
-                      <div className="flex shrink-0 items-center gap-3">
+                      <div className="flex shrink-0 flex-wrap items-center gap-2">
                         <span className="hidden font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground sm:inline">
                           {formatAge(item.date)}
                         </span>
-                        <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-primary underline-offset-4 group-hover:underline">
-                          {item.ctaLabel}
-                        </span>
+                        {isDecidable(item) ? (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setDecideItem(item);
+                                setDecideNote("");
+                                setDecideError(null);
+                              }}
+                            >
+                              {item.ctaLabel}
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                setDecideItem(item);
+                                setDecideNote("");
+                                setDecideError(null);
+                              }}
+                            >
+                              {item.kind === "APPROVAL" ? "Approve" : "Accept"}
+                            </Button>
+                          </>
+                        ) : (
+                          <Link
+                            href={item.href}
+                            className="font-mono text-[11px] uppercase tracking-[0.14em] text-primary underline-offset-4 group-hover:underline"
+                          >
+                            {item.ctaLabel}
+                          </Link>
+                        )}
                       </div>
-                    </Link>
+                    </div>
                   </motion.li>
                 ))}
               </ul>
@@ -263,11 +404,11 @@ export function CommandOverview() {
                   {data.pulse.systems.map((system) => (
                     <li key={system.id} className="flex items-center justify-between gap-3 text-sm">
                       <span className="flex min-w-0 items-center gap-2">
-                        <StatusDot status={system.status} />
+                        <span aria-hidden="true" className="inline-block h-2 w-2 shrink-0 rounded-full bg-primary/70" />
                         <span className="truncate">{system.name}</span>
                       </span>
-                      <span className="flex shrink-0 items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-                        {statusGlyph(system.status)} {system.status.toLowerCase()}
+                      <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                        {system.status.toLowerCase()}
                       </span>
                     </li>
                   ))}
@@ -349,6 +490,131 @@ export function CommandOverview() {
           ) : null}
         </div>
       </div>
+
+      {/* Inline decision dialog */}
+      <Dialog open={decideItem !== null} onOpenChange={(open) => { if (!open) setDecideItem(null); }}>
+        <DialogContent className="sm:max-w-lg">
+          {decideItem ? (
+            <>
+              <DialogHeader>
+                <DialogTitle>
+                  {decideItem.kind === "APPROVAL" ? "Sign-off decision" : "Change request decision"}
+                </DialogTitle>
+                <DialogDescription>{decideItem.title}</DialogDescription>
+              </DialogHeader>
+              <p className="text-sm leading-relaxed text-muted-foreground">{decideItem.detail}</p>
+              <div className="space-y-2">
+                <Label htmlFor="decide-note">
+                  {decideItem.kind === "APPROVAL" ? "Comment (optional)" : "Note (optional for accept)"}
+                </Label>
+                <Textarea
+                  id="decide-note"
+                  value={decideNote}
+                  onChange={(event) => setDecideNote(event.target.value)}
+                  rows={3}
+                  placeholder={
+                    decideItem.kind === "APPROVAL"
+                      ? "Anything the crew should know alongside your decision."
+                      : "Anything the crew should know alongside your decision."
+                  }
+                />
+              </div>
+              {decideError ? <p className="text-sm text-red-600">{decideError}</p> : null}
+              <DialogFooter className="gap-2 sm:gap-0">
+                <Button
+                  variant="outline"
+                  disabled={decideBusy}
+                  onClick={() => void submitDecision(decideItem.kind === "APPROVAL" ? "REQUEST_CHANGES" : "DECLINED")}
+                >
+                  {decideItem.kind === "APPROVAL" ? "Request changes" : "Decline"}
+                </Button>
+                <Button disabled={decideBusy} onClick={() => void submitDecision(decideItem.kind === "APPROVAL" ? "APPROVE" : "ACCEPTED")}>
+                  {decideBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                  {decideItem.kind === "APPROVAL" ? "Approve" : "Accept"}
+                </Button>
+              </DialogFooter>
+            </>
+          ) : null}
+        </DialogContent>
+      </Dialog>
+
+      {/* Quick actions dialog */}
+      <Dialog open={quickOpen !== null} onOpenChange={(open) => { if (!open) setQuickOpen(null); }}>
+        <DialogContent className="sm:max-w-lg">
+          {quickOpen ? (
+            <form onSubmit={(event) => void submitQuick(event)}>
+              <DialogHeader>
+                <DialogTitle>{quickOpen === "request" ? "Raise a request" : "Message the crew"}</DialogTitle>
+                <DialogDescription>
+                  {quickOpen === "request"
+                    ? "File it. The desk picks it up, and the lifecycle is tracked end to end."
+                    : "Start a conversation. The crew replies in the thread."}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="mt-4 space-y-3">
+                {quickOpen === "request" ? (
+                  <>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="quick-title">What do you need?</Label>
+                      <Input id="quick-title" name="title" required minLength={4} maxLength={120} placeholder="Short, specific summary" />
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="quick-category">Category</Label>
+                        <Select name="category" defaultValue="OTHER">
+                          <SelectTrigger id="quick-category"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {REQUEST_CATEGORIES.map((category) => (
+                              <SelectItem key={category} value={category}>
+                                {category.charAt(0) + category.slice(1).toLowerCase()}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="quick-priority">Priority</Label>
+                        <Select name="priority" defaultValue="NORMAL">
+                          <SelectTrigger id="quick-priority"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {REQUEST_PRIORITIES.map((priority) => (
+                              <SelectItem key={priority} value={priority}>
+                                {priority.charAt(0) + priority.slice(1).toLowerCase()}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="quick-description">Detail</Label>
+                      <Textarea id="quick-description" name="description" required minLength={10} maxLength={4000} rows={4} placeholder="What is the context, what does done look like?" />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="quick-subject">Subject</Label>
+                      <Input id="quick-subject" name="subject" required minLength={3} maxLength={120} placeholder="What is this about?" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="quick-body">Message</Label>
+                      <Textarea id="quick-body" name="body" required minLength={2} maxLength={4000} rows={4} placeholder="Write it out — this opens a tracked thread." />
+                    </div>
+                  </>
+                )}
+              </div>
+              {quickError ? <p className="mt-3 text-sm text-red-600">{quickError}</p> : null}
+              <DialogFooter className="mt-4">
+                <Button type="submit" disabled={quickBusy}>
+                  {quickBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                  {quickOpen === "request" ? "File the request" : "Send the message"}
+                </Button>
+              </DialogFooter>
+            </form>
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -34,6 +34,8 @@ export async function GET(request: Request) {
       proposedCRs,
       emailGroups,
       auditRows,
+      threadLasts,
+      dueInvoiceGroups,
     ] = await Promise.all([
       db.contactSubmission.groupBy({ by: ["status"], _count: { _all: true } }),
       db.organization.count(),
@@ -81,6 +83,15 @@ export async function GET(request: Request) {
           createdAt: true,
         },
       }),
+      db.messageThread.findMany({
+        select: { organizationId: true, messages: { orderBy: { createdAt: "desc" }, take: 1, select: { senderRole: true } } },
+      }),
+      db.invoice.groupBy({
+        by: ["organizationId"],
+        where: { status: { in: ["PENDING", "OVERDUE"] } },
+        _count: { _all: true },
+        _sum: { totalCents: true },
+      }),
     ]);
 
     const leads: Record<string, number> = {};
@@ -96,6 +107,16 @@ export async function GET(request: Request) {
       (sum, key) => sum + (projectHealth[key] ?? 0),
       0,
     );
+
+    // The service inbox: conversations whose newest message is still
+    // the client's, plus money currently on the table.
+    let needsReply = 0;
+    for (const thread of threadLasts) {
+      const last = thread.messages[0];
+      if (last && last.senderRole === "CLIENT") needsReply += 1;
+    }
+    const dueInvoices = dueInvoiceGroups.reduce((sum, row) => sum + row._count._all, 0);
+    const dueInvoiceTotalCents = dueInvoiceGroups.reduce((sum, row) => sum + (row._sum.totalCents ?? 0), 0);
 
     return NextResponse.json({
       ok: true,
@@ -133,6 +154,13 @@ export async function GET(request: Request) {
         })),
       },
       email,
+      inbox: {
+        needsReply,
+        pendingApprovals,
+        openRequests,
+        dueInvoices,
+        dueInvoiceTotalCents,
+      },
       audit: auditRows,
     });
   } catch (error) {

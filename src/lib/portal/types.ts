@@ -89,7 +89,7 @@ export type DecisionLogItem = {
 
 export type AttentionItem = {
   id: string;
-  kind: "APPROVAL" | "REQUEST" | "INVOICE";
+  kind: "APPROVAL" | "REQUEST" | "INVOICE" | "CHANGE_REQUEST" | "MESSAGE";
   title: string;
   detail: string;
   status: string;
@@ -372,6 +372,8 @@ export type InvoiceItem = {
   status: string;
   paidAt: string | null;
   method: string;
+  /** Client-reported payment claims not yet confirmed by ORBYT. */
+  paymentClaimCount?: number;
 };
 
 export type BillingPayload = {
