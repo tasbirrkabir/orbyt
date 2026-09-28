@@ -615,3 +615,25 @@ Work Log:
 Stage Summary:
 - Staff API gate fully functional again (503 -> proper 401/200 behavior). Dev key documented for the user; production must rotate.
 - No admin panel UI exists by design yet; offer stands to pull Phase 12 staff console forward if the user wants a visual admin surface.
+
+---
+Task ID: 34
+Agent: main (Z.ai)
+Task: User feedback "client panel is not useful enough" -> diagnosed root cause (no staff-side UI to operate real tenants) and built the ORBYT staff console (Phase 12 console pulled forward), wiring the existing keyed APIs into a working surface.
+
+Work Log:
+- Diagnosis: real tenants start empty because every staff tool was a raw API call; demo tenants only looked rich because the seeder fills them. The missing piece that makes the client panel useful is the staff console.
+- Read APIs added (all requireProvisionKey): GET /api/internal/overview (funnel counts, tenants, project health rollup, pending work, outbox, last 15 audit rows), GET /api/internal/projects (cross-tenant list w/ open CR/approval/request counts), GET /api/internal/projects/[id] (full ops plate: scope, CRs, decision log, client queues).
+- UI at /admin (noindex): key gate (staff key pasted once per browser session, sessionStorage only, verified against a guarded endpoint, honest 503/429/401 messaging), then 4 tabs: Overview (stat cards, CR decision queue with deep links, healthz deployment check, audit feed), Leads (status chips + search, mark contacted/qualify/archive, convert -> dialog with clientId + single-use activation link + copy chips), Projects (cross-tenant master-detail: recorded health setter with required note, scope add/status/remove incl. explicit exclusions, CR propose as ORBYT + decide client-raised ones (decline requires note), immutable decision log append, read-only client queues), Provision (tenant form -> result card with clientId + activation link).
+- Shared bits in admin-bits.tsx (staffFetch, closed-set badges, CopyChip, fmt helpers, stat/section/empty blocks). All copy honest; unknown statuses render as themselves.
+- Lint fixes: removed setState-in-effect patterns (gate hydration via async IIFE after await, focus deep-link via derived selectedId = manualSelection ?? focusProjectId, controlled Tabs so CR deep links switch tabs).
+- THROTTLE FIX: normal console use tripped the 20/10min guard bucket (reads + writes all counted; browser E2E hit 429 mid-session). guard.ts now peeks the counter before the constant-time compare and only records an attempt when the key is WRONG; correct credentials never consume budget, brute force still walls at 20 failures. rate-limit.ts gained a peek option. Verified: 8 rapid 200s with valid key, wrong key still 401.
+- ENV FIX root-caused: .env is reset by the sandbox (this is why PROVISION_API_KEY vanished before). Key now lives in .env.local (Next.js loads it over .env; the resetter does not touch it). Verified 401/401/200 after restart.
+- Browser E2E (agent-browser): wrong key -> honest gate error; unlock -> live overview; lead NEW->CONTACTED->QUALIFIED->CONVERT (ORB-S3JVN9 created, dialog shows activation link); demo-lead convert correctly 409s with surfaced toast ("An account with this email already exists"); project ops on ORB-DEMO: health AT_RISK + note, scope item added, CR-0004 proposed (shows "Waiting on the client. ORBYT cannot decide its own proposal."), decision logged; provision via UI created ORB-WHG48K (rows deleted afterwards to keep DB clean).
+- CLIENT-SIDE REFLECTION PROVEN: demo portal project page shows AT RISK + exact note, new scope item, CR-0004 "NEEDS DECISION" with client Accept/Decline buttons, and the staff-logged decision. The loop staff action -> client panel works.
+- Responsive: fixed 375px horizontal overflow (508px) caused by truncate/nowrap min-content inside grid items with min-width:auto; added min-w-0 to grid children in overview + projects tabs. All 4 tabs verified overflow-free at 375px; desktop screenshot reviewed; lint clean; healthz ok.
+
+Stage Summary:
+- /admin is the ORBYT-side operating surface: same key, same integrity rules, now clickable. The client panel is no longer a dead end for real tenants: staff can now move leads, stand up tenants, record health, manage scope, propose/decide changes and log decisions from one screen, and clients see all of it instantly.
+- Known honest caveat: the three demo tenants are seeder-owned; using the login "Explore the demo" button re-runs the seeder and resets seeder-managed fields (e.g. project health) to their story values. Real tenants are never touched by the seeder.
+- Staff key documented: PROVISION_API_KEY in .env.local (dev value orbyt-provision-dev-key-2026; rotate for production).

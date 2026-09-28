@@ -34,8 +34,11 @@ export async function requireProvisionKey(request: Request): Promise<ProvisionGu
     };
   }
 
-  // Throttle before comparing: brute force never reaches the compare.
-  const limit = checkRateLimit("provision-key", ip, 20, 10 * 60 * 1000);
+  // Peek before comparing, and only record the attempt when the key
+  // is wrong. Correct credentials never consume the brute-force
+  // budget, so normal console use cannot trip the throttle; an
+  // attacker still hits the wall after 20 bad keys per window.
+  const limit = checkRateLimit("provision-key", ip, 20, 10 * 60 * 1000, { peek: true });
   if (!limit.ok) {
     void recordAuditRaw({
       actorEmail: `ip:${ip}`,
@@ -60,6 +63,7 @@ export async function requireProvisionKey(request: Request): Promise<ProvisionGu
   const keyOk = a.length === b.length && timingSafeEqual(a, b);
 
   if (!keyOk) {
+    checkRateLimit("provision-key", ip, 20, 10 * 60 * 1000);
     void recordAuditRaw({
       actorEmail: `ip:${ip}`,
       actorRole: "ANONYMOUS",

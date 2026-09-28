@@ -32,11 +32,23 @@ export type RateLimitResult = {
   retryAfterSeconds: number
 }
 
+export type RateLimitOptions = {
+  /**
+   * Inspect the counter without spending an attempt. Used by guards
+   * that must decide BEFORE comparing a secret: peek first, compare,
+   * and only record the attempt when the secret was wrong. Correct
+   * credentials then never consume the budget, while brute force is
+   * still locked out after the limit.
+   */
+  peek?: boolean
+}
+
 export function checkRateLimit(
   bucket: string,
   identifier: string,
   limit: number,
   windowMs: number = WINDOW_MS_DEFAULT,
+  options: RateLimitOptions = {},
 ): RateLimitResult {
   const now = Date.now()
   const key = `${bucket}:${identifier}`
@@ -48,6 +60,21 @@ export function checkRateLimit(
   }
 
   const entry = store.get(key)
+
+  if (options.peek) {
+    if (!entry || now - entry.windowStart >= windowMs) {
+      return { ok: true, retryAfterSeconds: 0 }
+    }
+    if (entry.count >= limit) {
+      const retryAfterSeconds = Math.max(
+        1,
+        Math.ceil((entry.windowStart + windowMs - now) / 1000),
+      )
+      return { ok: false, retryAfterSeconds }
+    }
+    return { ok: true, retryAfterSeconds: 0 }
+  }
+
   if (!entry || now - entry.windowStart >= windowMs) {
     store.set(key, { count: 1, windowStart: now })
     return { ok: true, retryAfterSeconds: 0 }
