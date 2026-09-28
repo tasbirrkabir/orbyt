@@ -600,3 +600,18 @@ Work Log:
 
 Stage Summary:
 - PHASE 4 COMPLETE: projects now run their operations in the open. Scope (with explicit exclusions) is visible and changes only through decided change requests; either side can raise and only the other side decides; every decision lands in an immutable decision log with attribution; project health is a recorded fact with a note and a date. The staff side works today through the keyed internal API and is ready for the Phase 12 console. Demo tenants carry coherent stories for all three shapes. Next per plan: PHASE 5 integration framework (credential vault, Meta/Google/GA4/Search Console connection registry) or the spec's next dependency in line.
+
+---
+Task ID: 33
+Agent: main (Z.ai)
+Task: Restore missing PROVISION_API_KEY after user asked for admin panel access; confirm staff/portal credentials.
+
+Work Log:
+- Found .env had lost PROVISION_API_KEY (only DATABASE_URL remained); both guarded endpoints answered 503 "not configured".
+- Restored dev key `orbyt-provision-dev-key-2026` in .env; restarted dev server detached (setsid), clean Ready in 926ms on :3000.
+- Verified: no key -> 401, wrong key -> 401, correct key GET /api/lifecycle/leads -> 200 with live lead data; POST /api/demo -> 200 (demo login intact); healthz ok.
+- Confirmed codebase has NO admin UI page: staff surface today is keyed API only (/api/lifecycle/provision, /api/lifecycle/leads, /api/lifecycle/leads/[id], /api/internal/project-ops). Staff console UI is planned Phase 12 per spec.
+
+Stage Summary:
+- Staff API gate fully functional again (503 -> proper 401/200 behavior). Dev key documented for the user; production must rotate.
+- No admin panel UI exists by design yet; offer stands to pull Phase 12 staff console forward if the user wants a visual admin surface.
