@@ -11,34 +11,35 @@ import { cn } from "@/lib/utils";
 
 const SYSTEM_IMAGES: Record<string, { src: string; caption: string; alt: string }> = {
   acquisition: {
-    src: "/images/studio/studio-floor.jpg",
-    caption: "Every build starts at the studio floor.",
-    alt: "The studio: builders working across monitors in a dark workspace",
+    src: "/images/art/signal-path.png",
+    caption: "Every build starts as a map, not a mockup.",
+    alt: "Abstract topographic map with one glowing orange route crossing it",
   },
   "ai-ops": {
-    src: "/images/studio/code-screens.jpg",
+    src: "/images/art/circuit-weave.png",
     caption: "The machinery behind it, running in code.",
-    alt: "Production code glowing on screens in a dark room",
+    alt: "Abstract circuit traces weaving into one glowing path",
   },
   "connected-web": {
-    src: "/images/studio/collab-review.jpg",
+    src: "/images/art/particle-flow.png",
     caption: "And every page, reviewed as one connected surface.",
-    alt: "Two people reviewing a website build together at a laptop",
+    alt: "Streams of glowing particles converging into a single point",
   },
 };
 
 const STUDIO_BAND = [
-  { src: "/images/studio/wireframe-sketch.jpg", label: "DISCOVER", sub: "Sketching the shape of the system" },
-  { src: "/images/studio/sprint-wall.jpg", label: "BUILD", sub: "Sprints with owners and deadlines" },
-  { src: "/images/studio/presenting.jpg", label: "CONNECT", sub: "Walking the data with you" },
-  { src: "/images/studio/meeting-room.jpg", label: "GROW", sub: "Reviewing what the system earned" },
+  { src: "/images/art/aperture.png", label: "DISCOVER", sub: "Mapping the shape of the system" },
+  { src: "/images/art/lattice.png", label: "BUILD", sub: "Sprints with owners and deadlines" },
+  { src: "/images/art/data-pulse.png", label: "CONNECT", sub: "Walking the data with you" },
+  { src: "/images/art/wave-field.png", label: "GROW", sub: "Reviewing what the system earned" },
 ];
 
 /**
  * /work. An editorial systems showcase: three blueprint panels with
- * alternating photo layouts, a studio-process photo band, then the panel
- * on how engagements actually start. No invented case studies — the
- * photographs show the practice, not fake client logos (honesty rule).
+ * alternating custom-render layouts, a process band drawn in the same
+ * "Ink & Ember" language, then the panel on how engagements actually
+ * start. No invented case studies — ORBYT has no office to photograph,
+ * so the practice is shown as the system it is (honesty rule).
  */
 export function WorkView() {
   return (
@@ -147,13 +148,13 @@ export function WorkView() {
           })}
         </div>
 
-        {/* Studio process band */}
+        {/* Process band */}
         <div className="mt-20">
           <Reveal>
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
                 <p className="font-mono text-xs uppercase tracking-[0.18em] text-primary">
-                  The practice, photographed
+                  The practice, drawn
                 </p>
                 <h3 className="mt-3 font-display text-2xl font-bold tracking-tight md:text-3xl">
                   How a system comes together
@@ -175,7 +176,7 @@ export function WorkView() {
           <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {STUDIO_BAND.map((shot, i) => (
               <Reveal key={shot.src} delay={i * 0.06} className="min-w-0">
-                <figure className="group relative overflow-hidden border border-border bg-card">
+                <figure className="tint-sweep group relative overflow-hidden border border-border bg-card transition-colors duration-300 hover:border-primary/60">
                   <div className="relative aspect-[4/3] w-full overflow-hidden">
                     <Image
                       src={shot.src}

@@ -20,17 +20,18 @@ type Tile = {
   height: number;
 };
 
+/* Custom "Ink & Ember" renders — the practice as a system, not a place. */
 const ROW_A: Tile[] = [
-  { src: "/images/studio/studio-floor.jpg", label: "THE STUDIO FLOOR", sub: "Where the work happens", aspect: "aspect-[21/10]", width: 640, height: 305 },
-  { src: "/images/studio/wireframe-sketch.jpg", label: "PAPER FIRST", sub: "Interfaces start on paper", aspect: "aspect-[4/3]", width: 460, height: 345 },
-  { src: "/images/studio/code-screens.jpg", label: "SHIP LOGS", sub: "Real builds, real commits", aspect: "aspect-square", width: 380, height: 380 },
+  { src: "/images/art/orbit-core.png", label: "ONE SYSTEM", sub: "Every channel orbits the same core", aspect: "aspect-[21/10]", width: 640, height: 305 },
+  { src: "/images/art/aperture.png", label: "SCOPE FIRST", sub: "Mapped before anything is built", aspect: "aspect-[4/3]", width: 460, height: 345 },
+  { src: "/images/art/data-pulse.png", label: "SIGNAL OVER NOISE", sub: "Every build ships with tracking", aspect: "aspect-square", width: 380, height: 380 },
 ];
 
 const ROW_B: Tile[] = [
-  { src: "/images/studio/sprint-wall.jpg", label: "THE SPRINT WALL", sub: "Every task has an owner", aspect: "aspect-square", width: 380, height: 380 },
-  { src: "/images/studio/collab-review.jpg", label: "REVIEW RITUALS", sub: "Client + builder, same table", aspect: "aspect-[4/3]", width: 460, height: 345 },
-  { src: "/images/studio/keyboard-macro.jpg", label: "HANDS ON KEYS", sub: "Craft over shortcuts", aspect: "aspect-[3/4]", width: 360, height: 480 },
-  { src: "/images/studio/green-studio.jpg", label: "HQ", sub: "A calm place to think", aspect: "aspect-[4/3]", width: 460, height: 345 },
+  { src: "/images/art/particle-flow.png", label: "CONNECTED", sub: "Tools that finally talk to each other", aspect: "aspect-square", width: 380, height: 380 },
+  { src: "/images/art/circuit-weave.png", label: "AUTOMATED", sub: "Repetitive work, taken off your plate", aspect: "aspect-[4/3]", width: 460, height: 345 },
+  { src: "/images/art/monolith.png", label: "CRAFT", sub: "Built with care, shipped with proof", aspect: "aspect-[3/4]", width: 360, height: 480 },
+  { src: "/images/art/wave-field.png", label: "COMPOUNDING", sub: "A system that grows with the business", aspect: "aspect-[4/3]", width: 460, height: 345 },
 ];
 
 function GalleryTile({ tile }: { tile: Tile }) {
@@ -41,7 +42,7 @@ function GalleryTile({ tile }: { tile: Tile }) {
     >
       <figure
         className={cn(
-          "relative overflow-hidden border border-border bg-card transition-colors duration-300 group-hover:border-primary/60",
+          "tint-sweep relative overflow-hidden border border-border bg-card transition-all duration-300 group-hover:border-primary/60 group-hover:shadow-[0_0_36px_rgba(253,90,1,0.14)]",
           tile.aspect
         )}
         style={{ width: tile.width }}
@@ -71,10 +72,11 @@ function GalleryTile({ tile }: { tile: Tile }) {
 }
 
 /**
- * ShowcaseGallery — a full-bleed, dual-direction photo marquee of the
- * studio at work. Rows pause on hover; edges fade via mask; tiles tilt in
- * 3D under the pointer. Photographs of the practice itself — no invented
- * case studies (honesty rule holds).
+ * ShowcaseGallery — a full-bleed, dual-direction marquee of custom
+ * "Ink & Ember" renders: the practice drawn as the system it is. ORBYT is
+ * a distributed crew with no office, so there is nothing to photograph —
+ * the art stands in honestly, labelled with what the work actually does.
+ * Rows pause on hover; edges fade via mask; tiles tilt in 3D.
  */
 export function ShowcaseGallery() {
   return (
@@ -86,15 +88,19 @@ export function ShowcaseGallery() {
       <div className="mx-auto mb-10 flex w-full max-w-6xl items-end justify-between gap-6 px-4 sm:px-6 lg:px-8">
         <Reveal className="min-w-0">
           <p className="font-mono text-xs uppercase tracking-[0.18em] text-primary">
-            The work, in progress
+            The practice, drawn
           </p>
           <h2
             id="showcase-heading"
             className="mt-3 font-display text-3xl font-bold leading-[1.05] tracking-tight sm:text-4xl"
           >
-            Inside the
-            <span className="text-primary"> studio.</span>
+            The work,{" "}
+            <span className="text-primary">in motion.</span>
           </h2>
+          <p className="mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">
+            No office tour — there is no office. ORBYT runs as a distributed
+            crew, so here is the practice the honest way: as a system.
+          </p>
         </Reveal>
         <Reveal delay={0.08} className="hidden shrink-0 sm:block">
           <Link

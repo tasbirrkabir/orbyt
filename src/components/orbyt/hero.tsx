@@ -8,15 +8,14 @@ import {
   useScroll,
   useTransform,
 } from "framer-motion";
-import { useRef, type CSSProperties } from "react";
+import { useRef } from "react";
 import { HERO, HOME_TRUST, SITE } from "@/content/orbyt";
 import { Button } from "@/components/ui/button";
-import { AnimatedMark } from "./animated-mark";
 import { CrossField } from "./cross-field";
 import { EmberField } from "./ember-field";
 import { FadeUp } from "./reveal";
 import { Magnetic } from "./magnetic";
-import { PortalPreview } from "./portal-preview";
+import { OrbitSystem } from "./orbit-system";
 import { Marquee } from "./marquee";
 import { Scramble } from "./scramble";
 import { emphasize } from "./emphasize";
@@ -24,11 +23,12 @@ import { emphasize } from "./emphasize";
 const LINE_EASE = [0.22, 1, 0.36, 1] as const;
 
 /**
- * Home hero. The logo is the show: the animated mark (satellites + halo)
- * rides a dashed orbital ring above the floating tile, the headline rises
- * out of two masks, the eyebrow decodes, the primary CTA is magnetic and
- * the whole logo column drifts on scroll. Marquee 1 of 3 (hero, worked
- * with, CTA strip).
+ * Home hero. The copy carries the promise; the OrbitSystem carries the
+ * visual: the animated mark at the center of three counter-rotating rings
+ * with service chips riding them. The headline rises out of two masks,
+ * the eyebrow decodes, the primary CTA is magnetic, the orbit column
+ * tilts toward the pointer and drifts on scroll. Marquee 1 of 3 (hero,
+ * worked with, CTA strip).
  */
 export function Hero() {
   const reduced = useReducedMotion();
@@ -38,7 +38,6 @@ export function Hero() {
     offset: ["start start", "end start"],
   });
   const tileY = useTransform(scrollYProgress, [0, 1], [0, 56]);
-  const markY = useTransform(scrollYProgress, [0, 1], [0, -36]);
 
   return (
     <section
@@ -108,7 +107,7 @@ export function Hero() {
                 <Magnetic strength={0.25}>
                   <Button
                     asChild
-                    className="h-12 px-7 text-base font-semibold"
+                    className="btn-shine h-12 px-7 text-base font-semibold"
                   >
                     <Link href={SITE.cta.href}>
                       {SITE.cta.label}
@@ -129,38 +128,18 @@ export function Hero() {
             </FadeUp>
           </div>
 
-          {/* Product composition: small orbital mark above the live portal preview */}
+          {/* The Orbyt system: mark at the center, services in orbit */}
           <div className="min-w-0 lg:col-span-5">
             <FadeUp
               delay={0.15}
-              className="relative mx-auto w-full max-w-sm lg:max-w-none"
+              className="relative mx-auto w-full max-w-sm py-8 lg:max-w-none"
             >
-              <motion.div
-                className="mb-6 flex items-center justify-center gap-3 lg:absolute lg:-top-12 lg:right-0 lg:z-20 lg:mb-0"
-                style={reduced ? undefined : { y: markY }}
-              >
-                <div className="relative">
-                  {!reduced ? (
-                    <span
-                      aria-hidden="true"
-                      className="animate-spin-slow absolute left-1/2 top-1/2 size-[104px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-dashed border-primary/30"
-                      style={{ "--spin-duration": "36s" } as CSSProperties}
-                    />
-                  ) : null}
-                  <AnimatedMark size={64} satellites={2} halo />
-                </div>
-              </motion.div>
-
               <motion.div
                 style={reduced ? undefined : { y: tileY }}
                 className="min-w-0"
               >
-                <PortalPreview />
+                <OrbitSystem />
               </motion.div>
-
-              <p className="mt-7 text-center font-mono text-xs tracking-widest text-muted-foreground">
-                THE CLIENT PORTAL, LIVE
-              </p>
             </FadeUp>
           </div>
         </div>

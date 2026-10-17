@@ -105,6 +105,52 @@
   mask-image: linear-gradient(to right, transparent, black 7%, black 93%, transparent);
 }
 
+/* Tint sweep: an orange light passes over media on parent group hover.
+   Pair with a `group` container and overflow-hidden media figures. */
+.tint-sweep::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    transparent 32%,
+    rgba(253, 90, 1, 0.16) 50%,
+    transparent 68%
+  );
+  transform: translateX(-130%);
+  transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.group:hover .tint-sweep::after,
+.group.tint-sweep:hover::after,
+.group\/spot:hover .tint-sweep::after {
+  transform: translateX(130%);
+}
+
+/* Button shine: a soft highlight sweeps across primary CTAs once on hover. */
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+}
+.btn-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.32) 50%,
+    transparent 80%
+  );
+  transform: translateX(-120%) skewX(-18deg);
+  transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.btn-shine:hover::after {
+  transform: translateX(120%) skewX(-18deg);
+}
+
 /* ── Orbyt · Theme: "Ink & Ember" ──────────────────────────
    The logo is loud: the interface is quiet.
    BLACK (ink) + ELECTRIC/VIVID ORANGE (#FD5A01, from the mark).

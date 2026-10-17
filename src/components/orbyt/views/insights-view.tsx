@@ -39,7 +39,7 @@ export function InsightsView() {
               >
                 <span className="relative block aspect-[16/10] w-full overflow-hidden border border-border md:col-span-4">
                   <Image
-                    src={`/images/essays/${essay.slug}.jpg`}
+                    src={`/images/essays/${essay.slug}.png`}
                     alt=""
                     fill
                     sizes="(min-width: 768px) 380px, 100vw"

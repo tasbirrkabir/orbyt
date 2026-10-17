@@ -82,19 +82,19 @@ export function AboutView() {
         </Reveal>
       </Section>
 
-      {/* The practice, photographed */}
+      {/* The practice, drawn — no office, shown honestly */}
       <Section id="about-studio" header={null} className="py-4 md:py-6">
         <h2 id="about-studio-heading" className="sr-only">
-          The studio
+          How ORBYT runs
         </h2>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           {[
-            { src: "/images/studio/green-studio.jpg", sub: "The space", cls: "md:col-span-2 aspect-[4/3] md:aspect-auto md:h-full" },
-            { src: "/images/studio/collab-review.jpg", sub: "Reviews, side by side", cls: "aspect-square" },
-            { src: "/images/studio/sprint-wall.jpg", sub: "The wall runs the week", cls: "aspect-square" },
+            { src: "/images/art/orbit-core.png", sub: "One connected system", cls: "md:col-span-2 aspect-[4/3] md:aspect-auto md:h-full" },
+            { src: "/images/art/eclipse.png", sub: "Remote by design", cls: "aspect-square" },
+            { src: "/images/art/lattice.png", sub: "Built, not bought", cls: "aspect-square" },
           ].map((shot, i) => (
             <Reveal key={shot.src} delay={i * 0.06} className={shot.cls}>
-              <figure className="group relative h-full min-h-40 w-full overflow-hidden border border-border bg-card">
+              <figure className="tint-sweep group relative h-full min-h-40 w-full overflow-hidden border border-border bg-card">
                 <Image
                   src={shot.src}
                   alt={shot.sub}
@@ -113,6 +113,12 @@ export function AboutView() {
             </Reveal>
           ))}
         </div>
+        <Reveal delay={0.1} className="mt-4">
+          <p className="max-w-2xl border-l-2 border-primary pl-5 text-sm leading-relaxed text-muted-foreground">
+            No office tour, because there is no office. ORBYT runs as a
+            distributed crew — the system is the headquarters.
+          </p>
+        </Reveal>
       </Section>
 
       {/* Principles, generous */}

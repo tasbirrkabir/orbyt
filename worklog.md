@@ -704,3 +704,32 @@ Stage Summary:
 - /work is an editorial alternating-photo showcase with a process photo band
 - Asset convention: /public/images/studio/*.jpg (9) + essays/*.jpg (4); all references updated; old assets deleted
 - Remaining backlog unchanged: PHASE 4 project-ops UI, staff console, further phase work
+
+---
+Task ID: V-2 (visual upgrade round 2 — user feedback)
+Agent: Z.ai Code (main)
+Task: User feedback fix: ① office photos everywhere are wrong — ORBYT has no office; ② "Inside the studio" heading must go; ③ images must match the site's dark+orange vibe (custom-made, not stock); ④ hero workspace preview must be replaced; ⑤ more top-notch animations.
+
+Work Log:
+- Generated 14 custom "Ink & Ember" art pieces via z-ai CLI (script: scripts/gen-art.sh) — dark matte backgrounds + electric orange glow, no people/offices: orbit-core (ringed dark planet + satellites), signal-path, data-pulse, particle-flow, lattice, eclipse, circuit-weave, wave-field, monolith (obsidian obelisk), aperture, + 4 essay covers (workflow-nodes, fragmented-grid, layered-system, signal-noise → copied to /images/essays/{slug}.png)
+- Learned: ① never put hex codes in image prompts (model renders them as literal text) — fixed prompts, regenerated; ② API requires sizes to be 32px multiples (1440x720 rejected → use 1344x768); ③ CLI saves JPEG data regardless of extension; ④ run generations sequentially (P3 caused rate-limit failures)
+- Deleted public/images/studio/ (9 office photos) + old essays/*.jpg; all references moved to /images/art/*.png
+- NEW orbit-system.tsx: hero visual = ORBYT mark at center of 3 counter-rotating dashed rings, 6 service chips (WEB/ADS/DATA/AI/OPS/GROWTH) riding rings with counter-rotation (direction: ring normal → chip reverse), pointer-tilt via spring motion values, pulse-glow core, HUD corner brackets + mono labels, embedded SpinBadge (rotating circular textPath "START A PROJECT · ORBYT" → /contact)
+- hero.tsx: removed PortalPreview + floating giant logo; OrbitSystem in right column with scroll drift; btn-shine on primary CTA
+- showcase-gallery.tsx: "Inside the studio." → "The work, in motion." + honest sub-copy ("No office tour — there is no office..."); tiles = art set with practice labels (ONE SYSTEM / SCOPE FIRST / SIGNAL OVER NOISE / CONNECTED / AUTOMATED / CRAFT / COMPOUNDING); orange glow hover
+- work-view.tsx: SYSTEM_IMAGES + STUDIO_BAND → art with honest captions; tint-sweep on process band figures
+- about-view.tsx: studio photo grid → art grid (One connected system / Remote by design / Built, not bought) + honesty line ("the system is the headquarters")
+- home-view/services-view/services-with-preview: all art mapping swapped; essay refs .jpg → .png
+- NEW split-words.tsx: word-by-word masked rise for Section/PageHero headings — CRITICAL FIX: trigger lives on container (variants + staggerChildren) because a word translated 112% inside its own overflow mask is clipped → IntersectionObserver never fires on the word itself
+- globals.css: + tint-sweep (orange light sweep on group hover; selectors for .group, self, group/spot), + btn-shine (highlight sweep on primary CTAs); applied tint-sweep to gallery/parallax/about/systems figures
+- parallax-image.tsx: + tint-sweep + border glow on hover
+- Fixed SpinBadge className not being merged (badge rendered in flow at bottom-left instead of pinned corner); moved FIG.01 label to top-right to avoid overlap
+- DEBUGGED stale images: Next 16 Turbopack dev image cache lives at .next/dev/cache/images (NOT .next/cache/images); stale webp variants keyed by Accept header survived server restart — cleared dir, verified MISS→fresh
+- Browser-verified (agent-browser): desktop + iPhone 16 — hero orbit renders, chips upright, badge pinned, footer sticky, all 7 routes 200, no console errors; lint clean
+
+Stage Summary:
+- Site imagery is now 100% custom abstract system-art in brand palette; zero office/stock photography
+- Hero = signature orbital system (brand name made visual) with pointer tilt + rotating CTA badge
+- New animations: orbital rings/chips, word-stagger headings site-wide, tint sweeps, button shine, spin badge — layered on existing boot/marquee/scramble/magnetic/cursor/parallax stack
+- Reusable: scripts/gen-art.sh (sequential, hex-free prompts), art set at /images/art/ (14 pieces), essay covers at /images/essays/*.png
+- Known gotchas recorded: .next/dev/cache/images is the dev image cache; z-ai image size = 32px multiples; no hex in prompts

@@ -49,7 +49,7 @@ export function ParallaxImage({
       viewport={{ once: true, margin: "0px 0px -60px 0px" }}
       transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
       className={cn(
-        "group relative overflow-hidden border border-border bg-card",
+        "tint-sweep group relative overflow-hidden border border-border bg-card transition-colors duration-300 hover:border-primary/50",
         clipped && "[clip-path:polygon(0_0,calc(100%-26px)_0,100%_26px,100%_100%,0_100%)]",
         className
       )}

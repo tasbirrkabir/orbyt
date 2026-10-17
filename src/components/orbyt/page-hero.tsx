@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { EmberField } from "./ember-field";
+import { SplitWords } from "./split-words";
 
 type PageHeroProps = {
   /** Anchor id; the h1 receives `${id}-heading` for aria-labelledby. */
@@ -52,9 +53,11 @@ export function PageHero({
           id={`${id}-heading`}
           className="mt-5 max-w-3xl font-display text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl md:text-6xl"
         >
-          {title}
+          <SplitWords text={title} />
           {titleAccent ? (
-            <span className="block text-primary">{titleAccent}</span>
+            <span className="block text-primary">
+              <SplitWords text={titleAccent} delay={0.12} />
+            </span>
           ) : null}
         </h1>
         {lede ? (

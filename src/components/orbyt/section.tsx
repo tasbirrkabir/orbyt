@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { SplitWords } from "./split-words";
 
 type SectionProps = {
   id: string;
@@ -59,9 +60,11 @@ export function Section({
                   id={`${id}-heading`}
                   className="mt-4 font-display text-3xl font-bold leading-[1.05] tracking-tight sm:text-4xl md:text-5xl"
                 >
-                  {title}
+                  <SplitWords text={title} />
                   {titleAccent ? (
-                    <span className="block text-primary">{titleAccent}</span>
+                    <span className="block text-primary">
+                      <SplitWords text={titleAccent} delay={0.12} />
+                    </span>
                   ) : null}
                 </h2>
               ) : null}

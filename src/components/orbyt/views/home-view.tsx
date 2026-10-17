@@ -30,16 +30,16 @@ import { WorkedWith } from "../worked-with";
 
 const SYSTEM_CARD_IMAGES: Record<string, { src: string; alt: string }> = {
   acquisition: {
-    src: "/images/studio/studio-floor.jpg",
-    alt: "The studio floor: builders working across monitors",
+    src: "/images/art/orbit-core.png",
+    alt: "Glowing orbital rings circling a dark core — one system",
   },
   "ai-ops": {
-    src: "/images/studio/code-screens.jpg",
-    alt: "Production code on screens in a dark workspace",
+    src: "/images/art/circuit-weave.png",
+    alt: "Circuit traces weaving into one glowing path — automation",
   },
   "connected-web": {
-    src: "/images/studio/collab-review.jpg",
-    alt: "Two people reviewing a build together at a laptop",
+    src: "/images/art/particle-flow.png",
+    alt: "Particle streams converging into one point — connected surfaces",
   },
 };
 
@@ -196,7 +196,7 @@ function SystemsTeaser() {
             <Reveal key={blueprint.id} delay={i * 0.06} className="min-w-0">
               <SpotlightCard className="h-full">
                 {img ? (
-                  <div className="relative aspect-[16/9] overflow-hidden border-b border-border">
+                  <div className="tint-sweep relative aspect-[16/9] overflow-hidden border-b border-border">
                     <Image
                       src={img.src}
                       alt={img.alt}
@@ -302,7 +302,7 @@ function InsightsTeaser() {
             >
               <span className="relative block aspect-[16/10] w-full overflow-hidden border border-border sm:max-w-[180px] md:col-span-2">
                 <Image
-                  src={`/images/essays/${essay.slug}.jpg`}
+                  src={`/images/essays/${essay.slug}.png`}
                   alt=""
                   fill
                   sizes="180px"

@@ -19,23 +19,23 @@ import { cn } from "@/lib/utils";
 
 const SERVICE_IMAGES: Record<string, { src: string; caption: string }> = {
   "ai-automation": {
-    src: "/images/studio/code-screens.jpg",
+    src: "/images/art/circuit-weave.png",
     caption: "Intelligence wired into the core.",
   },
   "web-digital": {
-    src: "/images/studio/wireframe-sketch.jpg",
+    src: "/images/art/lattice.png",
     caption: "Surfaces sketched, then shipped.",
   },
   "growth-marketing": {
-    src: "/images/studio/sprint-wall.jpg",
+    src: "/images/art/wave-field.png",
     caption: "Campaigns run like sprints.",
   },
   "data-tracking": {
-    src: "/images/studio/presenting.jpg",
+    src: "/images/art/data-pulse.png",
     caption: "Signal, walked through honestly.",
   },
   "digital-systems": {
-    src: "/images/studio/collab-review.jpg",
+    src: "/images/art/particle-flow.png",
     caption: "Tools moving work, not people chasing tools.",
   },
 };
@@ -147,7 +147,7 @@ function ServiceBlock({
           </Reveal>
           <Reveal delay={0.12} className="mt-8">
             <ParallaxImage
-              src={SERVICE_IMAGES[service.slug]?.src ?? "/images/studio/studio-floor.jpg"}
+              src={SERVICE_IMAGES[service.slug]?.src ?? "/images/art/orbit-core.png"}
               alt={`Rendered visual for ${service.title}`}
               label={`Service ${service.index}`}
               caption={SERVICE_IMAGES[service.slug]?.caption}
