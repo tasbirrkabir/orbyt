@@ -31,7 +31,7 @@ import { SpotlightCard } from "../spotlight-card";
 import { TeamSection } from "../team-section";
 import { WorkedWith } from "../worked-with";
 
-/* Original ORBYT renders (public/images/art) — no stock, no offices. */
+/* Original ORBYT renders (public/images/art) — no stock imagery. */
 const SYSTEM_CARD_IMAGES: Record<string, { src: string; alt: string }> = {
   acquisition: {
     src: "/images/art/growth-beam.png",

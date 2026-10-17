@@ -10,20 +10,20 @@ import {
 } from "./horse-frames";
 
 /* ── Orbyt · Ember Horse ───────────────────────────────────
-   The gallop, rebuilt in code. Eight hand-posed keyframes
-   (see horse-frames.ts — after Muybridge, no IK) sampled
-   every frame into a grid of glowing ember dots, with brief
-   crossfades between poses, per-dot flicker, hoof-strike
-   dust and a ground track that scrolls with the stride.
-   Muybridge in LED. No video, no stock. */
+   The working trot, rebuilt in code. Eight hand-posed
+   keyframes (see horse-frames.ts — high head carriage, mane
+   crest, hanging tail) sampled every frame into a grid of
+   glowing ember dots, with brief crossfades between poses,
+   per-dot flicker, hoof-strike dust and a ground track that
+   scrolls with the stride. No video, no stock. */
 
 type Particle = { x: number; y: number; vx: number; vy: number; life: number; max: number };
 
 const FRAMES = HORSE_FRAMES.length;
-/** keyframe steps per second at pace 1 — a full stride ≈ 0.76s */
-const STEPS_PER_SEC = 10.5;
+/** keyframe steps per second at pace 1 — a full trot stride ≈ 1s */
+const STEPS_PER_SEC = 8;
 /** ground units the world travels per stride */
-const GROUND_PER_CYCLE = 26;
+const GROUND_PER_CYCLE = 18;
 const TAU = Math.PI * 2;
 
 function hitStroke(s: Stroke, x: number, y: number): boolean {
@@ -111,7 +111,7 @@ export function EmberHorse({ className }: { className?: string }) {
       cell = unit * 0.6;
       cx = W / 2 - ((HORSE_BBOX.minX + HORSE_BBOX.maxX) / 2) * unit;
 
-      glowSize = Math.ceil(cell * 3);
+      glowSize = Math.ceil(cell * 2.4);
       const g = document.createElement("canvas");
       g.width = glowSize;
       g.height = glowSize;
@@ -125,8 +125,8 @@ export function EmberHorse({ className }: { className?: string }) {
           glowSize / 2,
           glowSize / 2
         );
-        grad.addColorStop(0, "rgba(255,178,92,0.9)");
-        grad.addColorStop(0.35, "rgba(253,90,1,0.45)");
+        grad.addColorStop(0, "rgba(255,178,92,0.85)");
+        grad.addColorStop(0.4, "rgba(253,90,1,0.35)");
         grad.addColorStop(1, "rgba(253,90,1,0)");
         gctx.fillStyle = grad;
         gctx.fillRect(0, 0, glowSize, glowSize);

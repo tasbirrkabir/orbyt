@@ -1,24 +1,31 @@
-/* ── Orbyt · Gallop keyframes ──────────────────────────────
-   Eight hand-posed frames of a transverse gallop (after
-   Muybridge), stored as explicit joint coordinates — no IK,
-   no elasticity, no guessing at runtime. A puppet, posed
-   frame by frame, then sampled into ember dots by the canvas.
+/* ── Orbyt · Trot keyframes ────────────────────────────────
+   Eight hand-posed frames of a working trot, posed for
+   INSTANT recognition: the head is carried HIGH (the poll
+   sits well above the topline), the muzzle hangs forward-
+   down, a serrated mane rides the crest of the neck and a
+   full tail hangs and sways below the rump. High carriage +
+   mane + hanging tail is what makes a silhouette read
+   "horse" at a glance — a stretched flying gallop just
+   reads fox.
 
    Units: "horse units". x+ forward (the horse faces right),
-   y+ up, ground at y = 0. Proportions follow a real horse so
-   the silhouette reads HORSE at a glance, not dog:
+   y+ up, ground at y = 0. Proportions of a real horse:
 
-     · body core span (rump→chest) ≈ 18, depth ≈ 10  (~2:1)
-     · height at withers ≈ 19 → legs are ~45% of the height
-       and stay clearly visible under the barrel
-     · neck rises ~30–42° (never horizontal), head angles
-       DOWN from the poll — muzzle sits 3–4 units below it
-     · ears small at the poll, tail flows off the rump
+     · body core span (rump→chest) ≈ 18, depth ≈ 10 (~2:1)
+     · height at withers ≈ 19; poll ≈ 25 → head above topline
+     · head length ≈ 5.7 (long muzzle, tapered)
+     · legs ~45% of the silhouette height, clearly visible
+     · mane crest + hanging tail — the horse signatures
 
-   Every pose is hand-checked so limbs never telescope:
+   Trot mechanics: diagonal pairs (near-fore + far-hind) and
+   (far-fore + near-hind) alternate — land, carry, push,
+   brief suspension — every pose hand-checked so limbs never
+   telescope:
 
-     front leg  shoulder→carpus ≈6.5 · carpus→fetlock ≈5 · +1.5
-     hind leg   hip→hock ≈6.5 · hock→fetlock ≈5.2 · +1.4        */
+     front leg  shoulder→carpus ≈4.8-6 · carpus→fetlock ≈4.2-4.4
+                · fetlock→hoof ≈1.5-2
+     hind leg   hip→hock ≈5.3-6.6 · hock→fetlock ≈4.4-5.6
+                · fetlock→hoof ≈1.4-2.2                      */
 
 export type Pt = { x: number; y: number };
 export type Ball = { x: number; y: number; r: number; d?: number };
@@ -39,7 +46,7 @@ type Pose = {
   bob: number;
   /** body rotation in degrees, + = chest dips / rump rises */
   pitch: number;
-  /** −1 gathered neck … +1 fully extended neck */
+  /** −1 gathered neck … +1 fully extended neck (subtle at trot) */
   neck: number;
   /** front legs: carpus, fetlock, hoof (world space) */
   fN: Joints;
@@ -47,7 +54,7 @@ type Pose = {
   /** hind legs: hock, fetlock, hoof (world space) */
   hN: Joints;
   hF: Joints;
-  /** tail mid + two tip control points (world space) */
+  /** tail: three hanging points off the rump (world space) */
   tail: Joints;
 };
 
@@ -71,96 +78,96 @@ const FILLS: Array<{ p: Pt; r: number }> = [
 const SHOULDER: Pt = { x: 5.0, y: 11.5 };
 const HIP: Pt = { x: -8.0, y: 12.0 };
 
-/* Gallop cycle: extend (flying) → front strike → front carry →
-   gather (bunched) → hind strike → hind push → rise → reach. */
+/* Trot cycle — diagonal A (near fore + far hind) vs diagonal B
+   (far fore + near hind): land → carry → push → suspension. */
 const POSES: Pose[] = [
-  // F0 — extended suspension: the "flying" frame, legs reaching full stretch
+  // T0 — A lands: near fore + far hind plant, B folding through
   {
-    bob: 2.2,
-    pitch: -1.5,
-    neck: 1,
-    fN: [ { x: 11.4, y: 10.6 }, { x: 16.2, y: 9.6 }, { x: 18.2, y: 9.0 } ],
-    fF: [ { x: 10.6, y: 9.9 }, { x: 15.0, y: 8.2 }, { x: 16.8, y: 7.4 } ],
-    hN: [ { x: -14.4, y: 11.6 }, { x: -19.6, y: 9.6 }, { x: -21.6, y: 9.0 } ],
-    hF: [ { x: -13.6, y: 10.9 }, { x: -18.4, y: 8.6 }, { x: -20.2, y: 7.8 } ],
-    tail: [ { x: -15.8, y: 16.6 }, { x: -19.6, y: 17.4 }, { x: -22.8, y: 17.6 } ],
-  },
-  // F1 — front legs reaching down, hinds pushing away behind
-  {
-    bob: 0.8,
+    bob: 0.2,
     pitch: 0,
-    neck: 0.5,
-    fN: [ { x: 10.8, y: 8.2 }, { x: 14.8, y: 4.6 }, { x: 16.0, y: 3.2 } ],
-    fF: [ { x: 11.4, y: 9.4 }, { x: 15.8, y: 6.4 }, { x: 17.2, y: 5.4 } ],
-    hN: [ { x: -13.2, y: 8.0 }, { x: -17.0, y: 4.4 }, { x: -18.4, y: 3.0 } ],
-    hF: [ { x: -12.6, y: 8.8 }, { x: -16.0, y: 5.2 }, { x: -17.2, y: 4.0 } ],
-    tail: [ { x: -15.6, y: 15.6 }, { x: -19.2, y: 14.6 }, { x: -22.0, y: 13.4 } ],
+    neck: 0.1,
+    fN: [ { x: 6.0, y: 6.6 }, { x: 6.4, y: 2.5 }, { x: 6.6, y: 0.6 } ],
+    fF: [ { x: 7.6, y: 8.2 }, { x: 9.2, y: 6.0 }, { x: 10.0, y: 4.8 } ],
+    hN: [ { x: -4.6, y: 7.4 }, { x: -2.2, y: 3.6 }, { x: -1.2, y: 2.4 } ],
+    hF: [ { x: -8.4, y: 6.4 }, { x: -8.8, y: 2.0 }, { x: -9.0, y: 0.5 } ],
+    tail: [ { x: -14.2, y: 13.2 }, { x: -15.8, y: 10.0 }, { x: -16.6, y: 7.0 } ],
   },
-  // F2 — near fore strikes the ground, hinds swing under the belly
+  // T1 — A carries the weight, B folding tighter
   {
-    bob: -0.5,
-    pitch: 1.5,
+    bob: -0.2,
+    pitch: 0,
     neck: 0,
-    fN: [ { x: 9.0, y: 6.4 }, { x: 12.2, y: 2.0 }, { x: 13.0, y: 0.5 } ],
-    fF: [ { x: 10.8, y: 7.0 }, { x: 14.6, y: 3.4 }, { x: 16.0, y: 2.2 } ],
-    hN: [ { x: -4.4, y: 6.2 }, { x: -1.6, y: 1.8 }, { x: -0.6, y: 0.4 } ],
-    hF: [ { x: -10.2, y: 6.0 }, { x: -13.2, y: 1.8 }, { x: -14.4, y: 0.4 } ],
-    tail: [ { x: -15.4, y: 14.8 }, { x: -18.8, y: 12.8 }, { x: -21.4, y: 11.0 } ],
+    fN: [ { x: 5.8, y: 6.6 }, { x: 6.1, y: 2.4 }, { x: 6.2, y: 0.5 } ],
+    fF: [ { x: 6.8, y: 7.8 }, { x: 7.6, y: 5.0 }, { x: 8.0, y: 3.8 } ],
+    hN: [ { x: -4.2, y: 7.6 }, { x: -1.4, y: 4.0 }, { x: -0.2, y: 3.0 } ],
+    hF: [ { x: -8.8, y: 6.2 }, { x: -9.2, y: 2.0 }, { x: -9.4, y: 0.5 } ],
+    tail: [ { x: -14.4, y: 13.0 }, { x: -16.2, y: 9.8 }, { x: -17.2, y: 6.8 } ],
   },
-  // F3 — front legs carry (lowest), hinds folding forward
+  // T2 — A pushes off, B tucked ready to reach
   {
-    bob: -0.6,
-    pitch: 2,
-    neck: -0.5,
-    fN: [ { x: 7.4, y: 5.4 }, { x: 9.4, y: 1.4 }, { x: 9.8, y: 0.6 } ],
-    fF: [ { x: 5.2, y: 5.6 }, { x: 6.4, y: 1.6 }, { x: 6.2, y: 0.7 } ],
-    hN: [ { x: -3.4, y: 6.0 }, { x: -1.0, y: 1.8 }, { x: -0.2, y: 0.7 } ],
-    hF: [ { x: -6.6, y: 6.2 }, { x: -4.6, y: 2.0 }, { x: -3.8, y: 0.7 } ],
-    tail: [ { x: -15.2, y: 14.4 }, { x: -18.2, y: 12.2 }, { x: -20.4, y: 10.2 } ],
+    bob: 0.1,
+    pitch: -0.5,
+    neck: 0,
+    fN: [ { x: 5.6, y: 6.0 }, { x: 5.2, y: 2.0 }, { x: 4.9, y: 0.6 } ],
+    fF: [ { x: 6.2, y: 7.6 }, { x: 6.4, y: 4.4 }, { x: 6.6, y: 3.2 } ],
+    hN: [ { x: -4.0, y: 7.8 }, { x: -0.8, y: 4.4 }, { x: 0.4, y: 3.4 } ],
+    hF: [ { x: -8.8, y: 6.2 }, { x: -9.8, y: 2.2 }, { x: -10.4, y: 0.9 } ],
+    tail: [ { x: -14.6, y: 12.8 }, { x: -16.6, y: 9.6 }, { x: -17.6, y: 6.6 } ],
   },
-  // F4 — gathered suspension: everything tucked under, back arched
+  // T3 — suspension: B at full reach, A tucked under
   {
-    bob: 1.8,
-    pitch: 2.5,
-    neck: -1,
-    fN: [ { x: 9.4, y: 7.6 }, { x: 12.6, y: 5.0 }, { x: 14.0, y: 3.8 } ],
-    fF: [ { x: 7.0, y: 8.0 }, { x: 9.6, y: 5.6 }, { x: 10.8, y: 4.6 } ],
-    hN: [ { x: -4.0, y: 7.4 }, { x: -1.4, y: 3.2 }, { x: -0.4, y: 1.8 } ],
-    hF: [ { x: -7.0, y: 7.6 }, { x: -4.8, y: 3.6 }, { x: -3.6, y: 2.2 } ],
-    tail: [ { x: -15.6, y: 16.0 }, { x: -19.2, y: 15.6 }, { x: -22.0, y: 15.0 } ],
-  },
-  // F5 — near hind lands under the hip, front legs folding up
-  {
-    bob: 0.5,
-    pitch: 0.5,
-    neck: -0.5,
-    fN: [ { x: 10.4, y: 8.4 }, { x: 14.0, y: 6.0 }, { x: 15.6, y: 5.0 } ],
-    fF: [ { x: 8.6, y: 8.8 }, { x: 11.0, y: 6.6 }, { x: 12.4, y: 5.8 } ],
-    hN: [ { x: -10.6, y: 6.6 }, { x: -13.4, y: 2.2 }, { x: -14.2, y: 0.5 } ],
-    hF: [ { x: -3.6, y: 6.8 }, { x: -0.8, y: 2.0 }, { x: 0.2, y: 0.5 } ],
-    tail: [ { x: -15.4, y: 15.0 }, { x: -19.0, y: 13.6 }, { x: -21.8, y: 12.2 } ],
-  },
-  // F6 — hinds push off hard, front legs tucked under the chest
-  {
-    bob: 1.4,
-    pitch: -2,
+    bob: 1.0,
+    pitch: 0,
     neck: 0.2,
-    fN: [ { x: 8.8, y: 8.0 }, { x: 10.6, y: 4.8 }, { x: 11.4, y: 3.6 } ],
-    fF: [ { x: 7.2, y: 8.4 }, { x: 8.6, y: 5.2 }, { x: 9.2, y: 4.0 } ],
-    hN: [ { x: -12.6, y: 8.6 }, { x: -17.0, y: 4.6 }, { x: -19.0, y: 3.2 } ],
-    hF: [ { x: -11.6, y: 7.8 }, { x: -15.6, y: 3.6 }, { x: -17.4, y: 2.2 } ],
-    tail: [ { x: -15.8, y: 15.8 }, { x: -19.8, y: 15.6 }, { x: -22.8, y: 15.2 } ],
+    fN: [ { x: 6.0, y: 7.8 }, { x: 6.8, y: 5.0 }, { x: 7.4, y: 3.8 } ],
+    fF: [ { x: 9.0, y: 7.6 }, { x: 11.8, y: 4.4 }, { x: 13.2, y: 3.0 } ],
+    hN: [ { x: -4.6, y: 6.8 }, { x: -0.8, y: 2.8 }, { x: 1.0, y: 1.6 } ],
+    hF: [ { x: -9.0, y: 7.0 }, { x: -10.6, y: 3.4 }, { x: -11.4, y: 2.4 } ],
+    tail: [ { x: -14.4, y: 13.0 }, { x: -16.2, y: 9.8 }, { x: -17.0, y: 6.8 } ],
   },
-  // F7 — hinds trail away, front legs reach into the extension
+  // T4 — B lands: far fore + near hind plant, A folding through
   {
-    bob: 2.0,
-    pitch: -2,
-    neck: 0.7,
-    fN: [ { x: 11.0, y: 9.6 }, { x: 15.4, y: 7.6 }, { x: 17.4, y: 6.8 } ],
-    fF: [ { x: 10.2, y: 9.0 }, { x: 14.2, y: 6.6 }, { x: 16.0, y: 5.8 } ],
-    hN: [ { x: -13.6, y: 10.2 }, { x: -18.4, y: 7.6 }, { x: -20.6, y: 6.6 } ],
-    hF: [ { x: -12.8, y: 9.4 }, { x: -17.2, y: 6.6 }, { x: -19.2, y: 5.6 } ],
-    tail: [ { x: -15.8, y: 16.2 }, { x: -19.8, y: 16.8 }, { x: -23.0, y: 16.8 } ],
+    bob: 0.2,
+    pitch: 0,
+    neck: 0,
+    fN: [ { x: 6.4, y: 7.6 }, { x: 7.4, y: 4.8 }, { x: 8.0, y: 3.6 } ],
+    fF: [ { x: 8.4, y: 6.8 }, { x: 9.4, y: 2.6 }, { x: 9.7, y: 1.0 } ],
+    hN: [ { x: -5.2, y: 6.8 }, { x: -3.6, y: 2.4 }, { x: -3.0, y: 1.0 } ],
+    hF: [ { x: -9.2, y: 6.8 }, { x: -10.8, y: 3.2 }, { x: -11.6, y: 2.2 } ],
+    tail: [ { x: -14.2, y: 13.2 }, { x: -15.6, y: 10.2 }, { x: -16.6, y: 7.4 } ],
+  },
+  // T5 — B carries the weight, A folding tighter
+  {
+    bob: -0.2,
+    pitch: 0,
+    neck: -0.1,
+    fN: [ { x: 5.8, y: 7.8 }, { x: 6.4, y: 4.8 }, { x: 6.8, y: 3.6 } ],
+    fF: [ { x: 8.2, y: 6.8 }, { x: 9.0, y: 2.6 }, { x: 9.2, y: 1.0 } ],
+    hN: [ { x: -4.8, y: 7.0 }, { x: -3.0, y: 2.6 }, { x: -2.2, y: 1.2 } ],
+    hF: [ { x: -9.4, y: 7.0 }, { x: -11.0, y: 3.6 }, { x: -11.8, y: 2.8 } ],
+    tail: [ { x: -14.4, y: 13.4 }, { x: -15.8, y: 10.6 }, { x: -16.8, y: 7.8 } ],
+  },
+  // T6 — B pushes off, A tucked ready to reach
+  {
+    bob: 0.1,
+    pitch: 0.5,
+    neck: -0.2,
+    fN: [ { x: 5.6, y: 7.8 }, { x: 5.8, y: 4.6 }, { x: 6.0, y: 3.4 } ],
+    fF: [ { x: 8.6, y: 6.6 }, { x: 9.8, y: 2.4 }, { x: 10.1, y: 0.9 } ],
+    hN: [ { x: -4.4, y: 6.6 }, { x: -2.8, y: 2.4 }, { x: -2.0, y: 0.9 } ],
+    hF: [ { x: -9.6, y: 7.2 }, { x: -11.4, y: 3.8 }, { x: -12.2, y: 3.0 } ],
+    tail: [ { x: -14.6, y: 13.6 }, { x: -15.8, y: 10.8 }, { x: -16.6, y: 8.0 } ],
+  },
+  // T7 — suspension: A at full reach, B tucked under
+  {
+    bob: 1.0,
+    pitch: 0,
+    neck: -0.1,
+    fN: [ { x: 6.4, y: 7.4 }, { x: 8.6, y: 4.0 }, { x: 9.8, y: 2.6 } ],
+    fF: [ { x: 7.0, y: 7.8 }, { x: 8.0, y: 5.0 }, { x: 8.6, y: 3.8 } ],
+    hN: [ { x: -4.4, y: 7.6 }, { x: -1.2, y: 4.0 }, { x: 0.0, y: 3.0 } ],
+    hF: [ { x: -9.8, y: 7.0 }, { x: -12.0, y: 2.6 }, { x: -13.4, y: 1.8 } ],
+    tail: [ { x: -14.4, y: 13.8 }, { x: -15.4, y: 11.0 }, { x: -15.6, y: 8.2 } ],
   },
 ];
 
@@ -205,35 +212,66 @@ function buildFrame(pose: Pose): FramePrims {
     balls.push({ x: q.x, y: q.y, r: f.r });
   }
 
-  /* Neck + head — arched when gathered, stretched forward-low when
-     extended; the muzzle always hangs below the poll (horse, not dog). */
+  /* Neck — carried HIGH (steep ~60° rise), so the head sits well
+     above the topline. The muzzle always hangs below the poll. */
   const g = (pose.neck + 1) / 2;
-  const base = att({ x: 6.2, y: 15.3 });
-  const midN = att(lerpPt({ x: 10.4, y: 19.0 }, { x: 11.4, y: 18.4 }, g));
-  const poll = att(lerpPt({ x: 13.4, y: 21.6 }, { x: 15.4, y: 20.2 }, g));
-  const skull = att(lerpPt({ x: 14.9, y: 21.1 }, { x: 16.9, y: 19.6 }, g));
-  const jaw = att(lerpPt({ x: 17.4, y: 19.7 }, { x: 19.5, y: 18.1 }, g));
-  const tip = att(lerpPt({ x: 19.2, y: 18.2 }, { x: 21.4, y: 16.4 }, g));
-  const earA = att(lerpPt({ x: 12.6, y: 23.0 }, { x: 14.6, y: 21.4 }, g));
-  const earB = att(lerpPt({ x: 13.9, y: 22.9 }, { x: 15.9, y: 21.3 }, g));
+  const base = att({ x: 5.8, y: 15.4 });
+  const midN = att(lerpPt({ x: 8.8, y: 20.4 }, { x: 9.4, y: 19.8 }, g));
+  const poll = att(lerpPt({ x: 10.5, y: 24.7 }, { x: 11.4, y: 23.8 }, g));
+  const skull = att(lerpPt({ x: 12.1, y: 24.85 }, { x: 13.0, y: 23.95 }, g));
+  const jaw = att(lerpPt({ x: 14.4, y: 23.8 }, { x: 15.4, y: 22.85 }, g));
+  const tip = att(lerpPt({ x: 16.4, y: 22.7 }, { x: 17.4, y: 21.75 }, g));
+  const earA = att(lerpPt({ x: 10.2, y: 26.1 }, { x: 11.1, y: 25.2 }, g));
+  const earB = att(lerpPt({ x: 11.4, y: 26.0 }, { x: 12.3, y: 25.1 }, g));
 
-  strokes.push({ x1: base.x, y1: base.y, x2: midN.x, y2: midN.y, r: 1.75 });
-  strokes.push({ x1: midN.x, y1: midN.y, x2: poll.x, y2: poll.y, r: 1.05 });
-  balls.push({ x: skull.x, y: skull.y, r: 1.35 });
-  strokes.push({ x1: skull.x, y1: skull.y, x2: jaw.x, y2: jaw.y, r: 0.85 });
-  strokes.push({ x1: jaw.x, y1: jaw.y, x2: tip.x, y2: tip.y, r: 0.6 });
-  balls.push({ x: tip.x, y: tip.y, r: 0.6 });
-  strokes.push({ x1: poll.x, y1: poll.y, x2: earA.x, y2: earA.y, r: 0.38 });
-  strokes.push({ x1: poll.x, y1: poll.y, x2: earB.x, y2: earB.y, r: 0.38 });
+  strokes.push({ x1: base.x, y1: base.y, x2: midN.x, y2: midN.y, r: 1.95 });
+  strokes.push({ x1: midN.x, y1: midN.y, x2: poll.x, y2: poll.y, r: 1.2 });
+  balls.push({ x: skull.x, y: skull.y, r: 1.5 });
+  strokes.push({ x1: skull.x, y1: skull.y, x2: jaw.x, y2: jaw.y, r: 0.95 });
+  strokes.push({ x1: jaw.x, y1: jaw.y, x2: tip.x, y2: tip.y, r: 0.68 });
+  balls.push({ x: tip.x, y: tip.y, r: 0.68 });
+  strokes.push({ x1: poll.x, y1: poll.y, x2: earA.x, y2: earA.y, r: 0.42 });
+  strokes.push({ x1: poll.x, y1: poll.y, x2: earB.x, y2: earB.y, r: 0.42 });
 
-  /* Tail: three tapering strands off the rump */
+  /* Mane — a serrated crest riding the back edge of the neck,
+     plus a small forelock at the poll. THE horse signifier. */
+  const nx = poll.x - base.x;
+  const ny = poll.y - base.y;
+  const nl = Math.hypot(nx, ny) || 1;
+  const px = -ny / nl; // perpendicular, pointing up-back
+  const py = nx / nl;
+  const maneT = [0.16, 0.34, 0.52, 0.7, 0.88];
+  maneT.forEach((t, i) => {
+    const r = 1.95 + (1.2 - 1.95) * t;
+    const off = r + 0.48;
+    const mx = base.x + nx * t + px * off;
+    const my = base.y + ny * t + py * off;
+    balls.push({ x: mx, y: my, r: 0.82 - i * 0.045 });
+  });
+  strokes.push({
+    x1: poll.x,
+    y1: poll.y,
+    x2: poll.x + px * 1.5 - 0.2,
+    y2: poll.y + py * 1.5 + 0.3,
+    r: 0.42,
+  });
+  strokes.push({
+    x1: poll.x,
+    y1: poll.y,
+    x2: poll.x + px * 1.1 + 0.35,
+    y2: poll.y + py * 1.1 + 0.5,
+    r: 0.4,
+  });
+
+  /* Tail — hangs down off the rump and sways with the stride */
   const root = att(SPINE[0].p);
   const t1 = att(pose.tail[0]);
   const t2 = att(pose.tail[1]);
   const t3 = att(pose.tail[2]);
-  strokes.push({ x1: root.x, y1: root.y, x2: t1.x, y2: t1.y, r: 1.3 });
-  strokes.push({ x1: t1.x, y1: t1.y, x2: t2.x, y2: t2.y, r: 1.05 });
-  strokes.push({ x1: t2.x, y1: t2.y, x2: t3.x, y2: t3.y, r: 0.78 });
+  strokes.push({ x1: root.x, y1: root.y, x2: t1.x, y2: t1.y, r: 1.4 });
+  strokes.push({ x1: t1.x, y1: t1.y, x2: t2.x, y2: t2.y, r: 1.15 });
+  strokes.push({ x1: t2.x, y1: t2.y, x2: t3.x, y2: t3.y, r: 0.85 });
+  balls.push({ x: t3.x, y: t3.y, r: 0.8 });
 
   /* Legs — far pair drawn dimmer so the near pair reads on top */
   const leg = (

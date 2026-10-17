@@ -643,8 +643,8 @@ export const MANIFESTO = {
       "Senior hands or no deal. The people who pitch your project are the people who build it.",
     wavelength:
       "One wavelength. Client, crew and dashboard in a single channel — status is never a surprise.",
-    office:
-      "No office tours, because there is no office. The system is the headquarters, and it stays open.",
+    craft:
+      "Craft compounds. Small, deliberate drops, shipped every week, quietly outperform the big-bang launch.",
     zero: "handoffs between the sales team and the build team. There is no sales team.",
   },
   studioTime: {
@@ -669,7 +669,7 @@ export const MANIFESTO = {
 export const MOMENTUM = {
   eyebrow: "Momentum",
   title: "Built to keep moving.",
-  lede: "Orbit: movement, momentum, connection. The gallop is the operating speed — gather, extend, repeat, ship.",
-  figCaption: "Fig. 01 — The gallop, computed live in code. No video, no stock.",
+  lede: "Orbit: movement, momentum, connection. The trot is the working gait — steady, rhythmic, relentless.",
+  figCaption: "Fig. 01 — The horse, computed live in code. No video, no stock.",
   hoverHint: "Hover to pace up",
 } as const;

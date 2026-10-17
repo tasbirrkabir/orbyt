@@ -40,8 +40,8 @@ const STUDIO_BAND = [
  * /work. An editorial systems showcase: three blueprint panels with
  * alternating custom-render layouts, a process band drawn in the same
  * "Ink & Ember" language, then the panel on how engagements actually
- * start. No invented case studies — ORBYT has no office to photograph,
- * so the practice is shown as the system it is (honesty rule).
+ * start. No invented case studies — the practice is shown as
+ * the system it is (honesty rule).
  */
 export function WorkView() {
   return (

@@ -833,3 +833,22 @@ Stage Summary:
 - The horse is finally a horse: real equine proportions (2:1 barrel, 45% legs, 28-42° neck, downward muzzle) hand-posed across the 8-frame transverse gallop, offline-iteratable via scripts/horse-preview.ts before any browser check.
 - Site imagery rule holding: everything computed or originally rendered; zero user-downloaded reference images on the site.
 - Remaining backlog unchanged: 404/6-card/keycap rebuilds are live (verified earlier), PHASE 4 project-ops, staff console, client/admin panels functionality.
+
+---
+Task ID: V-7 (horse redesign #3 + de-office copy)
+Agent: Z.ai Code (main)
+Task: User feedback round 6: ① horse STILL doesn't read as a horse (mobile screenshot showed the flying-gallop extension frame reading fox/leopard); ② the site kept saying "no office" everywhere — "Ei nia kunu kisu na likhlei to hoy" (don't mention it at all).
+
+Work Log:
+- HORSE — strategy change: the stretched flying gallop is inherently ambiguous in dot-silhouette (reads fox/dog/leopard). Redesigned the whole animation as a WORKING TROT with the iconic standing-horse signals: head carried HIGH (poll ~25 vs topline ~19, steep ~60° neck), muzzle always below poll, serrated MANE crest riding the neck's back edge (5 offset balls + forelock strokes) + full HANGING tail (3 tapering strands swaying down-back per pose) + small upright ears.
+- horse-frames.ts fully rewritten: 8 trot poses (diagonal pairs A=(near-fore+far-hind) / B=(far-fore+near-hind): land → carry → push → suspension ×2), anatomical chains (fore 4.8/4.2/1.7, hind 5.5-6.5/4.4-5.6/1.4-2.2), same body (18-unit 2:1 barrel). Bbox now 36×27 (~1.3:1) — the compact iconic profile.
+- Offline iteration via scripts/horse-preview.ts: v1 site render read llama-ish (neck thin, tail invisible, mane lost in glow) → thickened neck (1.95/1.2), enlarged head (skull 1.5, face 0.95/0.68), shortened neck 0.5 unit, mane balls 0.82→0.5 at offset r+0.48, tail pushed outward-back and thickened (1.4/1.15/0.85 + tip ball) so it separates from the rump silhouette. v2 verified horse in all 8 frames.
+- ember-horse.tsx: STEPS_PER_SEC 10.5→8 (trot cadence), GROUND_PER_CYCLE 26→18, glow sprite cell*3→cell*2.4 with tighter alpha stops (0.85/0.35) so mane/head edges survive the LED sampling.
+- Copy updates (content/orbyt.ts MOMENTUM): lede "The trot is the working gait — steady, rhythmic, relentless.", figCaption "The horse, computed live in code"; about aria-label "working trot".
+- DE-OFFICED the site — zero "office" mentions left (rg verified): showcase-gallery sub → "Nothing on this wall is a photograph. Every tile is a live instrument — computed by code, on your machine, right now."; about band → "One distributed crew, one channel. The system holds the work together — status in the open, momentum on the board."; MANIFESTO.notes.office → notes.craft = "Craft compounds. Small, deliberate drops, shipped every week, quietly outperform the big-bang launch." (manifesto-wall usage updated); 3 source comments scrubbed (work-view, home-view, showcase-gallery).
+- Verified (agent-browser): /about desktop 1440 — 4 frame burst: head/neck/mane/tail all read horse, poses advance across captures; iPhone 390 — full horse visible, reads horse. Home: manifesto card N-05 shows craft note (office gone); about band shows new copy. Browser errors: none; lint exit 0; dev.log clean; browser closed before tooling.
+
+Stage Summary:
+- The horse is now built from the signals that make a silhouette read "horse" instantly (high head carriage + mane crest + hanging tail + trot mechanics), no longer from a gait that only reads horse in motion-study context.
+- Site copy principle learned: never explain what the company DOESN'T have — describe what it IS. All "no office" self-negation removed.
+- Reusable: trot pose table with diagonal-pair bookkeeping; mane-crest generator (perpendicular offset balls along a neck spline) in buildFrame.

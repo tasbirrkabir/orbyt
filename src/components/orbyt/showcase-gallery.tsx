@@ -16,11 +16,10 @@ import {
 import { cn } from "@/lib/utils";
 
 /* ── ShowcaseGallery → The Console ─────────────────────────
-   The section that used to hold photographs now holds
-   instruments. ORBYT has no office to photograph and no
-   stock imagery to lean on, so every tile is computed live:
-   an orbit, a carrier stream, a pointer-magnet lattice, a
-   dot-matrix sign and a studio clock. Code is the material. */
+   The wall that could have held photographs holds instruments
+   instead. Every tile is computed live: an orbit, a carrier
+   stream, a pointer-magnet lattice, a dot-matrix sign and a
+   studio clock. Code is the material. */
 
 function InstrumentTile({
   fig,
@@ -82,9 +81,8 @@ export function ShowcaseGallery() {
             Live, <span className="text-primary">not stock.</span>
           </h2>
           <p className="mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">
-            No office tour — there is no office. ORBYT runs as a distributed
-            crew, so nothing in this wall is a photograph: every instrument is
-            drawn by code, on your machine, right now.
+            Nothing on this wall is a photograph. Every tile is a live
+            instrument — computed by code, on your machine, right now.
           </p>
         </Reveal>
         <Reveal delay={0.08} className="hidden shrink-0 sm:block">

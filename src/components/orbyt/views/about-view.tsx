@@ -83,7 +83,7 @@ export function AboutView() {
           </div>
         </Reveal>
 
-        {/* Momentum — the gallop, computed live */}
+        {/* Momentum — the horse, computed live */}
         <Reveal delay={0.16} className="mt-12">
           <div className="max-w-3xl">
             <p className="font-mono text-xs uppercase tracking-[0.18em] text-primary">
@@ -115,13 +115,13 @@ export function AboutView() {
               </span>
             </div>
             <figcaption className="sr-only">
-              An animated dot-matrix horse in full gallop, rendered live in code.
+              An animated dot-matrix horse at a working trot, rendered live in code.
             </figcaption>
           </figure>
         </Reveal>
       </Section>
 
-      {/* The practice, drawn — no office, shown honestly */}
+      {/* The practice, drawn — original renders, shown honestly */}
       <Section id="about-studio" header={null} className="py-4 md:py-6">
         <h2 id="about-studio-heading" className="sr-only">
           How ORBYT runs
@@ -154,8 +154,8 @@ export function AboutView() {
         </div>
         <Reveal delay={0.1} className="mt-4">
           <p className="max-w-2xl border-l-2 border-primary pl-5 text-sm leading-relaxed text-muted-foreground">
-            No office tour, because there is no office. ORBYT runs as a
-            distributed crew — the system is the headquarters.
+            One distributed crew, one channel. The system holds the work
+            together — status in the open, momentum on the board.
           </p>
         </Reveal>
       </Section>

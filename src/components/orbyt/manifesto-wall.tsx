@@ -116,7 +116,7 @@ export function ManifestoWall() {
           <article className={`${CARD} min-h-52`}>
             <CardIndex n={5} />
             <p className="mt-5 font-display text-xl font-bold leading-snug tracking-tight md:text-2xl">
-              {MANIFESTO.notes.office}
+              {MANIFESTO.notes.craft}
             </p>
             <DotFooter className="mt-auto" />
           </article>
