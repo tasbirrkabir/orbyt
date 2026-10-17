@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import {
   FOOTER,
@@ -10,6 +9,7 @@ import {
   WHY_SECTION,
 } from "@/content/orbyt";
 import { Button } from "@/components/ui/button";
+import { CurtainReveal } from "../curtain-reveal";
 import { PageHero } from "../page-hero";
 import { Reveal } from "../reveal";
 import { Section } from "../section";
@@ -89,22 +89,22 @@ export function AboutView() {
         </h2>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           {[
-            { src: "/images/brand/posters.jpg", sub: "One connected system", cls: "md:col-span-2 aspect-[4/3] md:aspect-auto md:h-full" },
-            { src: "/images/brand/skyline.jpg", sub: "Remote by design", cls: "aspect-square" },
-            { src: "/images/brand/keycaps.jpg", sub: "Built, not bought", cls: "aspect-square" },
+            { src: "/images/art/layers.png", sub: "One connected system", cls: "md:col-span-2 aspect-[4/3] md:aspect-auto md:h-full" },
+            { src: "/images/art/remote-constellation.png", sub: "Remote by design", cls: "aspect-square" },
+            { src: "/images/art/build-blocks.png", sub: "Built, not bought", cls: "aspect-square" },
           ].map((shot, i) => (
             <Reveal key={shot.src} delay={i * 0.06} className={shot.cls}>
               <figure className="tint-sweep group relative h-full min-h-40 w-full overflow-hidden border border-border bg-card">
-                <Image
+                <CurtainReveal
                   src={shot.src}
                   alt={shot.sub}
-                  fill
                   sizes="(min-width: 768px) 25vw, 50vw"
-                  className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.05]"
+                  delay={i * 0.07}
+                  imageClassName="transition-transform duration-700 ease-out group-hover:scale-[1.05]"
                 />
                 <div
                   aria-hidden="true"
-                  className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent"
+                  className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent"
                 />
                 <figcaption className="absolute bottom-3 left-3 font-mono text-[10px] uppercase tracking-[0.18em] text-foreground/85">
                   {shot.sub}

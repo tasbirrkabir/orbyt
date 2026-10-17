@@ -14,13 +14,13 @@ import {
 import { SERVICES } from "@/content/orbyt";
 import { cn } from "@/lib/utils";
 
-/** Service → visual mapping (reuses the showcase render set). */
+/** Service → visual mapping (original ORBYT renders in /images/art). */
 const SERVICE_IMAGES: Record<string, string> = {
-  "ai-automation": "/images/brand/ember.jpg",
-  "web-digital": "/images/brand/control.jpg",
-  "growth-marketing": "/images/brand/skyline.jpg",
-  "data-tracking": "/images/brand/posters.jpg",
-  "digital-systems": "/images/brand/beacon.jpg",
+  "ai-automation": "/images/art/ai-synapse.png",
+  "web-digital": "/images/art/design-grid.png",
+  "growth-marketing": "/images/art/growth-beam.png",
+  "data-tracking": "/images/art/data-pulse2.png",
+  "digital-systems": "/images/art/ops-assembly.png",
 };
 
 /**

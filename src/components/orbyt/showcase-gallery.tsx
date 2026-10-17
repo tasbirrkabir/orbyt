@@ -20,19 +20,20 @@ type Tile = {
   height: number;
 };
 
-/* The brand plates — the practice as a system, not a place. */
+/* The treated brand plates — the user's references, regraded into ORBYT's
+   ember duotone (scripts/treat-plates.py). Used only here, on purpose. */
 const ROW_A: Tile[] = [
-  { src: "/images/brand/beacon.jpg", label: "THE BEACON", sub: "Build the thing people gather around", aspect: "aspect-[4/5]", width: 340, height: 425 },
-  { src: "/images/brand/posters.jpg", label: "THE BLUEPRINT", sub: "Every surface on the same grid", aspect: "aspect-[4/3]", width: 460, height: 345 },
-  { src: "/images/brand/control.jpg", label: "THE CRAFT", sub: "Hands on the keys, eyes on the data", aspect: "aspect-square", width: 380, height: 380 },
-  { src: "/images/brand/keycaps.jpg", label: "THE MANTRA", sub: "Don't give up. Do it. Ship.", aspect: "aspect-square", width: 380, height: 380 },
+  { src: "/images/plates/beacon.jpg", label: "THE BEACON", sub: "Build the thing people gather around", aspect: "aspect-[4/5]", width: 340, height: 425 },
+  { src: "/images/plates/posters.jpg", label: "THE BLUEPRINT", sub: "Every surface on the same grid", aspect: "aspect-[4/3]", width: 460, height: 345 },
+  { src: "/images/plates/control.jpg", label: "THE CRAFT", sub: "Hands on the keys, eyes on the data", aspect: "aspect-square", width: 380, height: 380 },
+  { src: "/images/plates/keycaps.jpg", label: "THE MANTRA", sub: "Don't give up. Do it. Ship.", aspect: "aspect-square", width: 380, height: 380 },
 ];
 
 const ROW_B: Tile[] = [
-  { src: "/images/brand/skyline.jpg", label: "THE AMBITION", sub: "Growth you can look up at", aspect: "aspect-[3/4]", width: 360, height: 480 },
-  { src: "/images/brand/ember.jpg", label: "THE MOMENTUM", sub: "Motion that keeps its heat", aspect: "aspect-[3/4]", width: 360, height: 480 },
-  { src: "/images/brand/invite.jpg", label: "THE INVITE", sub: "The letter that starts the project", aspect: "aspect-square", width: 380, height: 380 },
-  { src: "/images/brand/signal-lost.jpg", label: "THE GUARDRAIL", sub: "Nothing stays lost. Not even 404s.", aspect: "aspect-square", width: 380, height: 380 },
+  { src: "/images/plates/skyline.jpg", label: "THE AMBITION", sub: "Growth you can look up at", aspect: "aspect-[3/4]", width: 360, height: 480 },
+  { src: "/images/plates/ember.jpg", label: "THE MOMENTUM", sub: "Motion that keeps its heat", aspect: "aspect-[3/4]", width: 360, height: 480 },
+  { src: "/images/plates/invite.jpg", label: "THE INVITE", sub: "The letter that starts the project", aspect: "aspect-square", width: 380, height: 380 },
+  { src: "/images/plates/signal-lost.jpg", label: "THE GUARDRAIL", sub: "Nothing stays lost. Not even 404s.", aspect: "aspect-square", width: 380, height: 380 },
 ];
 
 function GalleryTile({ tile }: { tile: Tile }) {

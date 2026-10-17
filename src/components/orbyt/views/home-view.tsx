@@ -18,7 +18,9 @@ import { Button } from "@/components/ui/button";
 import { BootSequence } from "../boot-sequence";
 import { ChainDiagram } from "../chain-diagram";
 import { CtaStrip } from "../cta-strip";
+import { CurtainReveal } from "../curtain-reveal";
 import { emphasize } from "../emphasize";
+import { GiantMarquee } from "../giant-marquee";
 import { Hero } from "../hero";
 import { Reveal } from "../reveal";
 import { Section } from "../section";
@@ -28,18 +30,19 @@ import { SpotlightCard } from "../spotlight-card";
 import { TeamSection } from "../team-section";
 import { WorkedWith } from "../worked-with";
 
+/* Original ORBYT renders (public/images/art) — no stock, no offices. */
 const SYSTEM_CARD_IMAGES: Record<string, { src: string; alt: string }> = {
   acquisition: {
-    src: "/images/brand/control.jpg",
-    alt: "A hand reaching over a glowing keyboard in a red-orange field — the click, wired to everything after it",
+    src: "/images/art/growth-beam.png",
+    alt: "A single beam of orange light fanning into expanding broadcast arcs over darkness — one capture point, every channel after it",
   },
   "ai-ops": {
-    src: "/images/brand/ember.jpg",
-    alt: "A long-exposure streak of fire crossing a dark frame — automated momentum",
+    src: "/images/art/engine-core.png",
+    alt: "A dark mechanical engine core with ember energy running between its gears — momentum that runs itself",
   },
   "connected-web": {
-    src: "/images/brand/beacon.jpg",
-    alt: "A glowing orange monolith with a crowd gathered around it — one beacon, every channel pointing at it",
+    src: "/images/art/web-portal.png",
+    alt: "A glowing wireframe sphere of thin orange lines floating in dark space — one connected surface everything routes through",
   },
 };
 
@@ -55,6 +58,7 @@ export function HomeView() {
       <Hero />
       <WorkedWith />
       <ShowcaseGallery />
+      <GiantMarquee />
       <ProblemTeaser />
       <ServicesOverview />
       <ProcessStrip />
@@ -197,16 +201,16 @@ function SystemsTeaser() {
               <SpotlightCard className="h-full">
                 {img ? (
                   <div className="tint-sweep relative aspect-[16/9] overflow-hidden border-b border-border">
-                    <Image
+                    <CurtainReveal
                       src={img.src}
                       alt={img.alt}
-                      fill
                       sizes="(min-width: 768px) 360px, 100vw"
-                      className="object-cover transition-transform duration-700 ease-out group-hover/spot:scale-[1.05]"
+                      delay={i * 0.08}
+                      imageClassName="transition-transform duration-700 ease-out group-hover/spot:scale-[1.05]"
                     />
                     <div
                       aria-hidden="true"
-                      className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent"
+                      className="pointer-events-none absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent"
                     />
                   </div>
                 ) : null}

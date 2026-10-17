@@ -20,9 +20,10 @@ export default function NotFound() {
         <div className="mx-auto flex w-full max-w-6xl flex-col items-center px-4 py-24 text-center sm:px-6 md:py-32">
           <figure className="group relative aspect-square w-full max-w-sm overflow-hidden border border-border bg-card shadow-pixel-orange transition-colors duration-300 hover:border-primary/60">
             <Image
-              src="/images/brand/signal-lost.jpg"
+              src="/images/plates/signal-lost.jpg"
               alt="Glowing orange pixel artwork of a figure falling beside the words 'not found' — the signal was lost"
               fill
+              priority
               sizes="(min-width: 640px) 380px, 90vw"
               className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
             />

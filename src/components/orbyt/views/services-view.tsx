@@ -17,26 +17,27 @@ import { Reveal } from "../reveal";
 import { Section } from "../section";
 import { cn } from "@/lib/utils";
 
+/* Original ORBYT renders (public/images/art) — one per pillar. */
 const SERVICE_IMAGES: Record<string, { src: string; caption: string }> = {
   "ai-automation": {
-    src: "/images/brand/ember.jpg",
-    caption: "Momentum, wired into the workflow.",
+    src: "/images/art/ai-synapse.png",
+    caption: "A network that watches back.",
   },
   "web-digital": {
-    src: "/images/brand/control.jpg",
-    caption: "Surfaces sketched, then shipped.",
+    src: "/images/art/design-grid.png",
+    caption: "Surfaces drawn on the same grid, then shipped.",
   },
   "growth-marketing": {
-    src: "/images/brand/skyline.jpg",
-    caption: "Ambition, pointed at the sky.",
+    src: "/images/art/growth-beam.png",
+    caption: "One signal, fanning out.",
   },
   "data-tracking": {
-    src: "/images/brand/posters.jpg",
+    src: "/images/art/data-pulse2.png",
     caption: "Every number on the same grid.",
   },
   "digital-systems": {
-    src: "/images/brand/beacon.jpg",
-    caption: "One signal everything routes through.",
+    src: "/images/art/ops-assembly.png",
+    caption: "Modules moving through checkpoints, in order.",
   },
 };
 
@@ -147,7 +148,7 @@ function ServiceBlock({
           </Reveal>
           <Reveal delay={0.12} className="mt-8">
             <ParallaxImage
-              src={SERVICE_IMAGES[service.slug]?.src ?? "/images/brand/beacon.jpg"}
+              src={SERVICE_IMAGES[service.slug]?.src ?? "/images/art/web-portal.png"}
               alt={`Rendered visual for ${service.title}`}
               label={`Service ${service.index}`}
               caption={SERVICE_IMAGES[service.slug]?.caption}

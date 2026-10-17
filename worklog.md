@@ -755,3 +755,20 @@ Stage Summary:
 - The site now runs on the user's own 8 brand plates, customized to ORBYT (foreign wordmarks/advisory/watermarks removed), used across hero, home gallery, systems teasers, services, work, about and the 404.
 - Hero is a next-level layered composition (curtain reveal, Ken Burns, pointer-depth parallax, floating plate, rotating seal); the orange CTA band now leans with scroll velocity.
 - Old /images/art/*.png remain only as essay covers (insights); all other art references replaced.
+---
+Task ID: V-4 (visual correction round 4 — examples not placements)
+Agent: Z.ai Code (main)
+Task: User clarified: the 8 downloaded images were EXAMPLES of the vibe, not assets to plaster site-wide ("jeikhane use korso oikhane use korte bolinai — oigula example hishabe disi, erokom stuffs add deo, animations deo"); hero must go back to the previous OrbitSystem design ("hero tare ager moto koro"); downloaded images must be visibly changed ("you've to change it a little").
+
+Work Log:
+- HERO REVERTED: hero.tsx back on OrbitSystem (mark + three counter-rotating rings with upright service chips + SpinBadge + pointer tilt); deleted hero-visual.tsx (the beacon-plate composition) — no references left.
+- 13 ORIGINAL RENDERS generated via z-ai image CLI (scripts/gen-plates.sh, "Ember Poster" style anchor: matte black + ember orange, grain, no text/no people/no offices; parallel batch raced → reran at -P 2; 3 pieces rejected on review — design-grid rendered real architecture, growth-beam a letterform, ops-assembly too sparse — regenerated with explicit "no buildings/architecture/letterforms/logo shapes" negatives; all 13 now reviewed visually and on-brief).
+- PLATE TREATMENT: scripts/treat-plates.py turns the 8 downloads into /images/plates/*.jpg — autocontrast, desaturation, ember duotone (void→rust→warm highlight), film grain, vignette; signal-lost gets a gentler pass to keep pixel text readable.
+- PLACEMENT: downloads now live ONLY in showcase-gallery (as treated plates, honestly labelled) and the 404. Every functional slot uses original art: home/work systems (growth-beam, engine-core, web-portal), work process band (discover-contour, build-blocks, connect-corridor, grow-terrace), about band (layers, remote-constellation, build-blocks), services (ai-synapse, design-grid, growth-beam, data-pulse2, ops-assembly); services-with-preview mirrors services; not-found uses plates/signal-lost.
+- NEW ANIMATIONS: GiantMarquee (billboard outline text, dual counter-scrolling rows, velocity-skew via reactive Marquee, mask-faded edges) inserted between showcase and problem sections; CurtainReveal (clip-path wipe + zoom settle + ember edge seam, staggered, reduced-motion safe) on systems cards, work band, about band; beam-border (animated conic-gradient border via @property --beam-angle, mask ring) on the "How engagements start" card; 404 image got priority (LCP warning cleared).
+- Verified with agent-browser: desktop 1440 — hero orbit + chips upright, gallery duotone plates, giant marquee, systems cards art, /work band + beam card, /services art, 404 plate; iPhone 16 — hero, marquee, scrollWidth−clientWidth = 0; all 9 marketing routes 200; console clean; lint clean; dev.log clean.
+
+Stage Summary:
+- Hero is the OrbitSystem again (user's "ager moto"); the site's imagery is now majority-ORIGINAL (13 new pieces) in the examples' energy; user downloads survive only as heavily-regraded plates in the gallery + 404.
+- Motion stack gained: giant type marquee, curtain reveals, beam border — layered on boot/scramble/magnetic/marquee/orbit/parallax.
+- Scripts committed: scripts/gen-plates.sh (art set), scripts/treat-plates.py (duotone pipeline). Gotchas: batch image gen must run ≤2 concurrent; review every render (architecture/letterform drift).

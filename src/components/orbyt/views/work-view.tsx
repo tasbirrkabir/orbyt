@@ -1,37 +1,39 @@
 import Link from "next/link";
-import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { CONTACT, SITE, SYSTEMS_SECTION, SYSTEM_BLUEPRINTS } from "@/content/orbyt";
 import { Button } from "@/components/ui/button";
+import { CurtainReveal } from "../curtain-reveal";
 import { PageHero } from "../page-hero";
 import { ParallaxImage } from "../parallax-image";
 import { Reveal } from "../reveal";
 import { Section } from "../section";
 import { cn } from "@/lib/utils";
 
+/* Original ORBYT renders (public/images/art) — the practice as a system. */
 const SYSTEM_IMAGES: Record<string, { src: string; caption: string; alt: string }> = {
   acquisition: {
-    src: "/images/brand/control.jpg",
-    caption: "The click, wired to everything after it.",
-    alt: "A hand reaching over a glowing keyboard in a red-orange field",
+    src: "/images/art/growth-beam.png",
+    caption: "One capture point, every channel after it.",
+    alt: "A single beam of orange light fanning into expanding broadcast arcs over darkness",
   },
   "ai-ops": {
-    src: "/images/brand/ember.jpg",
-    caption: "Momentum, put in motion on purpose.",
-    alt: "A long-exposure streak of fire crossing a dark frame",
+    src: "/images/art/engine-core.png",
+    caption: "Momentum that runs itself.",
+    alt: "A dark mechanical engine core with ember energy running between its gears",
   },
   "connected-web": {
-    src: "/images/brand/beacon.jpg",
-    caption: "One beacon every channel points at.",
-    alt: "A glowing orange monolith with a crowd gathered around it",
+    src: "/images/art/web-portal.png",
+    caption: "One connected surface everything routes through.",
+    alt: "A glowing wireframe sphere of thin orange lines floating in dark space",
   },
 };
 
+/* Process band — original renders, one per step. */
 const STUDIO_BAND = [
-  { src: "/images/brand/posters.jpg", label: "DISCOVER", sub: "Mapping the shape of the system" },
-  { src: "/images/brand/keycaps.jpg", label: "BUILD", sub: "Shipped in small, deliberate presses" },
-  { src: "/images/brand/invite.jpg", label: "CONNECT", sub: "Follow-up that actually lands" },
-  { src: "/images/brand/skyline.jpg", label: "GROW", sub: "The view the system earns" },
+  { src: "/images/art/discover-contour.png", label: "DISCOVER", sub: "Mapping the shape of the system" },
+  { src: "/images/art/build-blocks.png", label: "BUILD", sub: "Shipped in small, deliberate layers" },
+  { src: "/images/art/connect-corridor.png", label: "CONNECT", sub: "Follow-up that actually lands" },
+  { src: "/images/art/grow-terrace.png", label: "GROW", sub: "The view the system earns" },
 ];
 
 /**
@@ -178,16 +180,16 @@ export function WorkView() {
               <Reveal key={shot.src} delay={i * 0.06} className="min-w-0">
                 <figure className="tint-sweep group relative overflow-hidden border border-border bg-card transition-colors duration-300 hover:border-primary/60">
                   <div className="relative aspect-[4/3] w-full overflow-hidden">
-                    <Image
+                    <CurtainReveal
                       src={shot.src}
                       alt={shot.sub}
-                      fill
                       sizes="(min-width: 1024px) 300px, (min-width: 640px) 50vw, 100vw"
-                      className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
+                      delay={i * 0.07}
+                      imageClassName="transition-transform duration-700 ease-out group-hover:scale-[1.06]"
                     />
                     <div
                       aria-hidden="true"
-                      className="absolute inset-0 bg-gradient-to-t from-background/85 via-background/10 to-transparent"
+                      className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/85 via-background/10 to-transparent"
                     />
                   </div>
                   <figcaption className="absolute bottom-0 left-0 right-0 p-4">
@@ -206,7 +208,7 @@ export function WorkView() {
 
         {/* How engagements start */}
         <Reveal className="mt-20">
-          <div className="border border-border bg-card p-8 shadow-pixel-orange md:p-12">
+          <div className="beam-border border border-border bg-card p-8 shadow-pixel-orange md:p-12">
             <p className="font-mono text-xs uppercase tracking-[0.18em] text-primary">
               How engagements start
             </p>

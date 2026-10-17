@@ -151,6 +151,55 @@
   transform: translateX(120%) skewX(-18deg);
 }
 
+/* ── Orbyt · Beam border ────────────────────────────────────
+   A single ember light orbiting a card's border ring. The angle is
+   a registered custom property so the conic gradient itself animates;
+   mask keeps only the 1px ring visible. */
+@property --beam-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes beam-spin {
+  to { --beam-angle: 360deg; }
+}
+.beam-border {
+  position: relative;
+  isolation: isolate;
+}
+.beam-border::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--beam-angle),
+    transparent 0deg,
+    transparent 250deg,
+    color-mix(in oklab, var(--primary) 85%, white) 320deg,
+    var(--primary) 340deg,
+    transparent 360deg
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: beam-spin 5.5s linear infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── Orbyt · Outline display text (giant marquee) ─────────── */
+.text-outline {
+  color: transparent;
+  -webkit-text-stroke: 1px color-mix(in oklab, var(--foreground) 30%, transparent);
+}
+.text-outline-primary {
+  color: transparent;
+  -webkit-text-stroke: 1px color-mix(in oklab, var(--primary) 62%, transparent);
+}
+
 /* ── Orbyt · Theme: "Ink & Ember" ──────────────────────────
    The logo is loud: the interface is quiet.
    BLACK (ink) + ELECTRIC/VIVID ORANGE (#FD5A01, from the mark).
@@ -276,6 +325,9 @@
   .animate-pulse-glow,
   .animate-float,
   .animate-spin-slow {
+    animation: none !important;
+  }
+  .beam-border::before {
     animation: none !important;
   }
 }
