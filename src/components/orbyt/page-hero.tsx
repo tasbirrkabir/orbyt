@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { EmberField } from "./ember-field";
 
 type PageHeroProps = {
   /** Anchor id; the h1 receives `${id}-heading` for aria-labelledby. */
@@ -42,7 +43,8 @@ export function PageHero({
       >
         +
       </span>
-      <div className="mx-auto w-full max-w-6xl px-4 pb-14 pt-16 sm:px-6 md:pb-20 md:pt-24 lg:px-8">
+      <EmberField density={30} className="opacity-50" />
+      <div className="relative mx-auto w-full max-w-6xl px-4 pb-14 pt-16 sm:px-6 md:pb-20 md:pt-24 lg:px-8">
         <p className="font-mono text-xs uppercase tracking-[0.18em] text-primary">
           {eyebrow}
         </p>

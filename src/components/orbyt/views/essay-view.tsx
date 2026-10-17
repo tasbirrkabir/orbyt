@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import type { Essay } from "@/content/insights";
@@ -34,6 +35,18 @@ export function EssayView({ essay, nextEssay }: { essay: Essay; nextEssay: Essay
         <p className="mt-6 text-lg leading-8 text-muted-foreground">
           {essay.dek}
         </p>
+
+        {/* Cover render, clipped to the brand's pixel corner */}
+        <div className="relative mt-10 aspect-[16/9] w-full overflow-hidden border border-border bg-card [clip-path:polygon(0_0,calc(100%-22px)_0,100%_22px,100%_100%,0_100%)]">
+          <Image
+            src={`/images/essays/${essay.slug}.png`}
+            alt=""
+            fill
+            priority
+            sizes="(min-width: 768px) 672px, 100vw"
+            className="object-cover"
+          />
+        </div>
       </Reveal>
 
       <div className="mt-12 border-t border-border pt-10">

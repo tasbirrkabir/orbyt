@@ -654,3 +654,24 @@ Work Log:
 Stage Summary:
 - The two panels are now one loop instead of two showcases: staff can serve tenants end-to-end from /admin (messages, requests, sign-offs, deliverables, invoices, payments, meetings) and every action lands instantly on the client's home screen with inline decisions; clients can raise requests, message the crew, decide CRs/approvals from home and report payments, and every client claim waits for a human staff confirmation. Honest-data principles held throughout: claims are never revenue, unread is a stored fact, and both sides read the same ledger.
 - Known platform notes: a benign Radix aria-controls hydration warning appears in dev (pre-existing class, unpatched by React, no functional impact); first click on a freshly re-rendered send button can be swallowed between renders (second click lands; handler verified by 200 + state flip).
+
+---
+Task ID: 36
+Agent: main (Z.ai Code)
+Task: Visual upgrade of the marketing site — "Website ta aro shundor koto image, animations diye" (make the site more beautiful with more images and animations). Respond to the "panels feel useless" feedback on its visual axis.
+
+Work Log:
+- Generated a 15-image brand render set in the "Ink & Ember" aesthetic (deep matte black + electric orange #FD5A01, ember glow, premium 3D) via `scripts/gen-brand-images.mjs` (z-ai-web-dev-sdk, concurrency 4, retry on 429): 8 showcase renders, 3 system-blueprint visuals, 4 essay covers → `public/images/{showcase,systems,essays}/`. All 15/15 succeeded.
+- New components (src/components/orbyt/):
+  - `ember-field.tsx` — canvas particle background: rising, twinkling embers; DPR-aware, ResizeObserver, static frame under prefers-reduced-motion; used in Hero (density 52) and PageHero (density 30, so every interior page gets animated background).
+  - `parallax-image.tsx` — scroll-parallax image (frame clip-wipe reveal, hover zoom, label/caption overlay, pixel-corner clip) + exported `TiltCard` (pointer-tracked 3D tilt with glare).
+  - `showcase-gallery.tsx` — full-bleed dual-direction image marquee ("Systems with a pulse."), rows pause on hover, masked edges, honest labels (system visualizations, not invented case studies).
+  - `services-with-preview.tsx` — services index rows with a cursor-trailing floating image preview (spring-damped, cross-fading per service); pointer-fine gated via useSyncExternalStore (lint-clean, no setState-in-effect); touch devices get rows only.
+- Page upgrades: Hero + PageHero ember fields; home adds ShowcaseGallery (after WorkedWith), services rows → ServicesWithPreview, insights teaser rows gain cover thumbs; /services blocks gain a ParallaxImage per pillar; /work blueprints gain blueprint visuals (acquisition/ai-ops/connected-web) above the story; /insights index rows gain 4-col cover images; essay reading pages gain a priority cover render under the dek.
+- Verification loop: fixed transient runtime errors (missing useState import, dropped subscribeFinePointer helper) caught by browser; services preview temporarily force-gated to visually verify the floating card, then reverted to the pointer-fine gate (headless browser reports pointer:none so the gate correctly hides it there).
+- Checks: lint clean; GET / /work /services /insights /insights/[slug] all 200 in dev.log; zero console/page errors; mobile 375px: overflowX=0, 0 broken images; footer sticks/pushes correctly; screenshots captured for desktop + mobile.
+
+Stage Summary:
+- Site now has 15 brand renders + 3 animated new components + animated backgrounds on all marketing pages; home gained an image gallery section; every marketing route got imagery.
+- Reduced-motion stays respected everywhere (EmberField static, marquee/parallax/tilt disabled).
+- Files: scripts/gen-brand-images.mjs (regenerable), 4 new components, edits in hero/page-hero/home-view/work-view/services-view/insights-view/essay-view.

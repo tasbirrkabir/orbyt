@@ -12,9 +12,33 @@ import { Button } from "@/components/ui/button";
 import { ChainDiagram } from "../chain-diagram";
 import { emphasize } from "../emphasize";
 import { PageHero } from "../page-hero";
+import { ParallaxImage } from "../parallax-image";
 import { Reveal } from "../reveal";
 import { Section } from "../section";
 import { cn } from "@/lib/utils";
+
+const SERVICE_IMAGES: Record<string, { src: string; caption: string }> = {
+  "ai-automation": {
+    src: "/images/showcase/showcase-06.png",
+    caption: "Intelligence wired into the core.",
+  },
+  "web-digital": {
+    src: "/images/showcase/showcase-01.png",
+    caption: "Surfaces that report while they perform.",
+  },
+  "growth-marketing": {
+    src: "/images/showcase/showcase-03.png",
+    caption: "Channels as one connected mesh.",
+  },
+  "data-tracking": {
+    src: "/images/showcase/showcase-02.png",
+    caption: "Signal, streaming honestly.",
+  },
+  "digital-systems": {
+    src: "/images/showcase/showcase-07.png",
+    caption: "Tools moving work, not people chasing tools.",
+  },
+};
 
 /**
  * /services. Full pillar detail: one editorial section per service,
@@ -120,6 +144,14 @@ function ServiceBlock({
               </p>
               <p className="mt-2 text-base leading-relaxed">{service.why}</p>
             </div>
+          </Reveal>
+          <Reveal delay={0.12} className="mt-8">
+            <ParallaxImage
+              src={SERVICE_IMAGES[service.slug]?.src ?? "/images/showcase/showcase-04.png"}
+              alt={`Rendered visual for ${service.title}`}
+              label={`Service ${service.index}`}
+              caption={SERVICE_IMAGES[service.slug]?.caption}
+            />
           </Reveal>
         </div>
 

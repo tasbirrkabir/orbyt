@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { ESSAYS } from "@/content/insights";
@@ -21,6 +22,8 @@ import { emphasize } from "../emphasize";
 import { Hero } from "../hero";
 import { Reveal } from "../reveal";
 import { Section } from "../section";
+import { ServicesWithPreview } from "../services-with-preview";
+import { ShowcaseGallery } from "../showcase-gallery";
 import { SpotlightCard } from "../spotlight-card";
 import { TeamSection } from "../team-section";
 import { WorkedWith } from "../worked-with";
@@ -36,6 +39,7 @@ export function HomeView() {
       <BootSequence />
       <Hero />
       <WorkedWith />
+      <ShowcaseGallery />
       <ProblemTeaser />
       <ServicesOverview />
       <ProcessStrip />
@@ -105,35 +109,8 @@ function ServicesOverview() {
       titleAccent={SERVICES_SECTION.titleAccent}
       lede={SERVICES_SECTION.lede}
     >
-      <div className="mt-14 border-b border-border">
-        {SERVICES.map((service, i) => (
-          <Reveal
-            key={service.slug}
-            delay={i * 0.04}
-            className="border-t border-border"
-          >
-            <Link
-              href={`/services#${service.slug}`}
-              className="group grid grid-cols-1 gap-2 py-6 md:grid-cols-12 md:items-baseline md:gap-6 md:py-7"
-            >
-              <span className="min-w-0 font-mono text-xs text-muted-foreground md:col-span-1">
-                {service.index}
-              </span>
-              <span className="min-w-0 font-display text-xl font-bold tracking-tight transition-colors group-hover:text-primary md:col-span-4 md:text-2xl">
-                {service.title}
-              </span>
-              <span className="min-w-0 text-sm leading-relaxed text-muted-foreground md:col-span-6 md:text-base">
-                {service.short}
-              </span>
-              <span className="hidden min-w-0 justify-end md:col-span-1 md:flex">
-                <ArrowRight
-                  aria-hidden="true"
-                  className="size-5 text-muted-foreground transition-colors group-hover:text-primary"
-                />
-              </span>
-            </Link>
-          </Reveal>
-        ))}
+      <div className="mt-14">
+        <ServicesWithPreview />
       </div>
 
       <div className="mt-12">
@@ -286,12 +263,23 @@ function InsightsTeaser() {
           >
             <Link
               href={`/insights/${essay.slug}`}
-              className="group grid grid-cols-1 gap-2 py-6 md:grid-cols-12 md:items-baseline md:gap-6 md:py-7"
+              className="group grid grid-cols-1 gap-4 py-6 md:grid-cols-12 md:items-center md:gap-6 md:py-7"
             >
-              <span className="min-w-0 font-mono text-xs text-muted-foreground md:col-span-1">
-                {String(i + 1).padStart(2, "0")}
+              <span className="relative block aspect-[16/10] w-full overflow-hidden border border-border sm:max-w-[180px] md:col-span-2">
+                <Image
+                  src={`/images/essays/${essay.slug}.png`}
+                  alt=""
+                  fill
+                  sizes="180px"
+                  className="object-cover transition-transform duration-500 group-hover:scale-[1.06]"
+                />
               </span>
-              <span className="min-w-0 md:col-span-8">
+              <span className="min-w-0 md:col-span-1">
+                <span className="font-mono text-xs text-muted-foreground">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+              </span>
+              <span className="min-w-0 md:col-span-7">
                 <span className="block font-display text-xl font-bold tracking-tight transition-colors group-hover:text-primary md:text-2xl">
                   {essay.title}
                 </span>
@@ -299,7 +287,7 @@ function InsightsTeaser() {
                   {essay.dek}
                 </span>
               </span>
-              <span className="flex items-center gap-3 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground md:col-span-3 md:justify-end">
+              <span className="flex items-center gap-3 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground md:col-span-2 md:justify-end">
                 {essay.minutes} MIN READ
                 <ArrowRight
                   aria-hidden="true"

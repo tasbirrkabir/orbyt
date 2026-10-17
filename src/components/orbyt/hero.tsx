@@ -14,6 +14,7 @@ import { HERO, HOME_TRUST, SITE } from "@/content/orbyt";
 import { Button } from "@/components/ui/button";
 import { AnimatedMark } from "./animated-mark";
 import { CrossField } from "./cross-field";
+import { EmberField } from "./ember-field";
 import { FadeUp } from "./reveal";
 import { Magnetic } from "./magnetic";
 import { Marquee } from "./marquee";
@@ -48,8 +49,9 @@ export function Hero() {
       className="relative scroll-mt-20 overflow-hidden bg-blueprint"
     >
       <CrossField />
+      <EmberField density={52} className="opacity-70" />
 
-      <div className="mx-auto w-full max-w-6xl px-4 pb-16 pt-14 sm:px-6 md:pt-20 lg:px-8">
+      <div className="relative mx-auto w-full max-w-6xl px-4 pb-16 pt-14 sm:px-6 md:pt-20 lg:px-8">
         <div className="grid w-full grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-8">
           {/* Copy */}
           <div className="min-w-0 lg:col-span-7">

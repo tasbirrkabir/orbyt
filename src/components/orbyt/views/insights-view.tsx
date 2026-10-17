@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { ESSAYS } from "@/content/insights";
@@ -36,10 +37,25 @@ export function InsightsView() {
                 href={`/insights/${essay.slug}`}
                 className="group grid grid-cols-1 gap-3 py-8 md:grid-cols-12 md:gap-8 md:py-10"
               >
-                <span className="min-w-0 font-mono text-xs text-muted-foreground md:col-span-1">
-                  {String(i + 1).padStart(2, "0")}
+                <span className="relative block aspect-[16/10] w-full overflow-hidden border border-border md:col-span-4">
+                  <Image
+                    src={`/images/essays/${essay.slug}.png`}
+                    alt=""
+                    fill
+                    sizes="(min-width: 768px) 380px, 100vw"
+                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.05]"
+                  />
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent"
+                  />
                 </span>
-                <span className="min-w-0 md:col-span-9">
+                <span className="min-w-0 md:col-span-1">
+                  <span className="font-mono text-xs text-muted-foreground">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                </span>
+                <span className="min-w-0 md:col-span-5">
                   <span className="block font-display text-2xl font-bold tracking-tight transition-colors group-hover:text-primary md:text-3xl">
                     {essay.title}
                   </span>

@@ -3,8 +3,24 @@ import { ArrowRight } from "lucide-react";
 import { CONTACT, SITE, SYSTEMS_SECTION, SYSTEM_BLUEPRINTS } from "@/content/orbyt";
 import { Button } from "@/components/ui/button";
 import { PageHero } from "../page-hero";
+import { ParallaxImage } from "../parallax-image";
 import { Reveal } from "../reveal";
 import { Section } from "../section";
+
+const SYSTEM_IMAGES: Record<string, { src: string; caption: string }> = {
+  acquisition: {
+    src: "/images/systems/acquisition.png",
+    caption: "Every channel pouring into one core.",
+  },
+  "ai-ops": {
+    src: "/images/systems/ai-ops.png",
+    caption: "A light heart, ringed by running machinery.",
+  },
+  "connected-web": {
+    src: "/images/systems/connected-web.png",
+    caption: "Pages as one connected surface.",
+  },
+};
 
 /**
  * /work. Honest systems: no invented case studies, three blueprint detail
@@ -33,25 +49,38 @@ export function WorkView() {
 
         {/* Blueprint detail panels */}
         <div className="mt-14 border-b border-border">
-          {SYSTEM_BLUEPRINTS.map((blueprint) => (
-            <Reveal key={blueprint.id} className="border-t border-border">
-              <article className="grid grid-cols-1 gap-10 py-12 md:py-16 lg:grid-cols-12">
-                <div className="min-w-0 lg:col-span-5">
-                  <p className="font-mono text-xs uppercase tracking-[0.18em] text-primary">
-                    System · {blueprint.id}
-                  </p>
-                  <h3 className="mt-4 font-display text-2xl font-bold tracking-tight md:text-3xl">
-                    {blueprint.title}
-                  </h3>
-                  <p className="mt-3 text-base leading-relaxed text-muted-foreground">
-                    {blueprint.for}
-                  </p>
-                </div>
+          {SYSTEM_BLUEPRINTS.map((blueprint, i) => {
+            const img = SYSTEM_IMAGES[blueprint.id];
+            return (
+              <Reveal key={blueprint.id} className="border-t border-border">
+                <article className="grid grid-cols-1 gap-10 py-12 md:py-16 lg:grid-cols-12">
+                  <div className="min-w-0 lg:col-span-5">
+                    <p className="font-mono text-xs uppercase tracking-[0.18em] text-primary">
+                      System · {blueprint.id}
+                    </p>
+                    <h3 className="mt-4 font-display text-2xl font-bold tracking-tight md:text-3xl">
+                      {blueprint.title}
+                    </h3>
+                    <p className="mt-3 text-base leading-relaxed text-muted-foreground">
+                      {blueprint.for}
+                    </p>
+                  </div>
 
-                <div className="min-w-0 lg:col-span-7">
-                  <p className="max-w-2xl text-base leading-relaxed text-foreground/90">
-                    {blueprint.story}
-                  </p>
+                  <div className="min-w-0 lg:col-span-7">
+                    {img ? (
+                      <ParallaxImage
+                        src={img.src}
+                        alt={`Rendered visualization of ${blueprint.title.toLowerCase()}`}
+                        label={blueprint.id.toUpperCase()}
+                        caption={img.caption}
+                        priority={i === 0}
+                        className="mb-8"
+                      />
+                    ) : null}
+
+                    <p className="max-w-2xl text-base leading-relaxed text-foreground/90">
+                      {blueprint.story}
+                    </p>
 
                   <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-2">
                     <div className="min-w-0">
@@ -92,7 +121,8 @@ export function WorkView() {
                 </div>
               </article>
             </Reveal>
-          ))}
+          );
+          })}
         </div>
 
         {/* How engagements start */}
