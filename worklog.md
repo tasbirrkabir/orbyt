@@ -793,3 +793,22 @@ Stage Summary:
 - The reference images now exist ONLY as inspiration — every visual is computed: the 404 sign is ~1000 live ember dots, the horse is IK-driven math, the wall is typographic truth (honest: "no office", "no sales team", "no handoffs").
 - Keyboard integration lives on /404 ("press any key to go home") as the brand's own mechanical switch; horse lives on /about as the momentum narrative.
 - Known pre-existing (documented, not fixed): hydration attribute warning from Cursor/shell (all routes, dev-only, benign); sandbox dev transitions 5-8s when cold.
+
+---
+Task ID: V-5 (horse fix + gallery de-photo — user feedback round 5)
+Agent: Z.ai Code (main)
+Task: User feedback: ① the dot-matrix horse "doesn't look like a horse — make it a horse no matter what"; ② the showcase section still displayed the 8 downloaded pictures ("downloaded pictures keno eikhane diye rakhso") — remove them entirely and put something real there instead of dumped static images.
+
+Work Log:
+- HORSE REBUILT as hand-authored keyframes (no more IK): new `src/components/orbyt/horse-frames.ts` defines 8 poses of a transverse gallop (after Muybridge: extended suspension → front strike → front carry → gather → hind strike → hind push → rise → reach) as explicit joint coordinates in horse units, chain-length-checked (front 7/5/1.7, hind 8/5.5/1.7) so limbs never telescope; body = spine circle-chain + fills, neck/head one rig lerped gathered↔extended, far legs dimmed (d=0.68) for depth.
+- NEW preview loop: `scripts/horse-preview.ts` renders the 8 frames to a BMP contact sheet (pure bun, no deps) → reviewed visually twice (v1 "corgi-heavy" → slimmed barrel radii, de-blobbed F4 tuck) before shipping. Iterate offline, not in the browser.
+- `ember-horse.tsx` rewritten as a frame renderer: samples the active keyframe (+ brief smoothstep crossfade in the last 30% of each step) into ember dots with per-dot hash flicker, sweep, edge falloff; ground track scrolls with the cycle; hoof-strike dust on frame boundaries; hover paces 1→2.2; reduced-motion = static extended-suspension frame; IO pause + DPR cap kept. 10.5 steps/s ≈ 0.76s stride.
+- GALLERY DE-PHOTO'D: deleted `/images/plates/*` (8 treated downloads) and the unreferenced `/images/brand/*`; `scripts/treat-plates.py` kept as history only. `showcase-gallery.tsx` rebuilt as **the console** — zero photographs: bento of live code-drawn instruments in new `console-tiles.tsx`: 01 orbit (rings+satellites+pulse), 02 clock (Dhaka time + day-progress bar, DOM), 03 carrier (falling dot columns), 04 pull (pointer-magnet dot lattice — verified interactive), 05 name (dot-matrix word cycler ORBYT/BUILD/SHIP/MOVE via offscreen text raster), 06 CTA strip → /contact. Shared harness: DPR cap, ResizeObserver, IO pause, pointer tracking, reduced-motion stills, try/catch around step so one broken instrument can't kill the rAF loop. Copy: "Live, not stock." + honest "no office tour — there is no office".
+- `displayFontFamily()` exported from pixel-sign-404 for reuse (glyph raster).
+- Fix detail: glyph tile went blank once mid-HMR with `Set.has of undefined` (stale chunk during fast edits); hardened with length+null guards and the step try/catch — fresh reloads produce zero errors, error store count stays flat across reloads.
+- Verified (agent-browser): /about horse desktop 1440 (3 frames captured — clearly reads as galloping horse: arched neck, ears, flowing tail, alternating leg poses) + iPhone 14; home console desktop (all 6 tiles animate; pull-lattice clusters at pointer; clock ticks 12:20:53 · day 51-52%) + mobile (stacks full-width, scrollWidth−clientWidth = 0); 404 unchanged (pixel sign + keycap intact); /work /services /insights /team /contact all 200; footer flush at page bottom (gap 0); dev.log clean; lint exit 0.
+
+Stage Summary:
+- The horse is now a real horse: 8 hand-posed Muybridge keyframes rendered as LED dots — and the pose data lives in an inspectable, offline-previewable data file (scripts/horse-preview.ts → /tmp/horse-preview.bmp) instead of being tuned blind in the browser.
+- The site no longer displays any of the 8 downloaded reference images anywhere; the gallery slot is a six-tile live console, all computed on the visitor's machine, keeping the "no video, no stock" promise literal.
+- Reusable: console-tiles useInstrument harness for future canvas instruments; horse keyframe format (pose → prims) for any future creature/figure.

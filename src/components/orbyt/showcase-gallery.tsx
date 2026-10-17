@@ -1,85 +1,68 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { SYSTEMS_SECTION } from "@/content/orbyt";
-import { Marquee } from "./marquee";
 import { Reveal } from "./reveal";
 import { Section } from "./section";
-import { TiltCard } from "./parallax-image";
+import {
+  InstrumentCanvas,
+  ConsoleClock,
+  orbitInstrument,
+  carrierInstrument,
+  magnetInstrument,
+  glyphInstrument,
+} from "./console-tiles";
 import { cn } from "@/lib/utils";
 
-type Tile = {
-  src: string;
-  label: string;
+/* ── ShowcaseGallery → The Console ─────────────────────────
+   The section that used to hold photographs now holds
+   instruments. ORBYT has no office to photograph and no
+   stock imagery to lean on, so every tile is computed live:
+   an orbit, a carrier stream, a pointer-magnet lattice, a
+   dot-matrix sign and a studio clock. Code is the material. */
+
+function InstrumentTile({
+  fig,
+  title,
+  sub,
+  className,
+  innerClassName,
+  children,
+}: {
+  fig: string;
+  title: string;
   sub: string;
-  /** Tailwind aspect class. */
-  aspect: string;
-  width: number;
-  height: number;
-};
-
-/* The treated brand plates — the user's references, regraded into ORBYT's
-   ember duotone (scripts/treat-plates.py). Used only here, on purpose. */
-const ROW_A: Tile[] = [
-  { src: "/images/plates/beacon.jpg", label: "THE BEACON", sub: "Build the thing people gather around", aspect: "aspect-[4/5]", width: 340, height: 425 },
-  { src: "/images/plates/posters.jpg", label: "THE BLUEPRINT", sub: "Every surface on the same grid", aspect: "aspect-[4/3]", width: 460, height: 345 },
-  { src: "/images/plates/control.jpg", label: "THE CRAFT", sub: "Hands on the keys, eyes on the data", aspect: "aspect-square", width: 380, height: 380 },
-  { src: "/images/plates/keycaps.jpg", label: "THE MANTRA", sub: "Don't give up. Do it. Ship.", aspect: "aspect-square", width: 380, height: 380 },
-];
-
-const ROW_B: Tile[] = [
-  { src: "/images/plates/skyline.jpg", label: "THE AMBITION", sub: "Growth you can look up at", aspect: "aspect-[3/4]", width: 360, height: 480 },
-  { src: "/images/plates/ember.jpg", label: "THE MOMENTUM", sub: "Motion that keeps its heat", aspect: "aspect-[3/4]", width: 360, height: 480 },
-  { src: "/images/plates/invite.jpg", label: "THE INVITE", sub: "The letter that starts the project", aspect: "aspect-square", width: 380, height: 380 },
-  { src: "/images/plates/signal-lost.jpg", label: "THE GUARDRAIL", sub: "Nothing stays lost. Not even 404s.", aspect: "aspect-square", width: 380, height: 380 },
-];
-
-function GalleryTile({ tile }: { tile: Tile }) {
+  className?: string;
+  innerClassName?: string;
+  children: React.ReactNode;
+}) {
   return (
-    <TiltCard
-      max={5}
-      className="group mr-4 shrink-0"
-    >
+    <Reveal className={cn("min-w-0", className)}>
       <figure
         className={cn(
-          "tint-sweep relative overflow-hidden border border-border bg-card transition-all duration-300 group-hover:border-primary/60 group-hover:shadow-[0_0_36px_rgba(253,90,1,0.14)]",
-          tile.aspect
+          "group relative h-full overflow-hidden border border-border bg-card transition-all duration-300 hover:border-primary/60 hover:shadow-[0_0_36px_rgba(253,90,1,0.14)]",
+          innerClassName
         )}
-        style={{ width: tile.width }}
       >
-        <Image
-          src={tile.src}
-          alt={`${tile.label} — ${tile.sub}`}
-          fill
-          sizes="560px"
-          className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
-        />
+        {children}
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-t from-background/85 via-background/10 to-transparent"
+          className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-background/80 to-transparent"
         />
-        <figcaption className="absolute bottom-3 left-3 right-3 translate-y-1 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-          <span className="block font-mono text-[10px] uppercase tracking-[0.18em] text-primary">
-            {tile.label}
+        <figcaption className="pointer-events-none absolute left-4 right-4 top-3 flex items-baseline justify-between gap-3">
+          <span className="shrink-0 whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
+            {fig} · {title}
           </span>
-          <span className="mt-0.5 block text-xs text-foreground/80">
-            {tile.sub}
+          <span className="hidden truncate whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground sm:block">
+            {sub}
           </span>
         </figcaption>
       </figure>
-    </TiltCard>
+    </Reveal>
   );
 }
 
-/**
- * ShowcaseGallery — a full-bleed, dual-direction marquee of the brand
- * plates: the practice drawn as the system it is. ORBYT is a distributed
- * crew with no office, so there is nothing to photograph — the plates
- * stand in honestly, labelled with what the work actually does.
- * Rows pause on hover; edges fade via mask; tiles tilt in 3D.
- */
 export function ShowcaseGallery() {
   return (
     <Section
@@ -90,18 +73,18 @@ export function ShowcaseGallery() {
       <div className="mx-auto mb-10 flex w-full max-w-6xl items-end justify-between gap-6 px-4 sm:px-6 lg:px-8">
         <Reveal className="min-w-0">
           <p className="font-mono text-xs uppercase tracking-[0.18em] text-primary">
-            The practice, drawn
+            The practice, computed
           </p>
           <h2
             id="showcase-heading"
             className="mt-3 font-display text-3xl font-bold leading-[1.05] tracking-tight sm:text-4xl"
           >
-            The work,{" "}
-            <span className="text-primary">in motion.</span>
+            Live, <span className="text-primary">not stock.</span>
           </h2>
           <p className="mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">
             No office tour — there is no office. ORBYT runs as a distributed
-            crew, so here is the practice the honest way: as a system.
+            crew, so nothing in this wall is a photograph: every instrument is
+            drawn by code, on your machine, right now.
           </p>
         </Reveal>
         <Reveal delay={0.08} className="hidden shrink-0 sm:block">
@@ -118,24 +101,89 @@ export function ShowcaseGallery() {
         </Reveal>
       </div>
 
-      <Reveal delay={0.05}>
-        <div className="space-y-4 [mask-image:linear-gradient(to_right,transparent,black_6%,black_94%,transparent)]">
-          <Marquee duration={48} pauseOnHover>
-            <div className="flex items-stretch py-1">
-              {ROW_A.map((tile) => (
-                <GalleryTile key={tile.src} tile={tile} />
-              ))}
-            </div>
-          </Marquee>
-          <Marquee duration={54} reverse pauseOnHover>
-            <div className="flex items-stretch py-1">
-              {ROW_B.map((tile) => (
-                <GalleryTile key={tile.src} tile={tile} />
-              ))}
-            </div>
-          </Marquee>
-        </div>
-      </Reveal>
+      <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-4 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-6 lg:px-8">
+        <InstrumentTile
+          fig="01"
+          title="The orbit"
+          sub="Every discipline, one ring"
+          className="h-64 sm:col-span-2 md:h-72 lg:col-span-4"
+        >
+          <InstrumentCanvas
+            factory={orbitInstrument}
+            label="Animated orbital diagram: two dashed rings, three travelling satellites and a pulsing core"
+          />
+        </InstrumentTile>
+
+        <InstrumentTile
+          fig="02"
+          title="The clock"
+          sub="Dhaka time, always on"
+          className="h-64 sm:col-span-2 md:h-72 lg:col-span-2"
+        >
+          <div className="absolute inset-0">
+            <ConsoleClock />
+          </div>
+        </InstrumentTile>
+
+        <InstrumentTile
+          fig="03"
+          title="The carrier"
+          sub="Small drops, shipped daily"
+          className="h-60 lg:col-span-2"
+        >
+          <InstrumentCanvas
+            factory={carrierInstrument}
+            label="Animated columns of glowing dots falling like a telegraph stream"
+          />
+        </InstrumentTile>
+
+        <InstrumentTile
+          fig="04"
+          title="The pull"
+          sub="Made to draw people in"
+          className="h-60 lg:col-span-2"
+        >
+          <InstrumentCanvas
+            factory={magnetInstrument}
+            label="Interactive dot lattice that leans toward the pointer"
+          />
+        </InstrumentTile>
+
+        <InstrumentTile
+          fig="05"
+          title="The name"
+          sub="Five letters, one system"
+          className="h-60 lg:col-span-2"
+        >
+          <InstrumentCanvas
+            factory={glyphInstrument}
+            label="Dot-matrix sign cycling the words ORBYT, BUILD, SHIP and MOVE"
+          />
+        </InstrumentTile>
+
+        <Reveal className="sm:col-span-2 lg:col-span-6">
+          <Link
+            href="/contact"
+            className="btn-shine group flex flex-wrap items-center justify-between gap-4 border border-primary/40 bg-primary/[0.06] px-6 py-7 transition-all duration-300 hover:border-primary/70 hover:bg-primary/10 hover:shadow-[0_0_44px_rgba(253,90,1,0.18)]"
+          >
+            <span className="min-w-0">
+              <span className="block font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
+                06 · Your move
+              </span>
+              <span className="mt-1 block font-display text-2xl font-bold tracking-tight sm:text-3xl">
+                Start the orbit.
+              </span>
+            </span>
+            <span className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.18em] text-primary">
+              Start a project
+              <ArrowRight
+                aria-hidden="true"
+                className="size-4 transition-transform group-hover:translate-x-1"
+              />
+            </span>
+          </Link>
+        </Reveal>
+      </div>
     </Section>
   );
 }

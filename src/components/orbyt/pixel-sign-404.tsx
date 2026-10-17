@@ -32,8 +32,8 @@ type Ember = {
 
 let cachedFont: string | null = null;
 
-/** Read the rendered display font so the sign matches the brand face. */
-function displayFontFamily(): string {
+/** Read the rendered display font so code-drawn text matches the brand face. */
+export function displayFontFamily(): string {
   if (cachedFont) return cachedFont;
   if (typeof document === "undefined") return "system-ui, sans-serif";
   const probe = document.createElement("span");
