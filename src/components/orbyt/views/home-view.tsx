@@ -28,6 +28,21 @@ import { SpotlightCard } from "../spotlight-card";
 import { TeamSection } from "../team-section";
 import { WorkedWith } from "../worked-with";
 
+const SYSTEM_CARD_IMAGES: Record<string, { src: string; alt: string }> = {
+  acquisition: {
+    src: "/images/studio/studio-floor.jpg",
+    alt: "The studio floor: builders working across monitors",
+  },
+  "ai-ops": {
+    src: "/images/studio/code-screens.jpg",
+    alt: "Production code on screens in a dark workspace",
+  },
+  "connected-web": {
+    src: "/images/studio/collab-review.jpg",
+    alt: "Two people reviewing a build together at a laptop",
+  },
+};
+
 /**
  * Home. Rich but composed: every section here is a teaser that hands off
  * to its detail route. Copy comes exclusively from src/content. The boot
@@ -175,21 +190,41 @@ function SystemsTeaser() {
       title={SYSTEMS_SECTION.title}
     >
       <div className="mt-14 grid grid-cols-1 gap-4 md:grid-cols-3">
-        {SYSTEM_BLUEPRINTS.map((blueprint, i) => (
-          <Reveal key={blueprint.id} delay={i * 0.06} className="min-w-0">
-            <SpotlightCard className="p-6">
-              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground transition-colors duration-200 group-hover/spot:text-primary">
-                {blueprint.id}
-              </p>
-              <h3 className="mt-3 font-display text-xl font-bold tracking-tight transition-colors duration-200 group-hover/spot:text-primary">
-                {blueprint.title}
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                {blueprint.for}
-              </p>
-            </SpotlightCard>
-          </Reveal>
-        ))}
+        {SYSTEM_BLUEPRINTS.map((blueprint, i) => {
+          const img = SYSTEM_CARD_IMAGES[blueprint.id];
+          return (
+            <Reveal key={blueprint.id} delay={i * 0.06} className="min-w-0">
+              <SpotlightCard className="h-full">
+                {img ? (
+                  <div className="relative aspect-[16/9] overflow-hidden border-b border-border">
+                    <Image
+                      src={img.src}
+                      alt={img.alt}
+                      fill
+                      sizes="(min-width: 768px) 360px, 100vw"
+                      className="object-cover transition-transform duration-700 ease-out group-hover/spot:scale-[1.05]"
+                    />
+                    <div
+                      aria-hidden="true"
+                      className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent"
+                    />
+                  </div>
+                ) : null}
+                <div className="p-6">
+                  <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground transition-colors duration-200 group-hover/spot:text-primary">
+                    {blueprint.id}
+                  </p>
+                  <h3 className="mt-3 font-display text-xl font-bold tracking-tight transition-colors duration-200 group-hover/spot:text-primary">
+                    {blueprint.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    {blueprint.for}
+                  </p>
+                </div>
+              </SpotlightCard>
+            </Reveal>
+          );
+        })}
       </div>
 
       <div className="mt-10">
@@ -267,7 +302,7 @@ function InsightsTeaser() {
             >
               <span className="relative block aspect-[16/10] w-full overflow-hidden border border-border sm:max-w-[180px] md:col-span-2">
                 <Image
-                  src={`/images/essays/${essay.slug}.png`}
+                  src={`/images/essays/${essay.slug}.jpg`}
                   alt=""
                   fill
                   sizes="180px"

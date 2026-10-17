@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { CONTACT, SITE, SYSTEMS_SECTION, SYSTEM_BLUEPRINTS } from "@/content/orbyt";
 import { Button } from "@/components/ui/button";
@@ -6,25 +7,38 @@ import { PageHero } from "../page-hero";
 import { ParallaxImage } from "../parallax-image";
 import { Reveal } from "../reveal";
 import { Section } from "../section";
+import { cn } from "@/lib/utils";
 
-const SYSTEM_IMAGES: Record<string, { src: string; caption: string }> = {
+const SYSTEM_IMAGES: Record<string, { src: string; caption: string; alt: string }> = {
   acquisition: {
-    src: "/images/systems/acquisition.png",
-    caption: "Every channel pouring into one core.",
+    src: "/images/studio/studio-floor.jpg",
+    caption: "Every build starts at the studio floor.",
+    alt: "The studio: builders working across monitors in a dark workspace",
   },
   "ai-ops": {
-    src: "/images/systems/ai-ops.png",
-    caption: "A light heart, ringed by running machinery.",
+    src: "/images/studio/code-screens.jpg",
+    caption: "The machinery behind it, running in code.",
+    alt: "Production code glowing on screens in a dark room",
   },
   "connected-web": {
-    src: "/images/systems/connected-web.png",
-    caption: "Pages as one connected surface.",
+    src: "/images/studio/collab-review.jpg",
+    caption: "And every page, reviewed as one connected surface.",
+    alt: "Two people reviewing a website build together at a laptop",
   },
 };
 
+const STUDIO_BAND = [
+  { src: "/images/studio/wireframe-sketch.jpg", label: "DISCOVER", sub: "Sketching the shape of the system" },
+  { src: "/images/studio/sprint-wall.jpg", label: "BUILD", sub: "Sprints with owners and deadlines" },
+  { src: "/images/studio/presenting.jpg", label: "CONNECT", sub: "Walking the data with you" },
+  { src: "/images/studio/meeting-room.jpg", label: "GROW", sub: "Reviewing what the system earned" },
+];
+
 /**
- * /work. Honest systems: no invented case studies, three blueprint detail
- * panels, then the panel on how engagements actually start.
+ * /work. An editorial systems showcase: three blueprint panels with
+ * alternating photo layouts, a studio-process photo band, then the panel
+ * on how engagements actually start. No invented case studies — the
+ * photographs show the practice, not fake client logos (honesty rule).
  */
 export function WorkView() {
   return (
@@ -47,86 +61,150 @@ export function WorkView() {
           </p>
         </Reveal>
 
-        {/* Blueprint detail panels */}
-        <div className="mt-14 border-b border-border">
+        {/* Blueprint detail panels — alternating editorial layout */}
+        <div className="mt-16 border-b border-border">
           {SYSTEM_BLUEPRINTS.map((blueprint, i) => {
             const img = SYSTEM_IMAGES[blueprint.id];
+            const flip = i % 2 === 1;
             return (
               <Reveal key={blueprint.id} className="border-t border-border">
-                <article className="grid grid-cols-1 gap-10 py-12 md:py-16 lg:grid-cols-12">
-                  <div className="min-w-0 lg:col-span-5">
-                    <p className="font-mono text-xs uppercase tracking-[0.18em] text-primary">
-                      System · {blueprint.id}
-                    </p>
-                    <h3 className="mt-4 font-display text-2xl font-bold tracking-tight md:text-3xl">
-                      {blueprint.title}
-                    </h3>
-                    <p className="mt-3 text-base leading-relaxed text-muted-foreground">
-                      {blueprint.for}
-                    </p>
+                <article className="grid grid-cols-1 items-start gap-10 py-14 md:py-20 lg:grid-cols-12 lg:gap-12">
+                  {/* Copy column */}
+                  <div
+                    className={cn(
+                      "min-w-0 lg:col-span-5",
+                      flip && "lg:order-2"
+                    )}
+                  >
+                    <div className="lg:sticky lg:top-24">
+                      <p className="font-mono text-xs uppercase tracking-[0.18em] text-primary">
+                        System · {String(i + 1).padStart(2, "0")} · {blueprint.id}
+                      </p>
+                      <h3 className="mt-4 font-display text-3xl font-bold leading-[1.05] tracking-tight md:text-4xl">
+                        {blueprint.title}
+                      </h3>
+                      <p className="mt-4 text-base leading-relaxed text-muted-foreground">
+                        {blueprint.for}
+                      </p>
+
+                      <div className="mt-8">
+                        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                          Components
+                        </p>
+                        <ul className="mt-3">
+                          {blueprint.components.map((component) => (
+                            <li key={component} className="flex gap-3 py-1.5">
+                              <span
+                                aria-hidden="true"
+                                className="mt-[9px] size-1.5 shrink-0 bg-primary"
+                              />
+                              <span className="min-w-0 text-sm leading-relaxed">
+                                {component}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <div className="mt-8">
+                        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                          {SYSTEMS_SECTION.measuredLabel}
+                        </p>
+                        <ul className="mt-3 flex flex-wrap gap-2">
+                          {blueprint.measured.map((metric) => (
+                            <li
+                              key={metric}
+                              className="border border-border bg-background px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-foreground/85"
+                            >
+                              {metric}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="min-w-0 lg:col-span-7">
+                  {/* Story + photo column */}
+                  <div className={cn("min-w-0 lg:col-span-7", flip && "lg:order-1")}>
                     {img ? (
                       <ParallaxImage
                         src={img.src}
-                        alt={`Rendered visualization of ${blueprint.title.toLowerCase()}`}
+                        alt={img.alt}
                         label={blueprint.id.toUpperCase()}
                         caption={img.caption}
                         priority={i === 0}
-                        className="mb-8"
+                        travel={flip ? -30 : 34}
                       />
                     ) : null}
 
-                    <p className="max-w-2xl text-base leading-relaxed text-foreground/90">
+                    <p className="mx-auto mt-10 max-w-2xl text-lg leading-relaxed text-foreground/90 md:text-xl">
                       {blueprint.story}
                     </p>
-
-                  <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-2">
-                    <div className="min-w-0">
-                      <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                        Components
-                      </p>
-                      <ul className="mt-3">
-                        {blueprint.components.map((component) => (
-                          <li key={component} className="flex gap-3 py-1.5">
-                            <span
-                              aria-hidden="true"
-                              className="mt-[9px] size-1.5 shrink-0 bg-primary"
-                            />
-                            <span className="min-w-0 text-sm leading-relaxed">
-                              {component}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <div className="min-w-0">
-                      <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                        {SYSTEMS_SECTION.measuredLabel}
-                      </p>
-                      <ul className="mt-3 flex flex-wrap gap-2">
-                        {blueprint.measured.map((metric) => (
-                          <li
-                            key={metric}
-                            className="border border-border bg-background px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-foreground/85"
-                          >
-                            {metric}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
                   </div>
-                </div>
-              </article>
-            </Reveal>
-          );
+                </article>
+              </Reveal>
+            );
           })}
         </div>
 
+        {/* Studio process band */}
+        <div className="mt-20">
+          <Reveal>
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <p className="font-mono text-xs uppercase tracking-[0.18em] text-primary">
+                  The practice, photographed
+                </p>
+                <h3 className="mt-3 font-display text-2xl font-bold tracking-tight md:text-3xl">
+                  How a system comes together
+                </h3>
+              </div>
+              <Link
+                href="/process"
+                className="group inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-primary"
+              >
+                The full process
+                <ArrowRight
+                  aria-hidden="true"
+                  className="size-4 text-primary transition-transform group-hover:translate-x-0.5"
+                />
+              </Link>
+            </div>
+          </Reveal>
+
+          <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {STUDIO_BAND.map((shot, i) => (
+              <Reveal key={shot.src} delay={i * 0.06} className="min-w-0">
+                <figure className="group relative overflow-hidden border border-border bg-card">
+                  <div className="relative aspect-[4/3] w-full overflow-hidden">
+                    <Image
+                      src={shot.src}
+                      alt={shot.sub}
+                      fill
+                      sizes="(min-width: 1024px) 300px, (min-width: 640px) 50vw, 100vw"
+                      className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
+                    />
+                    <div
+                      aria-hidden="true"
+                      className="absolute inset-0 bg-gradient-to-t from-background/85 via-background/10 to-transparent"
+                    />
+                  </div>
+                  <figcaption className="absolute bottom-0 left-0 right-0 p-4">
+                    <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-primary">
+                      {String(i + 1).padStart(2, "0")} · {shot.label}
+                    </span>
+                    <span className="mt-1 block text-sm font-medium text-foreground/90">
+                      {shot.sub}
+                    </span>
+                  </figcaption>
+                </figure>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+
         {/* How engagements start */}
-        <Reveal className="mt-14">
+        <Reveal className="mt-20">
           <div className="border border-border bg-card p-8 shadow-pixel-orange md:p-12">
             <p className="font-mono text-xs uppercase tracking-[0.18em] text-primary">
               How engagements start

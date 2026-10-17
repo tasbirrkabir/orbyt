@@ -39,7 +39,7 @@ export function EssayView({ essay, nextEssay }: { essay: Essay; nextEssay: Essay
         {/* Cover render, clipped to the brand's pixel corner */}
         <div className="relative mt-10 aspect-[16/9] w-full overflow-hidden border border-border bg-card [clip-path:polygon(0_0,calc(100%-22px)_0,100%_22px,100%_100%,0_100%)]">
           <Image
-            src={`/images/essays/${essay.slug}.png`}
+            src={`/images/essays/${essay.slug}.jpg`}
             alt=""
             fill
             priority

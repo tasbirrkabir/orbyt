@@ -675,3 +675,32 @@ Stage Summary:
 - Site now has 15 brand renders + 3 animated new components + animated backgrounds on all marketing pages; home gained an image gallery section; every marketing route got imagery.
 - Reduced-motion stays respected everywhere (EmberField static, marquee/parallax/tilt disabled).
 - Files: scripts/gen-brand-images.mjs (regenerable), 4 new components, edits in hero/page-hero/home-view/work-view/services-view/insights-view/essay-view.
+
+---
+Task ID: visual-revamp-1
+Agent: Z.ai Code (main)
+Task: Full visual revamp — replace cyberpunk renders with real agency photography, redesign hero (remove giant logo), rebuild /work showcase
+
+Work Log:
+- User feedback: existing AI-generated images looked like a crypto/sci-fi site, not an agency; hero giant logo tile pointless; /work showcase needed beauty
+- Ran 6 image-search queries (design, team, dev, wireframe, office, presenting); downloaded 26 candidates, visually reviewed contact sheets, selected 9 professional agency photos (skipped watermarked stock sources)
+- Processed photos to public/images/studio/ (9 jpgs, q82, max 1600px): collab-review, studio-floor, meeting-room, green-studio, code-screens, keyboard-macro, sprint-wall, wireframe-sketch, presenting
+- Generated 4 new essay covers from studio photos (16:10 crops, jpg)
+- NEW portal-preview.tsx: animated honest miniature of the ORBYT client portal (window chrome, sidebar nav, project "Storefront rebuild" with ON TRACK chip, 68% progress bar animation, ship-velocity bar chart, milestones, activity feed, 2 floating chips) — replaces giant logo in hero; reduced-motion safe
+- hero.tsx: removed giant orbyt-logo.png tile; small AnimatedMark (64px) + orbital ring above PortalPreview; caption "THE CLIENT PORTAL, LIVE"; removed unused imports
+- showcase-gallery.tsx: dual marquee now uses real studio photos with honest labels/subs; tiles wrapped in TiltCard (3D pointer tilt + glare)
+- home-view.tsx: SystemsTeaser cards now photo-topped (SpotlightCard + image with hover zoom); InsightsTeaser covers → .jpg
+- work-view.tsx: rebuilt as editorial showcase — alternating 5/7 blueprint panels with sticky copy + ParallaxImage photos, added 4-photo studio process band (DISCOVER/BUILD/CONNECT/GROW), kept honesty lede + engagements panel
+- services-view.tsx + services-with-preview.tsx: all 5 service images swapped to studio photos
+- about-view.tsx: added 3-photo studio band ("The space", "Reviews side by side", "The wall runs the week")
+- insights-view.tsx + essay-view.tsx: cover paths .png → .jpg
+- Deleted all cyber render assets: showcase-01..08.png, systems/*.png, essays/*.png, orbyt-hero.png
+- Lint clean (exit 0); all routes 200; browser-verified home (hero/showcase/systems/insights), /work (3 scroll depths), /about, /services, mobile 390px hero; console clean; dev.log clean
+- Fixed: "2 approvals cleared" chip overlapped logo mark (moved to top-20)
+
+Stage Summary:
+- Site now reads as a professional agency: real studio photography everywhere, no sci-fi renders
+- Hero shows the actual product (animated client-portal preview) instead of a giant logo
+- /work is an editorial alternating-photo showcase with a process photo band
+- Asset convention: /public/images/studio/*.jpg (9) + essays/*.jpg (4); all references updated; old assets deleted
+- Remaining backlog unchanged: PHASE 4 project-ops UI, staff console, further phase work

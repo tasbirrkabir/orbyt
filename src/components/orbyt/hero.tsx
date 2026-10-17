@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import {
@@ -17,10 +16,10 @@ import { CrossField } from "./cross-field";
 import { EmberField } from "./ember-field";
 import { FadeUp } from "./reveal";
 import { Magnetic } from "./magnetic";
+import { PortalPreview } from "./portal-preview";
 import { Marquee } from "./marquee";
 import { Scramble } from "./scramble";
 import { emphasize } from "./emphasize";
-import { cn } from "@/lib/utils";
 
 const LINE_EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -130,25 +129,25 @@ export function Hero() {
             </FadeUp>
           </div>
 
-          {/* Logo composition: orbital mark over the floating, drifting tile */}
+          {/* Product composition: small orbital mark above the live portal preview */}
           <div className="min-w-0 lg:col-span-5">
             <FadeUp
               delay={0.15}
               className="relative mx-auto w-full max-w-sm lg:max-w-none"
             >
               <motion.div
-                className="mb-10 flex justify-center lg:absolute lg:-top-16 lg:right-0 lg:z-20 lg:mb-0"
+                className="mb-6 flex items-center justify-center gap-3 lg:absolute lg:-top-12 lg:right-0 lg:z-20 lg:mb-0"
                 style={reduced ? undefined : { y: markY }}
               >
                 <div className="relative">
                   {!reduced ? (
                     <span
                       aria-hidden="true"
-                      className="animate-spin-slow absolute left-1/2 top-1/2 size-[188px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-dashed border-primary/30"
+                      className="animate-spin-slow absolute left-1/2 top-1/2 size-[104px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-dashed border-primary/30"
                       style={{ "--spin-duration": "36s" } as CSSProperties}
                     />
                   ) : null}
-                  <AnimatedMark size={120} satellites={2} halo />
+                  <AnimatedMark size={64} satellites={2} halo />
                 </div>
               </motion.div>
 
@@ -156,34 +155,11 @@ export function Hero() {
                 style={reduced ? undefined : { y: tileY }}
                 className="min-w-0"
               >
-                <div
-                  className={cn(
-                    "shadow-pixel-orange",
-                    !reduced && "animate-float"
-                  )}
-                  style={{ "--float-duration": "8s" } as CSSProperties}
-                >
-                  <div
-                    className="overflow-hidden rounded-md border border-border transition-transform duration-300 hover:-rotate-1"
-                    style={{
-                      clipPath:
-                        "polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 0 100%)",
-                    }}
-                  >
-                    <Image
-                      src="/orbyt-logo.png"
-                      alt="ORBYT logo: a black pixel runner on an orange tile"
-                      width={1189}
-                      height={1323}
-                      priority
-                      sizes="(min-width: 1024px) 440px, (min-width: 640px) 384px, calc(100vw - 32px)"
-                      className="h-auto w-full"
-                    />
-                  </div>
-                </div>
+                <PortalPreview />
               </motion.div>
-              <p className="mt-5 text-center font-mono text-xs tracking-widest text-muted-foreground">
-                BUILD · CONNECT · GROW
+
+              <p className="mt-7 text-center font-mono text-xs tracking-widest text-muted-foreground">
+                THE CLIENT PORTAL, LIVE
               </p>
             </FadeUp>
           </div>

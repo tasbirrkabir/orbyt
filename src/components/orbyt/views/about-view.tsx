@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import {
   FOOTER,
@@ -79,6 +80,39 @@ export function AboutView() {
             </div>
           </div>
         </Reveal>
+      </Section>
+
+      {/* The practice, photographed */}
+      <Section id="about-studio" header={null} className="py-4 md:py-6">
+        <h2 id="about-studio-heading" className="sr-only">
+          The studio
+        </h2>
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          {[
+            { src: "/images/studio/green-studio.jpg", sub: "The space", cls: "md:col-span-2 aspect-[4/3] md:aspect-auto md:h-full" },
+            { src: "/images/studio/collab-review.jpg", sub: "Reviews, side by side", cls: "aspect-square" },
+            { src: "/images/studio/sprint-wall.jpg", sub: "The wall runs the week", cls: "aspect-square" },
+          ].map((shot, i) => (
+            <Reveal key={shot.src} delay={i * 0.06} className={shot.cls}>
+              <figure className="group relative h-full min-h-40 w-full overflow-hidden border border-border bg-card">
+                <Image
+                  src={shot.src}
+                  alt={shot.sub}
+                  fill
+                  sizes="(min-width: 768px) 25vw, 50vw"
+                  className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.05]"
+                />
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent"
+                />
+                <figcaption className="absolute bottom-3 left-3 font-mono text-[10px] uppercase tracking-[0.18em] text-foreground/85">
+                  {shot.sub}
+                </figcaption>
+              </figure>
+            </Reveal>
+          ))}
+        </div>
       </Section>
 
       {/* Principles, generous */}
