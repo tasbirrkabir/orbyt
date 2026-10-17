@@ -22,6 +22,7 @@ import { CurtainReveal } from "../curtain-reveal";
 import { emphasize } from "../emphasize";
 import { GiantMarquee } from "../giant-marquee";
 import { Hero } from "../hero";
+import { ManifestoWall } from "../manifesto-wall";
 import { Reveal } from "../reveal";
 import { Section } from "../section";
 import { ServicesWithPreview } from "../services-with-preview";
@@ -59,6 +60,7 @@ export function HomeView() {
       <WorkedWith />
       <ShowcaseGallery />
       <GiantMarquee />
+      <ManifestoWall />
       <ProblemTeaser />
       <ServicesOverview />
       <ProcessStrip />

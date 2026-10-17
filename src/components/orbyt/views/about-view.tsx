@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import {
   FOOTER,
+  MOMENTUM,
   PRINCIPLES,
   PROCESS_SECTION,
   PROCESS_STEPS,
@@ -9,6 +10,7 @@ import {
   WHY_SECTION,
 } from "@/content/orbyt";
 import { Button } from "@/components/ui/button";
+import { EmberHorse } from "../ember-horse";
 import { CurtainReveal } from "../curtain-reveal";
 import { PageHero } from "../page-hero";
 import { Reveal } from "../reveal";
@@ -79,6 +81,43 @@ export function AboutView() {
               </p>
             </div>
           </div>
+        </Reveal>
+
+        {/* Momentum — the gallop, computed live */}
+        <Reveal delay={0.16} className="mt-12">
+          <div className="max-w-3xl">
+            <p className="font-mono text-xs uppercase tracking-[0.18em] text-primary">
+              {MOMENTUM.eyebrow}
+            </p>
+            <h3 className="mt-4 font-display text-3xl font-bold leading-[1.05] tracking-tight sm:text-4xl">
+              {MOMENTUM.title}
+            </h3>
+            <p className="mt-4 text-base leading-relaxed text-muted-foreground md:text-lg">
+              {MOMENTUM.lede}
+            </p>
+          </div>
+          <figure className="group relative mt-8 overflow-hidden border border-border bg-[#0c0a09]">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 z-10 bg-[radial-gradient(110%_80%_at_50%_0%,rgba(253,90,1,0.1),transparent_55%)]"
+            />
+            <div className="relative h-[300px] md:h-[400px]">
+              <EmberHorse />
+            </div>
+            <div className="relative flex flex-wrap items-center justify-between gap-2 border-t border-border px-4 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+              <span>{MOMENTUM.figCaption}</span>
+              <span className="flex items-center gap-2 text-primary">
+                <span
+                  aria-hidden="true"
+                  className="size-1.5 animate-blink bg-primary"
+                />
+                {MOMENTUM.hoverHint}
+              </span>
+            </div>
+            <figcaption className="sr-only">
+              An animated dot-matrix horse in full gallop, rendered live in code.
+            </figcaption>
+          </figure>
         </Reveal>
       </Section>
 

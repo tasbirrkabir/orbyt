@@ -772,3 +772,24 @@ Stage Summary:
 - Hero is the OrbitSystem again (user's "ager moto"); the site's imagery is now majority-ORIGINAL (13 new pieces) in the examples' energy; user downloads survive only as heavily-regraded plates in the gallery + 404.
 - Motion stack gained: giant type marquee, curtain reveals, beam border — layered on boot/scramble/magnetic/marquee/orbit/parallax.
 - Scripts committed: scripts/gen-plates.sh (art set), scripts/treat-plates.py (duotone pipeline). Gotchas: batch image gen must run ≤2 concurrent; review every render (architecture/letterform drift).
+
+---
+Task ID: visual-rebuild-2
+Agent: main (Z.ai Code)
+Task: User clarification round — the 8 uploaded reference images are INSPIRATION ONLY ("not copy paste, rebuild it"). Rebuild in code: (1) the glowing pixel "NOT FOUND 404" sign → 404 page, (2) the 6-card typographic poster wall → homepage section, (3) the keyboard keycap → integrate with animations, (4) the horse → some page with animations.
+
+Work Log:
+- Rewrote `src/app/not-found.tsx` around two new code-built components; no more static image.
+- NEW `src/components/orbyt/pixel-sign-404.tsx`: canvas dot-matrix LED sign. "404 / NOT FOUND" rasterized to a low-res mask (probes the display font family at runtime), re-drawn as glowing ember dots (shared radial-glow sprite + hot pixel cores). Per-dot flicker (random phase/speed), random dot deaths (neon decay), periodic power-dip double-blinks (faulty neon), floating ember particles. IntersectionObserver pause, DPR cap 2, ResizeObserver rebuild, reduced-motion static frame.
+- NEW `src/components/orbyt/press-any-key.tsx`: CSS 3D mechanical keycap (layered shadows, bottom-out translate). Global keydown listener — any key (guards: modifiers, F1-F12, Tab, typing targets) depresses the cap, stamps the pressed key name (SPACE/ENTER/↑…), flash overlay, navigates home after 520ms. Click/tap fallback for mobile. a11y: real button, aria-label.
+- NEW `src/components/orbyt/ember-horse.tsx`: procedural galloping horse sampled to LED dots (Muybridge-in-ember). 2-bone IK legs (elliptical foot paths, 4-beat gallop phase offsets 0/0.16/0.52/0.68, knees fold backward), body capsule + chest/haunch/skull/ear balls, neck + muzzle capsules, waving 3-segment tail, torso bob + pitch, hoof-strike dust particles, scrolling dotted ground matched to stride speed, scanline sweep. Pointer hover paces up (1x → 2.3x, lerped). Reduced-motion static frame; IO pause offscreen. Tuned once: v1 read "dog" → lengthened legs (7.6/7.2 HU), elegant neck, deeper chest, longer muzzle, sweeping tail → reads horse.
+- NEW `src/components/orbyt/manifesto-wall.tsx` + `src/components/orbyt/manifesto-live.tsx`: 6 poster cards in CSS-columns masonry (statement / live StudioClock ticking Asia/Dhaka via Intl.DateTimeFormat, hydration-safe / canvas SignalWave / mono ship-log with dotted leaders + blinking cursor / statement / giant zero). Halftone dot footers slide one cell on hover; tint-sweep + border glow + pixel-shadow hover.
+- Content: added MANIFESTO, MOMENTUM, extended NOT_FOUND (signCaption/keyHint/keyAlt) in `src/content/orbyt.ts` — original words, poster-wall FORMAT only inspired.
+- Wired: home-view inserts ManifestoWall after GiantMarquee; about-view gains "Momentum" band (EmberHorse figure + fig caption "computed live in code. No video, no stock." + hover hint) after "The name" card; layout.tsx html got data-scroll-behavior="smooth" (clears Next advisory).
+- OPS: hit repeated dev-server wedges — root cause: stale agent-browser tabs reconnecting en masse + Turbopack persistent cache corrupted by kill -9 mid-compile on a 4GB box. Fix protocol: close browser FIRST, pkill, rm -rf .next, setsid restart, warm one curl, THEN browse. Dev-mode client-side navigations take 5-8s cold — verify URLs AFTER completion, not on fixed short waits.
+- Verified (agent-browser): 404 desktop + 390px mobile (sign, caption bar, keycap, footer flow); press-any-key → homepage E2E confirmed twice (Home key and letter key; URL + title = home); home field-notes wall: all 6 cards render, wave animates, clock ticks (17 OCT 2026 · ASIA/DHAKA + OPEN), ship log LIVE rows blink; about horse animates across frames with correct gallop proportions; lint clean.
+
+Stage Summary:
+- The reference images now exist ONLY as inspiration — every visual is computed: the 404 sign is ~1000 live ember dots, the horse is IK-driven math, the wall is typographic truth (honest: "no office", "no sales team", "no handoffs").
+- Keyboard integration lives on /404 ("press any key to go home") as the brand's own mechanical switch; horse lives on /about as the momentum narrative.
+- Known pre-existing (documented, not fixed): hydration attribute warning from Cursor/shell (all routes, dev-only, benign); sandbox dev transitions 5-8s when cold.

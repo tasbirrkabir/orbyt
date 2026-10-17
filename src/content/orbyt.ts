@@ -623,6 +623,53 @@ export const FOOTER = {
 export const NOT_FOUND = {
   code: "404",
   title: "This page drifted out of orbit.",
-  body: "The link is broken or the page moved. The system map below still works.",
+  body: "The link broke or the page moved. Hit any key — or the big one below — to snap back to orbit.",
   cta: { label: "Back to the homepage", href: "/" },
+  signCaption: "Err · Signal lost",
+  keyHint: "Press any key to go home",
+  keyAlt: "No keyboard? Tap the key.",
+} as const;
+
+/* ── Field notes wall (home) ──────────────────────────── */
+/* Poster-style cards: statements, live clock, ship log.
+   Format inspired by typographic poster walls; words are ours. */
+
+export const MANIFESTO = {
+  eyebrow: "Field notes",
+  title: "Pinned to the studio wall.",
+  lede: "The operating beliefs, pinned where every build can see them.",
+  notes: {
+    senior:
+      "Senior hands or no deal. The people who pitch your project are the people who build it.",
+    wavelength:
+      "One wavelength. Client, crew and dashboard in a single channel — status is never a surprise.",
+    office:
+      "No office tours, because there is no office. The system is the headquarters, and it stays open.",
+    zero: "handoffs between the sales team and the build team. There is no sales team.",
+  },
+  studioTime: {
+    label: "Studio time",
+    hours: "09.00 – 19.00",
+    zone: "Asia/Dhaka",
+    open: "OPEN",
+  },
+  shipLog: {
+    label: "Ship log",
+    rows: [
+      { name: "ACQUISITION", status: "LIVE" },
+      { name: "AI-OPS", status: "LIVE" },
+      { name: "CONNECTED-WEB", status: "LIVE" },
+    ],
+  },
+  waveCaption: "Signal check · continuous",
+} as const;
+
+/* ── Momentum band (about) ────────────────────────────── */
+
+export const MOMENTUM = {
+  eyebrow: "Momentum",
+  title: "Built to keep moving.",
+  lede: "Orbit: movement, momentum, connection. The gallop is the operating speed — gather, extend, repeat, ship.",
+  figCaption: "Fig. 01 — The gallop, computed live in code. No video, no stock.",
+  hoverHint: "Hover to pace up",
 } as const;
