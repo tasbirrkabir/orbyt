@@ -812,3 +812,24 @@ Stage Summary:
 - The horse is now a real horse: 8 hand-posed Muybridge keyframes rendered as LED dots — and the pose data lives in an inspectable, offline-previewable data file (scripts/horse-preview.ts → /tmp/horse-preview.bmp) instead of being tuned blind in the browser.
 - The site no longer displays any of the 8 downloaded reference images anywhere; the gallery slot is a six-tile live console, all computed on the visitor's machine, keeping the "no video, no stock" promise literal.
 - Reusable: console-tiles useInstrument harness for future canvas instruments; horse keyframe format (pose → prims) for any future creature/figure.
+
+---
+Task ID: V-6 (horse proportions — "make it a horse" round 2)
+Agent: Z.ai Code (main)
+Task: Session resumed after context overflow; dev server was down. Restart it, then finish/verify the two user rejections from the screenshots: ① the dot-matrix horse still didn't read as a horse ("horse lagche na — kunuvabei make it horse"); ② showcase section must not show downloaded pictures.
+
+Work Log:
+- Restarted dev server via setsid double-fork; healthz + home 200; no stale .next issues.
+- AUDITED the live horse on /about with browser screenshots: confirmed the user's complaint — silhouette read corgi/dachshund. Measured causes in horse-frames.ts: body core span 25 units vs withers height 19 (~3.5:1 barrel — real horse ≈2:1); neck rising at only ~22° (nearly horizontal, reads dog); head held horizontal with no downward muzzle; fat body radii (4.9) swallowing the thin legs.
+- REWROTE horse-frames.ts proportions: body core span 25→18 (rump -11.5 → chest 6.5), spine radii 4.1-4.3 max, deep-girth fills + flank tuck for the horse belly line; shoulder (5.0,11.5)/hip (-8.0,12.0) with legs ~45% of silhouette height; neck rig lerps gathered (arched ~42°) ↔ extended (forward-low ~28°) and the muzzle ALWAYS hangs 3-4 units below the poll; ears shortened/thickened so they read as ears, not a horn; tail thickened (1.3/1.05/0.78); spine chain subdivided 3→4 segments for a smooth topline; all 8 Muybridge poses re-posed joint-by-joint for the new skeleton.
+- ITERATED OFFLINE via scripts/horse-preview.ts (BMP contact sheet, scale 7, single site-accurate color): 3 review rounds — v1 duck-bill head (skull ball too close to poll, head too short/wide) → lengthened head chain (poll→skull→jaw→tip ≈5.7 units, taper 1.35→0.6), thinned neck (1.75/1.05); v2 verified horse.
+- ember-horse.tsx: sample grid cell unit*0.8 → unit*0.6 so ears/muzzle/legs survive dot-matrix sampling at site scale.
+- Verified /about desktop 1440: 3 frame captures across the stride (gathered-carry / suspension / flying extension) — every frame clearly reads a galloping horse (arched neck, down-angled muzzle, ears, flowing tail, deep chest, long legs); animation confirmed live (poses differ between captures). iPhone 390px: full horse visible, layout holds.
+- Verified home "Live, not stock." console: zero photographs, all five instruments computing live (orbit, Dhaka clock 12:42:48 + day bar, carrier stream, pull lattice, dot-matrix word cycler) — the screenshot-2 rejection stays resolved.
+- Confirmed no downloaded reference images exist anywhere: public/images holds only art/ (13 original renders) + essays/ (4 AI covers); brand/ and plates/ remain deleted; grep shows no /images/(showcase|systems|brand|plates) references.
+- lint exit 0; dev.log clean except the pre-existing benign NEXTAUTH_URL warning; browser closed before tooling runs (dev-wedge protocol).
+
+Stage Summary:
+- The horse is finally a horse: real equine proportions (2:1 barrel, 45% legs, 28-42° neck, downward muzzle) hand-posed across the 8-frame transverse gallop, offline-iteratable via scripts/horse-preview.ts before any browser check.
+- Site imagery rule holding: everything computed or originally rendered; zero user-downloaded reference images on the site.
+- Remaining backlog unchanged: 404/6-card/keycap rebuilds are live (verified earlier), PHASE 4 project-ops, staff console, client/admin panels functionality.

@@ -106,7 +106,9 @@ export function EmberHorse({ className }: { className?: string }) {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       gy = H * 0.87;
       unit = Math.min((W * 0.92) / BW, (gy * 0.96) / BH);
-      cell = unit * 0.8;
+      /* finer grid than the body needs so head/ears/legs keep their
+         detail when the silhouette is sampled to ember dots */
+      cell = unit * 0.6;
       cx = W / 2 - ((HORSE_BBOX.minX + HORSE_BBOX.maxX) / 2) * unit;
 
       glowSize = Math.ceil(cell * 3);

@@ -4,7 +4,7 @@
 
 import { HORSE_FRAMES, HORSE_BBOX, type FramePrims } from "../src/components/orbyt/horse-frames";
 
-const SCALE = 3;
+const SCALE = 7;
 const M = 5;
 const FW = Math.ceil((HORSE_BBOX.maxX - HORSE_BBOX.minX) * SCALE) + M * 2;
 const FH = Math.ceil(HORSE_BBOX.maxY * SCALE) + M * 2;
@@ -54,7 +54,7 @@ function inside(wx: number, wy: number, fr: FramePrims): number {
 const BG: [number, number, number] = [12, 10, 9];
 const GROUND: [number, number, number] = [86, 33, 8];
 const NEAR: [number, number, number] = [253, 90, 1];
-const HOT: [number, number, number] = [255, 201, 135];
+const HOT: [number, number, number] = [253, 90, 1];
 const FAR: [number, number, number] = [150, 52, 6];
 
 HORSE_FRAMES.forEach((fr, i) => {
@@ -66,7 +66,7 @@ HORSE_FRAMES.forEach((fr, i) => {
       const wy = (FH - M - py) / SCALE;
       const d = inside(wx, wy, fr);
       const onGround = Math.abs(wy) < 0.25 && ((pxl + i * 3) % 6 < 3);
-      const c = d >= 1 ? (wx > 16 && wy > 10 ? HOT : NEAR) : d > 0 ? FAR : onGround ? GROUND : BG;
+      const c = d >= 1 ? (wx > 14 && wy > 15 ? HOT : NEAR) : d > 0 ? FAR : onGround ? GROUND : BG;
       setPx(ox + pxl, oy + py, c);
     }
   }
