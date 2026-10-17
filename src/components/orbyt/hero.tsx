@@ -15,7 +15,7 @@ import { CrossField } from "./cross-field";
 import { EmberField } from "./ember-field";
 import { FadeUp } from "./reveal";
 import { Magnetic } from "./magnetic";
-import { OrbitSystem } from "./orbit-system";
+import { HeroVisual } from "./hero-visual";
 import { Marquee } from "./marquee";
 import { Scramble } from "./scramble";
 import { emphasize } from "./emphasize";
@@ -23,12 +23,11 @@ import { emphasize } from "./emphasize";
 const LINE_EASE = [0.22, 1, 0.36, 1] as const;
 
 /**
- * Home hero. The copy carries the promise; the OrbitSystem carries the
- * visual: the animated mark at the center of three counter-rotating rings
- * with service chips riding them. The headline rises out of two masks,
- * the eyebrow decodes, the primary CTA is magnetic, the orbit column
- * tilts toward the pointer and drifts on scroll. Marquee 1 of 3 (hero,
- * worked with, CTA strip).
+ * Home hero. The copy carries the promise; HeroVisual carries the visual:
+ * the brand plates as a layered cinematic composition with pointer depth.
+ * The headline rises out of two masks, the eyebrow decodes, the primary
+ * CTA is magnetic, the plate column drifts on scroll. Marquee 1 of 3
+ * (hero, worked with, CTA strip).
  */
 export function Hero() {
   const reduced = useReducedMotion();
@@ -128,19 +127,16 @@ export function Hero() {
             </FadeUp>
           </div>
 
-          {/* The Orbyt system: mark at the center, services in orbit */}
+          {/* The brand plates: layered cinematic composition */}
           <div className="min-w-0 lg:col-span-5">
-            <FadeUp
-              delay={0.15}
-              className="relative mx-auto w-full max-w-sm py-8 lg:max-w-none"
-            >
+            <div className="relative mx-auto w-full max-w-sm py-8 lg:max-w-none">
               <motion.div
                 style={reduced ? undefined : { y: tileY }}
                 className="min-w-0"
               >
-                <OrbitSystem />
+                <HeroVisual />
               </motion.div>
-            </FadeUp>
+            </div>
           </div>
         </div>
 

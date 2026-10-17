@@ -13,7 +13,7 @@ export function CtaStrip() {
       aria-label="Build. Connect. Grow."
       className="relative overflow-hidden border-y border-primary bg-primary text-primary-foreground"
     >
-      <Marquee duration={24} className="py-5">
+      <Marquee duration={24} reactive className="py-5">
         <div className="flex items-center">
           {CTA_STRIP.map((word) => (
             <span key={word} className="flex items-center">

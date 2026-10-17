@@ -30,16 +30,16 @@ import { WorkedWith } from "../worked-with";
 
 const SYSTEM_CARD_IMAGES: Record<string, { src: string; alt: string }> = {
   acquisition: {
-    src: "/images/art/orbit-core.png",
-    alt: "Glowing orbital rings circling a dark core — one system",
+    src: "/images/brand/control.jpg",
+    alt: "A hand reaching over a glowing keyboard in a red-orange field — the click, wired to everything after it",
   },
   "ai-ops": {
-    src: "/images/art/circuit-weave.png",
-    alt: "Circuit traces weaving into one glowing path — automation",
+    src: "/images/brand/ember.jpg",
+    alt: "A long-exposure streak of fire crossing a dark frame — automated momentum",
   },
   "connected-web": {
-    src: "/images/art/particle-flow.png",
-    alt: "Particle streams converging into one point — connected surfaces",
+    src: "/images/brand/beacon.jpg",
+    alt: "A glowing orange monolith with a crowd gathered around it — one beacon, every channel pointing at it",
   },
 };
 

@@ -89,9 +89,9 @@ export function AboutView() {
         </h2>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           {[
-            { src: "/images/art/orbit-core.png", sub: "One connected system", cls: "md:col-span-2 aspect-[4/3] md:aspect-auto md:h-full" },
-            { src: "/images/art/eclipse.png", sub: "Remote by design", cls: "aspect-square" },
-            { src: "/images/art/lattice.png", sub: "Built, not bought", cls: "aspect-square" },
+            { src: "/images/brand/posters.jpg", sub: "One connected system", cls: "md:col-span-2 aspect-[4/3] md:aspect-auto md:h-full" },
+            { src: "/images/brand/skyline.jpg", sub: "Remote by design", cls: "aspect-square" },
+            { src: "/images/brand/keycaps.jpg", sub: "Built, not bought", cls: "aspect-square" },
           ].map((shot, i) => (
             <Reveal key={shot.src} delay={i * 0.06} className={shot.cls}>
               <figure className="tint-sweep group relative h-full min-h-40 w-full overflow-hidden border border-border bg-card">

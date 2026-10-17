@@ -733,3 +733,25 @@ Stage Summary:
 - New animations: orbital rings/chips, word-stagger headings site-wide, tint sweeps, button shine, spin badge — layered on existing boot/marquee/scramble/magnetic/cursor/parallax stack
 - Reusable: scripts/gen-art.sh (sequential, hex-free prompts), art set at /images/art/ (14 pieces), essay covers at /images/essays/*.png
 - Known gotchas recorded: .next/dev/cache/images is the dev image cache; z-ai image size = 32px multiples; no hex in prompts
+---
+Task ID: V-3 (visual upgrade round 3 — user's own brand plates)
+Agent: Z.ai Code (main)
+Task: User supplied 8 downloaded images ("customize these according to our branding and use these in our website. I repeat I want a next level website"). Integrate them site-wide with brand treatment and elevate the experience.
+
+Work Log:
+- Copied the 8 uploads to public/images/brand/ with branded names: beacon (orange monolith + crowd), ember (fire horse), control (hand over glowing keyboard), skyline (silhouette vs glowing towers), signal-lost (404 pixel art), invite (glowing envelope), keycaps (don't give up / do it), posters (brutalist orange grid).
+- BRAND CLEANUP (PIL): cropped top 20% off beacon.jpg to remove the "ommo" wordmark; gaussian-blurred the "superpower" text block on invite.jpg (glow card remains); removed the PARENTAL ADVISORY badge from signal-lost.jpg (bottom-right blur); restored posters.jpg from upload and blurred the 4 "#realsmcraft"/"©2022" marks at their exact measured coordinates (first attempt hit wrong rows and left visible smears — pixel-scanned the black gap bands to find true positions; marks actually sit at y≈248-270 on the posters' dark bottoms).
+- NEW hero-visual.tsx replaces OrbitSystem in the hero: layered cinematic composition — beacon plate (curtain clip reveal → Ken Burns settle 1.14→1, corner brackets, scrim, glow border), floating ember plate (spring entrance, rotate -4°, CSS animate-float on its own inner layer so framer/CSS transforms never fight), SpinBadge top-right, HUD strip ("SIGNAL — live" blink dot). Pointer depth via spring-smoothed motion values, layers travel at different rates (parallax depth). One-time sheen sweep after the wipe. Reduced motion: still composition.
+- hero.tsx: swapped OrbitSystem → HeroVisual (scroll drift wrapper kept); removed FadeUp around it (component handles its own entrance).
+- showcase-gallery.tsx: both marquee rows rebuilt from the 8 brand plates with honest labels (THE BEACON/THE BLUEPRINT/THE CRAFT/THE MANTRA + THE AMBITION/THE MOMENTUM/THE INVITE/THE GUARDRAIL).
+- home-view.tsx SYSTEM_CARD_IMAGES, work-view.tsx SYSTEM_IMAGES + STUDIO_BAND, about-view.tsx band, services-view.tsx SERVICE_IMAGES, services-with-preview.tsx preview map: all swapped from /images/art/*.png to brand plates (services: ember/control/skyline/posters/beacon).
+- not-found.tsx: rebuilt around the signal-lost plate (framed, glow, "ERR · SIGNAL LOST" caption + blink dot); AnimatedMark removed.
+- marquee.tsx: new `reactive` prop — spring-smoothed scroll velocity drives skewX (±6°) on an OUTER motion layer (transform isolation: CSS translate animation owns the track transform, so they never conflict); cta-strip.tsx enables it.
+- Hero caption fix: right-aligned + responsive left clearance (pl-28 sm:pl-36) so the floating plate never covers the words; removed the HUD right label the SpinBadge was colliding with.
+- Gotchas hit: dev server died mid-session (restarted with setsid); .next/dev/cache/images must be cleared after replacing image files (stale variants).
+- Verification (agent-browser): desktop 1440 + iPhone 16 — hero composition, gallery rows (all 8 load), /work plates + band, /about band, /services plates, 404 plate; scrollWidth-clientWidth = 0 on mobile; lint clean; console clean; all marketing routes 200; dev.log free of app errors.
+
+Stage Summary:
+- The site now runs on the user's own 8 brand plates, customized to ORBYT (foreign wordmarks/advisory/watermarks removed), used across hero, home gallery, systems teasers, services, work, about and the 404.
+- Hero is a next-level layered composition (curtain reveal, Ken Burns, pointer-depth parallax, floating plate, rotating seal); the orange CTA band now leans with scroll velocity.
+- Old /images/art/*.png remain only as essay covers (insights); all other art references replaced.

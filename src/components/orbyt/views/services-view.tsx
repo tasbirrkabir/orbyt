@@ -19,24 +19,24 @@ import { cn } from "@/lib/utils";
 
 const SERVICE_IMAGES: Record<string, { src: string; caption: string }> = {
   "ai-automation": {
-    src: "/images/art/circuit-weave.png",
-    caption: "Intelligence wired into the core.",
+    src: "/images/brand/ember.jpg",
+    caption: "Momentum, wired into the workflow.",
   },
   "web-digital": {
-    src: "/images/art/lattice.png",
+    src: "/images/brand/control.jpg",
     caption: "Surfaces sketched, then shipped.",
   },
   "growth-marketing": {
-    src: "/images/art/wave-field.png",
-    caption: "Campaigns run like sprints.",
+    src: "/images/brand/skyline.jpg",
+    caption: "Ambition, pointed at the sky.",
   },
   "data-tracking": {
-    src: "/images/art/data-pulse.png",
-    caption: "Signal, walked through honestly.",
+    src: "/images/brand/posters.jpg",
+    caption: "Every number on the same grid.",
   },
   "digital-systems": {
-    src: "/images/art/particle-flow.png",
-    caption: "Tools moving work, not people chasing tools.",
+    src: "/images/brand/beacon.jpg",
+    caption: "One signal everything routes through.",
   },
 };
 
@@ -147,7 +147,7 @@ function ServiceBlock({
           </Reveal>
           <Reveal delay={0.12} className="mt-8">
             <ParallaxImage
-              src={SERVICE_IMAGES[service.slug]?.src ?? "/images/art/orbit-core.png"}
+              src={SERVICE_IMAGES[service.slug]?.src ?? "/images/brand/beacon.jpg"}
               alt={`Rendered visual for ${service.title}`}
               label={`Service ${service.index}`}
               caption={SERVICE_IMAGES[service.slug]?.caption}

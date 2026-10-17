@@ -16,11 +16,11 @@ import { cn } from "@/lib/utils";
 
 /** Service → visual mapping (reuses the showcase render set). */
 const SERVICE_IMAGES: Record<string, string> = {
-  "ai-automation": "/images/art/circuit-weave.png",
-  "web-digital": "/images/art/lattice.png",
-  "growth-marketing": "/images/art/wave-field.png",
-  "data-tracking": "/images/art/data-pulse.png",
-  "digital-systems": "/images/art/particle-flow.png",
+  "ai-automation": "/images/brand/ember.jpg",
+  "web-digital": "/images/brand/control.jpg",
+  "growth-marketing": "/images/brand/skyline.jpg",
+  "data-tracking": "/images/brand/posters.jpg",
+  "digital-systems": "/images/brand/beacon.jpg",
 };
 
 /**

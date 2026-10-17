@@ -20,18 +20,19 @@ type Tile = {
   height: number;
 };
 
-/* Custom "Ink & Ember" renders — the practice as a system, not a place. */
+/* The brand plates — the practice as a system, not a place. */
 const ROW_A: Tile[] = [
-  { src: "/images/art/orbit-core.png", label: "ONE SYSTEM", sub: "Every channel orbits the same core", aspect: "aspect-[21/10]", width: 640, height: 305 },
-  { src: "/images/art/aperture.png", label: "SCOPE FIRST", sub: "Mapped before anything is built", aspect: "aspect-[4/3]", width: 460, height: 345 },
-  { src: "/images/art/data-pulse.png", label: "SIGNAL OVER NOISE", sub: "Every build ships with tracking", aspect: "aspect-square", width: 380, height: 380 },
+  { src: "/images/brand/beacon.jpg", label: "THE BEACON", sub: "Build the thing people gather around", aspect: "aspect-[4/5]", width: 340, height: 425 },
+  { src: "/images/brand/posters.jpg", label: "THE BLUEPRINT", sub: "Every surface on the same grid", aspect: "aspect-[4/3]", width: 460, height: 345 },
+  { src: "/images/brand/control.jpg", label: "THE CRAFT", sub: "Hands on the keys, eyes on the data", aspect: "aspect-square", width: 380, height: 380 },
+  { src: "/images/brand/keycaps.jpg", label: "THE MANTRA", sub: "Don't give up. Do it. Ship.", aspect: "aspect-square", width: 380, height: 380 },
 ];
 
 const ROW_B: Tile[] = [
-  { src: "/images/art/particle-flow.png", label: "CONNECTED", sub: "Tools that finally talk to each other", aspect: "aspect-square", width: 380, height: 380 },
-  { src: "/images/art/circuit-weave.png", label: "AUTOMATED", sub: "Repetitive work, taken off your plate", aspect: "aspect-[4/3]", width: 460, height: 345 },
-  { src: "/images/art/monolith.png", label: "CRAFT", sub: "Built with care, shipped with proof", aspect: "aspect-[3/4]", width: 360, height: 480 },
-  { src: "/images/art/wave-field.png", label: "COMPOUNDING", sub: "A system that grows with the business", aspect: "aspect-[4/3]", width: 460, height: 345 },
+  { src: "/images/brand/skyline.jpg", label: "THE AMBITION", sub: "Growth you can look up at", aspect: "aspect-[3/4]", width: 360, height: 480 },
+  { src: "/images/brand/ember.jpg", label: "THE MOMENTUM", sub: "Motion that keeps its heat", aspect: "aspect-[3/4]", width: 360, height: 480 },
+  { src: "/images/brand/invite.jpg", label: "THE INVITE", sub: "The letter that starts the project", aspect: "aspect-square", width: 380, height: 380 },
+  { src: "/images/brand/signal-lost.jpg", label: "THE GUARDRAIL", sub: "Nothing stays lost. Not even 404s.", aspect: "aspect-square", width: 380, height: 380 },
 ];
 
 function GalleryTile({ tile }: { tile: Tile }) {
@@ -72,10 +73,10 @@ function GalleryTile({ tile }: { tile: Tile }) {
 }
 
 /**
- * ShowcaseGallery — a full-bleed, dual-direction marquee of custom
- * "Ink & Ember" renders: the practice drawn as the system it is. ORBYT is
- * a distributed crew with no office, so there is nothing to photograph —
- * the art stands in honestly, labelled with what the work actually does.
+ * ShowcaseGallery — a full-bleed, dual-direction marquee of the brand
+ * plates: the practice drawn as the system it is. ORBYT is a distributed
+ * crew with no office, so there is nothing to photograph — the plates
+ * stand in honestly, labelled with what the work actually does.
  * Rows pause on hover; edges fade via mask; tiles tilt in 3D.
  */
 export function ShowcaseGallery() {

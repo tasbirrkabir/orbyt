@@ -11,27 +11,27 @@ import { cn } from "@/lib/utils";
 
 const SYSTEM_IMAGES: Record<string, { src: string; caption: string; alt: string }> = {
   acquisition: {
-    src: "/images/art/signal-path.png",
-    caption: "Every build starts as a map, not a mockup.",
-    alt: "Abstract topographic map with one glowing orange route crossing it",
+    src: "/images/brand/control.jpg",
+    caption: "The click, wired to everything after it.",
+    alt: "A hand reaching over a glowing keyboard in a red-orange field",
   },
   "ai-ops": {
-    src: "/images/art/circuit-weave.png",
-    caption: "The machinery behind it, running in code.",
-    alt: "Abstract circuit traces weaving into one glowing path",
+    src: "/images/brand/ember.jpg",
+    caption: "Momentum, put in motion on purpose.",
+    alt: "A long-exposure streak of fire crossing a dark frame",
   },
   "connected-web": {
-    src: "/images/art/particle-flow.png",
-    caption: "And every page, reviewed as one connected surface.",
-    alt: "Streams of glowing particles converging into a single point",
+    src: "/images/brand/beacon.jpg",
+    caption: "One beacon every channel points at.",
+    alt: "A glowing orange monolith with a crowd gathered around it",
   },
 };
 
 const STUDIO_BAND = [
-  { src: "/images/art/aperture.png", label: "DISCOVER", sub: "Mapping the shape of the system" },
-  { src: "/images/art/lattice.png", label: "BUILD", sub: "Sprints with owners and deadlines" },
-  { src: "/images/art/data-pulse.png", label: "CONNECT", sub: "Walking the data with you" },
-  { src: "/images/art/wave-field.png", label: "GROW", sub: "Reviewing what the system earned" },
+  { src: "/images/brand/posters.jpg", label: "DISCOVER", sub: "Mapping the shape of the system" },
+  { src: "/images/brand/keycaps.jpg", label: "BUILD", sub: "Shipped in small, deliberate presses" },
+  { src: "/images/brand/invite.jpg", label: "CONNECT", sub: "Follow-up that actually lands" },
+  { src: "/images/brand/skyline.jpg", label: "GROW", sub: "The view the system earns" },
 ];
 
 /**
