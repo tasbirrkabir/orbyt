@@ -261,14 +261,8 @@ export function renderTemplate(payload: EmailPayload): {
 export const emailLinks = {
   login: () => url("/login"),
   workspace: () => url("/workspace"),
-  projects: () => url("/workspace/projects"),
-  project: (id: string) => url(`/workspace/projects/${id}`),
-  approvals: () => url("/workspace/approvals"),
-  requests: () => url("/workspace/requests"),
-  request: (id: string) => url(`/workspace/requests/${id}`),
-  thread: (id: string) => url(`/workspace/messages/${id}`),
-  meetings: () => url("/workspace/meetings"),
-  billing: () => url("/workspace/billing"),
-  systems: () => url("/workspace/systems"),
+  project: () => url("/workspace"),
+  invoices: () => url("/workspace/invoices"),
+  contact: () => url("/workspace/contact"),
   resetPassword: (token: string) => url(`/reset-password?token=${encodeURIComponent(token)}`),
 };

@@ -1,0 +1,621 @@
+     1→"use client";
+     2→
+     3→import { useState, type FormEvent } from "react";
+     4→import Link from "next/link";
+     5→import { motion, useReducedMotion } from "framer-motion";
+     6→import { Loader2, MessageSquarePlus, Plus } from "lucide-react";
+     7→import { Button } from "@/components/ui/button";
+     8→import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+     9→import { Input } from "@/components/ui/input";
+    10→import { Label } from "@/components/ui/label";
+    11→import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+    12→import { Textarea } from "@/components/ui/textarea";
+    13→import { COMMAND } from "@/content/command";
+    14→import {
+    15→  formatAge,
+    16→  formatDate,
+    17→  formatDateTime,
+    18→  formatMoney,
+    19→  greetingBucket,
+    20→  PROJECT_TYPE_LABELS,
+    21→  REQUEST_CATEGORIES,
+    22→  REQUEST_PRIORITIES,
+    23→} from "@/lib/portal/domain";
+    24→import type { AttentionItem, OverviewPayload } from "@/lib/portal/types";
+    25→import { usePortalFetch } from "./use-portal-fetch";
+    26→import { LoadingState, ErrorState, ProgressBar, Section } from "./primitives";
+    27→import { StatusBadge } from "./status-badge";
+    28→import { StageRail } from "./stage-rail";
+    29→
+    30→const DEMO_CLIENT_IDS = ["ORB-DEMO", "ORB-NOVA", "ORB-ATLAS"];
+    31→
+    32→function Panel({ children, className }: { children: React.ReactNode; className?: string }) {
+    33→  return (
+    34→    <div className={`border border-border bg-card/50 p-5 ${className ?? ""}`}>{children}</div>
+    35→  );
+    36→}
+    37→
+    38→/** Kinds the client can settle right here, without navigating away. */
+    39→type DecidableAttention = AttentionItem & { kind: "APPROVAL" | "CHANGE_REQUEST" };
+    40→
+    41→function isDecidable(item: AttentionItem): item is DecidableAttention {
+    42→  return item.kind === "APPROVAL" || item.kind === "CHANGE_REQUEST";
+    43→}
+    44→
+    45→export function CommandOverview() {
+    46→  const { data, loading, failed, retry, refresh } = usePortalFetch<OverviewPayload>("/api/portal/overview");
+    47→  const reduced = useReducedMotion();
+    48→
+    49→  // Inline decision state: one dialog at a time, keyed by attention id.
+    50→  const [decideItem, setDecideItem] = useState<DecidableAttention | null>(null);
+    51→  const [decideNote, setDecideNote] = useState("");
+    52→  const [decideBusy, setDecideBusy] = useState(false);
+    53→  const [decideError, setDecideError] = useState<string | null>(null);
+    54→
+    55→  // Quick action state.
+    56→  const [quickOpen, setQuickOpen] = useState<"request" | "message" | null>(null);
+    57→  const [quickBusy, setQuickBusy] = useState(false);
+    58→  const [quickError, setQuickError] = useState<string | null>(null);
+    59→
+    60→  if (loading && !data) return <LoadingState />;
+    61→  if (failed && !data) return <ErrorState onRetry={retry} />;
+    62→  if (!data) return null;
+    63→
+    64→  const greeting = COMMAND.overview.eyebrow === "COMMAND CENTER" ? greetingBucket() : "evening";
+    65→  const greetingLine =
+    66→    greeting === "morning" ? "Good morning" : greeting === "afternoon" ? "Good afternoon" : "Good evening";
+    67→  const isDemo = DEMO_CLIENT_IDS.includes(data.identity.clientId);
+    68→  const { activeProject: project } = data;
+    69→
+    70→  async function submitDecision(decision: "APPROVE" | "REQUEST_CHANGES" | "ACCEPTED" | "DECLINED") {
+    71→    if (!decideItem || decideBusy) return;
+    72→    const note = decideNote.trim();
+    73→    if (decideItem.kind === "APPROVAL" && decision === "REQUEST_CHANGES" && note.length < 4) {
+    74→      setDecideError("Say what should change — a comment is required.");
+    75→      return;
+    76→    }
+    77→    if (decideItem.kind === "CHANGE_REQUEST" && decision === "DECLINED" && note.length < 4) {
+    78→      setDecideError("Say why you are declining — a note is required.");
+    79→      return;
+    80→    }
+    81→    setDecideBusy(true);
+    82→    setDecideError(null);
+    83→    try {
+    84→      const url =
+    85→        decideItem.kind === "APPROVAL"
+    86→          ? `/api/portal/approvals/${decideItem.id.replace("approval-", "")}`
+    87→          : `/api/portal/change-requests/${decideItem.id.replace("cr-", "")}`;
+    88→      const body =
+    89→        decideItem.kind === "APPROVAL"
+    90→          ? { decision, comment: note }
+    91→          : { decision, note: note || undefined };
+    92→      const response = await fetch(url, {
+    93→        method: "POST",
+    94→        headers: { "Content-Type": "application/json" },
+    95→        body: JSON.stringify(body),
+    96→      });
+    97→      if (!response.ok) {
+    98→        const payload = (await response.json().catch(() => ({}))) as { error?: string };
+    99→        setDecideError(payload.error ?? "That did not go through. Try again.");
+   100→        return;
+   101→      }
+   102→      setDecideItem(null);
+   103→      setDecideNote("");
+   104→      refresh();
+   105→    } catch {
+   106→      setDecideError("Network trouble. Try again.");
+   107→    } finally {
+   108→      setDecideBusy(false);
+   109→    }
+   110→  }
+   111→
+   112→  async function submitQuick(event: FormEvent<HTMLFormElement>) {
+   113→    event.preventDefault();
+   114→    if (!quickOpen || quickBusy) return;
+   115→    const form = new FormData(event.currentTarget);
+   116→    setQuickBusy(true);
+   117→    setQuickError(null);
+   118→    try {
+   119→      const payload =
+   120→        quickOpen === "request"
+   121→          ? {
+   122→              title: String(form.get("title") ?? ""),
+   123→              category: String(form.get("category") ?? "OTHER"),
+   124→              priority: String(form.get("priority") ?? "NORMAL"),
+   125→              description: String(form.get("description") ?? ""),
+   126→            }
+   127→          : {
+   128→              subject: String(form.get("subject") ?? ""),
+   129→              body: String(form.get("body") ?? ""),
+   130→            };
+   131→      const response = await fetch(quickOpen === "request" ? "/api/portal/requests" : "/api/portal/messages", {
+   132→        method: "POST",
+   133→        headers: { "Content-Type": "application/json" },
+   134→        body: JSON.stringify(payload),
+   135→      });
+   136→      if (!response.ok) {
+   137→        const result = (await response.json().catch(() => ({}))) as { error?: string };
+   138→        setQuickError(result.error ?? "That did not go through. Try again.");
+   139→        return;
+   140→      }
+   141→      setQuickOpen(null);
+   142→      refresh();
+   143→    } catch {
+   144→      setQuickError("Network trouble. Try again.");
+   145→    } finally {
+   146→      setQuickBusy(false);
+   147→    }
+   148→  }
+   149→
+   150→  return (
+   151→    <div className="space-y-10">
+   152→      {/* Greeting */}
+   153→      <motion.header
+   154→        initial={reduced ? false : { opacity: 0, y: 12 }}
+   155→        animate={{ opacity: 1, y: 0 }}
+   156→        transition={{ duration: 0.45, ease: "easeOut" }}
+   157→      >
+   158→        <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-primary">
+   159→          {COMMAND.overview.eyebrow}
+   160→        </p>
+   161→        <h1 className="mt-2 font-display text-3xl font-bold tracking-tight sm:text-4xl">
+   162→          {greetingLine}, {data.greetingName}.
+   163→        </h1>
+   164→        <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
+   165→          {COMMAND.overview.sub}
+   166→        </p>
+   167→        {isDemo ? (
+   168→          <p className="mt-4 inline-flex max-w-2xl items-start gap-2 border border-border bg-muted/40 px-3 py-2 text-xs leading-relaxed text-muted-foreground">
+   169→            <span className="shrink-0 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-primary">
+   170→              {COMMAND.overview.demoNote.tag}
+   171→            </span>
+   172→            <span>{COMMAND.overview.demoNote.body}</span>
+   173→          </p>
+   174→        ) : null}
+   175→        <div className="mt-5 flex flex-wrap gap-2.5">
+   176→          <Button size="sm" onClick={() => { setQuickOpen("request"); setQuickError(null); }}>
+   177→            <Plus className="h-3.5 w-3.5" /> Raise a request
+   178→          </Button>
+   179→          <Button size="sm" variant="outline" onClick={() => { setQuickOpen("message"); setQuickError(null); }}>
+   180→            <MessageSquarePlus className="h-3.5 w-3.5" /> Message the crew
+   181→          </Button>
+   182→        </div>
+   183→      </motion.header>
+   184→
+   185→      <div className="grid gap-10 lg:grid-cols-3 lg:gap-8">
+   186→        {/* Primary column */}
+   187→        <div className="min-w-0 space-y-10 lg:col-span-2">
+   188→          {/* 1. Active project */}
+   189→          <section aria-label={COMMAND.overview.project.label}>
+   190→            <h2 className="mb-4 font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+   191→              {COMMAND.overview.project.label}
+   192→            </h2>
+   193→            {project ? (
+   194→              <motion.div
+   195→                initial={reduced ? false : { opacity: 0, y: 10 }}
+   196→                animate={{ opacity: 1, y: 0 }}
+   197→                transition={{ duration: 0.4, delay: 0.05, ease: "easeOut" }}
+   198→              >
+   199→                <Panel>
+   200→                  <div className="flex flex-wrap items-start justify-between gap-3">
+   201→                    <div className="min-w-0">
+   202→                      <div className="flex flex-wrap items-center gap-2.5">
+   203→                        <h3 className="font-display text-lg font-bold leading-tight">{project.title}</h3>
+   204→                        <StatusBadge status={project.status} />
+   205→                      </div>
+   206→                      <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+   207→                        {project.code ? `${project.code} · ` : ""}
+   208→                        {PROJECT_TYPE_LABELS[project.type] ?? project.type}
+   209→                      </p>
+   210→                    </div>
+   211→                    <div className="text-right">
+   212→                      <p className="font-display text-2xl font-bold tabular-nums text-primary">
+   213→                        {project.progress}%
+   214→                      </p>
+   215→                      <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground">
+   216→                        {COMMAND.overview.project.progressAria}
+   217→                      </p>
+   218→                    </div>
+   219→                  </div>
+   220→
+   221→                  <div className="mt-4">
+   222→                    <ProgressBar value={project.progress} label={`${project.title} progress`} />
+   223→                  </div>
+   224→
+   225→                  <div className="mt-5">
+   226→                    <StageRail current={project.stage} />
+   227→                  </div>
+   228→
+   229→                  <dl className="mt-5 grid gap-3 border-t border-border pt-4 text-sm sm:grid-cols-3">
+   230→                    <div>
+   231→                      <dt className="font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground">
+   232→                        {COMMAND.overview.project.nextMilestone}
+   233→                      </dt>
+   234→                      <dd className="mt-0.5 font-medium">{project.nextMilestone ?? "..."}</dd>
+   235→                    </div>
+   236→                    <div>
+   237→                      <dt className="font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground">
+   238→                        {COMMAND.overview.project.targetLaunch}
+   239→                      </dt>
+   240→                      <dd className="mt-0.5 font-medium">
+   241→                        {project.targetLaunchAt ? formatDate(project.targetLaunchAt) : "..."}
+   242→                      </dd>
+   243→                    </div>
+   244→                    <div>
+   245→                      <dt className="font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground">
+   246→                        {COMMAND.overview.project.owner}
+   247→                      </dt>
+   248→                      <dd className="mt-0.5 font-medium">{project.ownerLabel}</dd>
+   249→                    </div>
+   250→                  </dl>
+   251→
+   252→                  <div className="mt-5">
+   253→                    <Button asChild size="sm" variant="outline">
+   254→                      <Link href={`/workspace/projects/${project.id}`}>
+   255→                        {COMMAND.overview.project.open}
+   256→                      </Link>
+   257→                    </Button>
+   258→                  </div>
+   259→                </Panel>
+   260→              </motion.div>
+   261→            ) : (
+   262→              <Panel className="border-dashed bg-transparent">
+   263→                <p className="font-display text-base font-semibold">{COMMAND.overview.project.noProjectTitle}</p>
+   264→                <p className="mt-1.5 max-w-md text-sm leading-relaxed text-muted-foreground">
+   265→                  {COMMAND.overview.project.noProjectBody}
+   266→                </p>
+   267→              </Panel>
+   268→            )}
+   269→          </section>
+   270→
+   271→          {/* 2. Needs your attention — with inline decisions */}
+   272→          <section aria-label={COMMAND.overview.attention.label}>
+   273→            <h2 className="mb-4 font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+   274→              {COMMAND.overview.attention.label}
+   275→            </h2>
+   276→            {data.attention.length === 0 ? (
+   277→              <Panel className="border-dashed bg-transparent">
+   278→                <p className="flex items-center gap-2 font-medium">
+   279→                  <span aria-hidden="true" className="text-primary">✓</span>
+   280→                  {COMMAND.overview.attention.allClear}
+   281→                </p>
+   282→                <p className="mt-1.5 max-w-md text-sm leading-relaxed text-muted-foreground">
+   283→                  {COMMAND.overview.attention.allClearBody}
+   284→                </p>
+   285→              </Panel>
+   286→            ) : (
+   287→              <ul role="list" className="divide-y divide-border border border-border bg-card/50">
+   288→                {data.attention.map((item, index) => (
+   289→                  <motion.li
+   290→                    key={item.id}
+   291→                    initial={reduced ? false : { opacity: 0, y: 8 }}
+   292→                    animate={{ opacity: 1, y: 0 }}
+   293→                    transition={{ duration: 0.35, delay: 0.03 * index, ease: "easeOut" }}
+   294→                  >
+   295→                    <div className="group flex flex-wrap items-center justify-between gap-x-4 gap-y-3 px-5 py-4 transition-colors hover:bg-accent/50">
+   296→                      <div className="min-w-0 flex-1">
+   297→                        <div className="flex flex-wrap items-center gap-2">
+   298→                          <p className="truncate text-sm font-semibold">{item.title}</p>
+   299→                          <StatusBadge status={item.status} />
+   300→                        </div>
+   301→                        <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-muted-foreground">{item.detail}</p>
+   302→                      </div>
+   303→                      <div className="flex shrink-0 flex-wrap items-center gap-2">
+   304→                        <span className="hidden font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground sm:inline">
+   305→                          {formatAge(item.date)}
+   306→                        </span>
+   307→                        {isDecidable(item) ? (
+   308→                          <>
+   309→                            <Button
+   310→                              size="sm"
+   311→                              variant="outline"
+   312→                              onClick={() => {
+   313→                                setDecideItem(item);
+   314→                                setDecideNote("");
+   315→                                setDecideError(null);
+   316→                              }}
+   317→                            >
+   318→                              {item.ctaLabel}
+   319→                            </Button>
+   320→                            <Button
+   321→                              size="sm"
+   322→                              onClick={() => {
+   323→                                setDecideItem(item);
+   324→                                setDecideNote("");
+   325→                                setDecideError(null);
+   326→                              }}
+   327→                            >
+   328→                              {item.kind === "APPROVAL" ? "Approve" : "Accept"}
+   329→                            </Button>
+   330→                          </>
+   331→                        ) : (
+   332→                          <Link
+   333→                            href={item.href}
+   334→                            className="font-mono text-[11px] uppercase tracking-[0.14em] text-primary underline-offset-4 group-hover:underline"
+   335→                          >
+   336→                            {item.ctaLabel}
+   337→                          </Link>
+   338→                        )}
+   339→                      </div>
+   340→                    </div>
+   341→                  </motion.li>
+   342→                ))}
+   343→              </ul>
+   344→            )}
+   345→          </section>
+   346→
+   347→          {/* 5. Recent activity */}
+   348→          <Section
+   349→            label={COMMAND.overview.activity.label}
+   350→            action={
+   351→              <Link
+   352→                href="/workspace/activity"
+   353→                className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+   354→              >
+   355→                {COMMAND.overview.activity.open}
+   356→              </Link>
+   357→            }
+   358→            className="!mt-10"
+   359→          >
+   360→            {data.recentActivity.length === 0 ? (
+   361→              <p className="text-sm text-muted-foreground">{COMMAND.activity.empty}</p>
+   362→            ) : (
+   363→              <ul role="list" className="border-t border-border">
+   364→                {data.recentActivity.slice(0, 6).map((event) => (
+   365→                  <li key={event.id} className="flex items-baseline gap-3 border-b border-border py-2.5">
+   366→                    <span
+   367→                      aria-hidden="true"
+   368→                      className="w-4 shrink-0 text-center font-mono text-xs text-primary/70"
+   369→                    >
+   370→                      {event.actorRole === "CLIENT" ? "›" : "·"}
+   371→                    </span>
+   372→                    <p className="min-w-0 flex-1 text-sm leading-snug">
+   373→                      {event.link ? (
+   374→                        <Link href={event.link} className="underline-offset-4 hover:underline">
+   375→                          {event.title}
+   376→                        </Link>
+   377→                      ) : (
+   378→                        event.title
+   379→                      )}
+   380→                    </p>
+   381→                    <span className="shrink-0 font-mono text-[10px] text-muted-foreground">
+   382→                      {formatAge(event.createdAt)}
+   383→                    </span>
+   384→                  </li>
+   385→                ))}
+   386→              </ul>
+   387→            )}
+   388→          </Section>
+   389→        </div>
+   390→
+   391→        {/* Side column */}
+   392→        <div className="min-w-0 space-y-10">
+   393→          {/* 3. ORBYT Pulse */}
+   394→          {data.pulse ? (
+   395→            <section aria-label={COMMAND.overview.pulse.label}>
+   396→              <h2 className="mb-4 font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+   397→                {COMMAND.overview.pulse.label}
+   398→              </h2>
+   399→              <Panel>
+   400→                <p className="font-display text-sm font-bold">
+   401→                  {COMMAND.overview.pulse.healthyLine(data.pulse.healthyCount, data.pulse.totalCount)}
+   402→                </p>
+   403→                <ul role="list" className="mt-3 space-y-2.5">
+   404→                  {data.pulse.systems.map((system) => (
+   405→                    <li key={system.id} className="flex items-center justify-between gap-3 text-sm">
+   406→                      <span className="flex min-w-0 items-center gap-2">
+   407→                        <span aria-hidden="true" className="inline-block h-2 w-2 shrink-0 rounded-full bg-primary/70" />
+   408→                        <span className="truncate">{system.name}</span>
+   409→                      </span>
+   410→                      <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+   411→                        {system.status.toLowerCase()}
+   412→                      </span>
+   413→                    </li>
+   414→                  ))}
+   415→                </ul>
+   416→                <Button asChild size="sm" variant="outline" className="mt-4 w-full">
+   417→                  <Link href="/workspace/systems">{COMMAND.overview.pulse.open}</Link>
+   418→                </Button>
+   419→              </Panel>
+   420→            </section>
+   421→          ) : null}
+   422→
+   423→          {/* 4. Next up */}
+   424→          <section aria-label={COMMAND.overview.nextUp.label}>
+   425→            <h2 className="mb-4 font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+   426→              {COMMAND.overview.nextUp.label}
+   427→            </h2>
+   428→            {data.nextUp ? (
+   429→              <Panel>
+   430→                <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-primary">
+   431→                  {data.nextUp.kind}
+   432→                </p>
+   433→                <p className="mt-1.5 font-display text-base font-bold leading-snug">{data.nextUp.title}</p>
+   434→                <p className="mt-1 text-sm text-muted-foreground">{formatDateTime(data.nextUp.date)}</p>
+   435→                {data.nextUp.href ? (
+   436→                  <Link
+   437→                    href={data.nextUp.href}
+   438→                    className="mt-3 inline-block font-mono text-[10px] uppercase tracking-[0.16em] text-primary underline-offset-4 hover:underline"
+   439→                  >
+   440→                    Open
+   441→                  </Link>
+   442→                ) : null}
+   443→              </Panel>
+   444→            ) : (
+   445→              <Panel className="border-dashed bg-transparent">
+   446→                <p className="text-sm text-muted-foreground">{COMMAND.overview.nextUp.nothing}</p>
+   447→              </Panel>
+   448→            )}
+   449→          </section>
+   450→
+   451→          {/* Upcoming meetings */}
+   452→          {data.upcomingMeetings.length > 0 ? (
+   453→            <section aria-label={COMMAND.overview.meetings.label}>
+   454→              <h2 className="mb-4 font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+   455→                {COMMAND.overview.meetings.label}
+   456→              </h2>
+   457→              <ul role="list" className="space-y-3">
+   458→                {data.upcomingMeetings.map((meeting) => (
+   459→                  <li key={meeting.id} className="border-l-2 border-primary/50 pl-3">
+   460→                    <p className="text-sm font-medium leading-snug">{meeting.title}</p>
+   461→                    <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+   462→                      {formatDateTime(meeting.startsAt)} · {COMMAND.overview.meetings.minutes(meeting.durationMins)}
+   463→                    </p>
+   464→                  </li>
+   465→                ))}
+   466→              </ul>
+   467→            </section>
+   468→          ) : null}
+   469→
+   470→          {/* Billing snapshot */}
+   471→          {data.billing ? (
+   472→            <section aria-label={COMMAND.overview.billing.label}>
+   473→              <h2 className="mb-4 font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+   474→                {COMMAND.overview.billing.label}
+   475→              </h2>
+   476→              <Panel>
+   477→                <p className="font-display text-xl font-bold tabular-nums">
+   478→                  {formatMoney(data.billing.pendingTotalCents)}
+   479→                </p>
+   480→                <p className="mt-1 text-sm text-muted-foreground">
+   481→                  {COMMAND.overview.billing.dueLine} {data.billing.pendingCount}{" "}
+   482→                  {COMMAND.overview.billing.invoices(data.billing.pendingCount)}
+   483→                  {data.billing.nextDueDate ? `, next due ${formatDate(data.billing.nextDueDate)}` : ""}.
+   484→                </p>
+   485→                <Button asChild size="sm" variant="outline" className="mt-4 w-full">
+   486→                  <Link href="/workspace/billing">{COMMAND.overview.billing.open}</Link>
+   487→                </Button>
+   488→              </Panel>
+   489→            </section>
+   490→          ) : null}
+   491→        </div>
+   492→      </div>
+   493→
+   494→      {/* Inline decision dialog */}
+   495→      <Dialog open={decideItem !== null} onOpenChange={(open) => { if (!open) setDecideItem(null); }}>
+   496→        <DialogContent className="sm:max-w-lg">
+   497→          {decideItem ? (
+   498→            <>
+   499→              <DialogHeader>
+   500→                <DialogTitle>
+   501→                  {decideItem.kind === "APPROVAL" ? "Sign-off decision" : "Change request decision"}
+   502→                </DialogTitle>
+   503→                <DialogDescription>{decideItem.title}</DialogDescription>
+   504→              </DialogHeader>
+   505→              <p className="text-sm leading-relaxed text-muted-foreground">{decideItem.detail}</p>
+   506→              <div className="space-y-2">
+   507→                <Label htmlFor="decide-note">
+   508→                  {decideItem.kind === "APPROVAL" ? "Comment (optional)" : "Note (optional for accept)"}
+   509→                </Label>
+   510→                <Textarea
+   511→                  id="decide-note"
+   512→                  value={decideNote}
+   513→                  onChange={(event) => setDecideNote(event.target.value)}
+   514→                  rows={3}
+   515→                  placeholder={
+   516→                    decideItem.kind === "APPROVAL"
+   517→                      ? "Anything the crew should know alongside your decision."
+   518→                      : "Anything the crew should know alongside your decision."
+   519→                  }
+   520→                />
+   521→              </div>
+   522→              {decideError ? <p className="text-sm text-red-600">{decideError}</p> : null}
+   523→              <DialogFooter className="gap-2 sm:gap-0">
+   524→                <Button
+   525→                  variant="outline"
+   526→                  disabled={decideBusy}
+   527→                  onClick={() => void submitDecision(decideItem.kind === "APPROVAL" ? "REQUEST_CHANGES" : "DECLINED")}
+   528→                >
+   529→                  {decideItem.kind === "APPROVAL" ? "Request changes" : "Decline"}
+   530→                </Button>
+   531→                <Button disabled={decideBusy} onClick={() => void submitDecision(decideItem.kind === "APPROVAL" ? "APPROVE" : "ACCEPTED")}>
+   532→                  {decideBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+   533→                  {decideItem.kind === "APPROVAL" ? "Approve" : "Accept"}
+   534→                </Button>
+   535→              </DialogFooter>
+   536→            </>
+   537→          ) : null}
+   538→        </DialogContent>
+   539→      </Dialog>
+   540→
+   541→      {/* Quick actions dialog */}
+   542→      <Dialog open={quickOpen !== null} onOpenChange={(open) => { if (!open) setQuickOpen(null); }}>
+   543→        <DialogContent className="sm:max-w-lg">
+   544→          {quickOpen ? (
+   545→            <form onSubmit={(event) => void submitQuick(event)}>
+   546→              <DialogHeader>
+   547→                <DialogTitle>{quickOpen === "request" ? "Raise a request" : "Message the crew"}</DialogTitle>
+   548→                <DialogDescription>
+   549→                  {quickOpen === "request"
+   550→                    ? "File it. The desk picks it up, and the lifecycle is tracked end to end."
+   551→                    : "Start a conversation. The crew replies in the thread."}
+   552→                </DialogDescription>
+   553→              </DialogHeader>
+   554→              <div className="mt-4 space-y-3">
+   555→                {quickOpen === "request" ? (
+   556→                  <>
+   557→                    <div className="space-y-1.5">
+   558→                      <Label htmlFor="quick-title">What do you need?</Label>
+   559→                      <Input id="quick-title" name="title" required minLength={4} maxLength={120} placeholder="Short, specific summary" />
+   560→                    </div>
+   561→                    <div className="grid gap-3 sm:grid-cols-2">
+   562→                      <div className="space-y-1.5">
+   563→                        <Label htmlFor="quick-category">Category</Label>
+   564→                        <Select name="category" defaultValue="OTHER">
+   565→                          <SelectTrigger id="quick-category"><SelectValue /></SelectTrigger>
+   566→                          <SelectContent>
+   567→                            {REQUEST_CATEGORIES.map((category) => (
+   568→                              <SelectItem key={category} value={category}>
+   569→                                {category.charAt(0) + category.slice(1).toLowerCase()}
+   570→                              </SelectItem>
+   571→                            ))}
+   572→                          </SelectContent>
+   573→                        </Select>
+   574→                      </div>
+   575→                      <div className="space-y-1.5">
+   576→                        <Label htmlFor="quick-priority">Priority</Label>
+   577→                        <Select name="priority" defaultValue="NORMAL">
+   578→                          <SelectTrigger id="quick-priority"><SelectValue /></SelectTrigger>
+   579→                          <SelectContent>
+   580→                            {REQUEST_PRIORITIES.map((priority) => (
+   581→                              <SelectItem key={priority} value={priority}>
+   582→                                {priority.charAt(0) + priority.slice(1).toLowerCase()}
+   583→                              </SelectItem>
+   584→                            ))}
+   585→                          </SelectContent>
+   586→                        </Select>
+   587→                      </div>
+   588→                    </div>
+   589→                    <div className="space-y-1.5">
+   590→                      <Label htmlFor="quick-description">Detail</Label>
+   591→                      <Textarea id="quick-description" name="description" required minLength={10} maxLength={4000} rows={4} placeholder="What is the context, what does done look like?" />
+   592→                    </div>
+   593→                  </>
+   594→                ) : (
+   595→                  <>
+   596→                    <div className="space-y-1.5">
+   597→                      <Label htmlFor="quick-subject">Subject</Label>
+   598→                      <Input id="quick-subject" name="subject" required minLength={3} maxLength={120} placeholder="What is this about?" />
+   599→                    </div>
+   600→                    <div className="space-y-1.5">
+   601→                      <Label htmlFor="quick-body">Message</Label>
+   602→                      <Textarea id="quick-body" name="body" required minLength={2} maxLength={4000} rows={4} placeholder="Write it out — this opens a tracked thread." />
+   603→                    </div>
+   604→                  </>
+   605→                )}
+   606→              </div>
+   607→              {quickError ? <p className="mt-3 text-sm text-red-600">{quickError}</p> : null}
+   608→              <DialogFooter className="mt-4">
+   609→                <Button type="submit" disabled={quickBusy}>
+   610→                  {quickBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+   611→                  {quickOpen === "request" ? "File the request" : "Send the message"}
+   612→                </Button>
+   613→              </DialogFooter>
+   614→            </form>
+   615→          ) : null}
+   616→        </DialogContent>
+   617→      </Dialog>
+   618→    </div>
+   619→  );
+   620→}
+   621→

@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { CommandOverview } from "@/components/orbyt/command/command-overview";
+import { CommandProject } from "@/components/orbyt/command/command-project";
 
 export const metadata: Metadata = {
-  title: "Overview · ORBYT Command Center",
+  title: "Project · ORBYT Command Center",
 };
 
-export default function WorkspacePage() {
-  return <CommandOverview />;
+export default function WorkspaceHomePage() {
+  return <CommandProject />;
 }

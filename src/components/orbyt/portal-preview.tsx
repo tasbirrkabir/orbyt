@@ -3,22 +3,20 @@
 import { motion, useReducedMotion } from "framer-motion";
 import {
   Bell,
-  CalendarDays,
+  ReceiptText,
+  Mail,
+  FolderKanban,
   CheckCircle2,
   Circle,
-  FileText,
-  LayoutDashboard,
-  MessageSquare,
-  FolderKanban,
 } from "lucide-react";
 import type { CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 
 /**
  * PortalPreview — an honest, animated miniature of the ORBYT client
- * portal (the real product behind the login). Labels mirror the actual
- * workspace: projects with stage/health, milestones, activity. No fake
- * brands, no invented numbers beyond the demo data's own shapes.
+ * panel (the real product behind the login). Labels mirror the actual
+ * workspace rooms: project, invoices, contact. No fake brands, no
+ * invented numbers beyond the demo data's own shapes.
  *
  * Motion: window springs in, rows stagger up, the progress bar and chart
  * bars grow once on view, status dots breathe. All of it collapses under
@@ -28,11 +26,9 @@ import { cn } from "@/lib/utils";
 const EASE = [0.22, 1, 0.36, 1] as const;
 
 const NAV = [
-  { icon: LayoutDashboard, label: "Overview", active: true },
-  { icon: FolderKanban, label: "Projects" },
-  { icon: MessageSquare, label: "Requests" },
-  { icon: FileText, label: "Files" },
-  { icon: CalendarDays, label: "Meetings" },
+  { icon: FolderKanban, label: "Project", active: true },
+  { icon: ReceiptText, label: "Invoices" },
+  { icon: Mail, label: "Contact" },
 ] as const;
 
 const CHART_BARS = [38, 52, 44, 66, 58, 80, 92] as const;
@@ -299,8 +295,8 @@ export function PortalPreview() {
         animate={reduced ? undefined : { opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 1.2, ease: EASE }}
       >
-        <CalendarDays className="size-3 text-primary" />
-        Demo: fri 14:00
+        <ReceiptText className="size-3 text-primary" />
+        Demo: invoice due
       </motion.div>
     </motion.div>
   );

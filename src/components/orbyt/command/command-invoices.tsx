@@ -11,16 +11,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { COMMAND } from "@/content/command";
 import { formatDate, formatMoney, STATUS_LABELS } from "@/lib/portal/domain";
 import type { BillingPayload, InvoiceItem } from "@/lib/portal/types";
+import { cn } from "@/lib/utils";
 import { usePortalFetch } from "./use-portal-fetch";
 import { EmptyState, ErrorState, LoadingState, PageHeader } from "./primitives";
 import { StatusBadge } from "./status-badge";
 
-const METHOD_LABELS: Record<string, string> = {
-  BANK_TRANSFER: "Bank transfer",
-  BKASH: "bKash",
-  NAGAD: "Nagad",
-  CARD: "Card",
-};
+const B = COMMAND.invoices;
 
 const METHOD_OPTIONS = ["BANK_TRANSFER", "BKASH", "NAGAD", "CARD"] as const;
 
@@ -28,32 +24,31 @@ function InvoiceRow({ invoice, onReport }: { invoice: InvoiceItem; onReport?: (i
   const canReport = Boolean(onReport) && ["PENDING", "OVERDUE"].includes(invoice.status);
   const claimed = (invoice.paymentClaimCount ?? 0) > 0 && !invoice.paidAt;
   return (
-    <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-2 px-5 py-4">
+    <div className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-start sm:justify-between sm:gap-x-6">
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2.5">
           <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-primary">{invoice.number}</span>
           <StatusBadge status={invoice.status} />
           {claimed ? (
             <span className="border border-border bg-muted/50 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
-              Payment reported · awaiting confirmation
+              {B.reported}
             </span>
           ) : null}
         </div>
         <p className="mt-1 text-sm text-muted-foreground">{invoice.description}</p>
         <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-          {COMMAND.billing.labels.issued} {formatDate(invoice.issueDate)} · {COMMAND.billing.labels.due}{" "}
-          {formatDate(invoice.dueDate)}
+          {B.labels.issued} {formatDate(invoice.issueDate)} · {B.labels.due} {formatDate(invoice.dueDate)}
           {invoice.paidAt
-            ? ` · ${COMMAND.billing.labels.paidOn} ${formatDate(invoice.paidAt)}${
-                invoice.method ? ` · ${METHOD_LABELS[invoice.method] ?? invoice.method}` : ""
+            ? ` · ${B.labels.paidOn} ${formatDate(invoice.paidAt)}${
+                invoice.method ? ` · ${B.methods[invoice.method] ?? invoice.method}` : ""
               }`
             : ""}
         </p>
       </div>
-      <div className="flex shrink-0 items-center gap-3">
+      <div className="flex shrink-0 items-center justify-between gap-3 sm:justify-end">
         {canReport && onReport ? (
           <Button size="sm" variant="outline" onClick={() => onReport(invoice)}>
-            Report payment
+            {B.reportCta}
           </Button>
         ) : null}
         <p className="font-display text-lg font-bold tabular-nums">
@@ -64,7 +59,12 @@ function InvoiceRow({ invoice, onReport }: { invoice: InvoiceItem; onReport?: (i
   );
 }
 
-export function CommandBilling() {
+/**
+ * The Invoices room: invoice details in the open, the way payment
+ * actually works at ORBYT, and the report-payment loop. The portal
+ * never processes a payment; a human confirms every receipt.
+ */
+export function CommandInvoices() {
   const { data, loading, failed, retry, refresh } = usePortalFetch<BillingPayload>("/api/portal/billing");
   const reduced = useReducedMotion();
   const [reporting, setReporting] = useState<InvoiceItem | null>(null);
@@ -76,6 +76,7 @@ export function CommandBilling() {
   if (!data) return null;
 
   const nothingAtAll = data.pending.length === 0 && data.settled.length === 0;
+  const canWrite = data.identity.canWrite;
 
   function openReport(invoice: InvoiceItem) {
     setReporting(invoice);
@@ -113,14 +114,36 @@ export function CommandBilling() {
 
   return (
     <div>
-      <PageHeader eyebrow={COMMAND.billing.eyebrow} title={COMMAND.billing.title} sub={COMMAND.billing.sub} />
+      <PageHeader eyebrow={B.eyebrow} title={B.title} sub={B.sub} />
 
-      <p className="mb-8 max-w-3xl border border-border bg-muted/30 px-4 py-3 text-sm leading-relaxed text-muted-foreground">
-        {COMMAND.billing.honesty}
-      </p>
+      {/* How payment works: the honest three steps. */}
+      <motion.div
+        initial={reduced ? false : { opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="mb-10 border border-border bg-card/50 p-5"
+      >
+        <h2 className="font-mono text-[11px] uppercase tracking-[0.22em] text-primary">{B.how.title}</h2>
+        <ol role="list" className="mt-3 space-y-2.5">
+          {B.how.steps.map((step, index) => (
+            <li key={step} className="flex gap-3 text-sm leading-relaxed text-muted-foreground">
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "mt-0.5 flex size-5 shrink-0 items-center justify-center border font-mono text-[10px]",
+                  index === 2 ? "border-primary/40 bg-primary/10 text-primary" : "border-border bg-muted text-muted-foreground",
+                )}
+              >
+                {index + 1}
+              </span>
+              <span>{step}</span>
+            </li>
+          ))}
+        </ol>
+      </motion.div>
 
       {nothingAtAll ? (
-        <EmptyState title={COMMAND.billing.emptyTitle} body={COMMAND.billing.empty} />
+        <EmptyState title={B.emptyTitle} body={B.empty} />
       ) : (
         <>
           {/* Summary */}
@@ -132,7 +155,7 @@ export function CommandBilling() {
           >
             <div className="bg-card/60 p-5">
               <dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                {COMMAND.billing.summary.outstanding}
+                {B.summary.outstanding}
               </dt>
               <dd className="mt-1.5 font-display text-2xl font-bold tabular-nums">
                 {formatMoney(data.outstandingCents)}
@@ -140,7 +163,7 @@ export function CommandBilling() {
             </div>
             <div className="bg-card/60 p-5">
               <dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                {COMMAND.billing.summary.paidThisYear}
+                {B.summary.paidThisYear}
               </dt>
               <dd className="mt-1.5 font-display text-2xl font-bold tabular-nums text-primary">
                 {formatMoney(data.paidThisYearCents)}
@@ -148,11 +171,11 @@ export function CommandBilling() {
             </div>
           </motion.dl>
 
-          {/* Pending */}
-          <section aria-label={COMMAND.billing.pending} className="mb-10">
+          {/* Due */}
+          <section aria-label={B.pending} className="mb-10">
             <div className="mb-3 flex items-baseline justify-between gap-3">
               <h2 className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-                {COMMAND.billing.pending}
+                {B.pending}
               </h2>
               <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
                 {STATUS_LABELS.PENDING}
@@ -160,29 +183,31 @@ export function CommandBilling() {
             </div>
             {data.pending.length === 0 ? (
               <p className="border border-dashed border-border bg-muted/30 px-5 py-6 text-sm text-muted-foreground">
-                {COMMAND.billing.emptyPending}
+                {B.emptyPending}
               </p>
             ) : (
               <div className="divide-y divide-border border border-border bg-card/50">
                 {data.pending.map((invoice) => (
-                  <InvoiceRow key={invoice.id} invoice={invoice} onReport={openReport} />
+                  <InvoiceRow key={invoice.id} invoice={invoice} onReport={canWrite ? openReport : undefined} />
                 ))}
                 <p className="bg-muted/20 px-5 py-3 text-xs leading-relaxed text-muted-foreground">
-                  {COMMAND.billing.payNote} Sent it already? Report the payment and ORBYT confirms receipt —
-                  the invoice stays pending until a human on the crew records it.
+                  {B.payNote}
                 </p>
               </div>
             )}
+            {!canWrite && data.pending.length > 0 ? (
+              <p className="mt-2 text-xs text-muted-foreground">{B.viewerNote}</p>
+            ) : null}
           </section>
 
           {/* Settled */}
-          <section aria-label={COMMAND.billing.settled}>
+          <section aria-label={B.settled}>
             <h2 className="mb-3 font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-              {COMMAND.billing.settled}
+              {B.settled}
             </h2>
             {data.settled.length === 0 ? (
               <p className="border border-dashed border-border bg-muted/30 px-5 py-6 text-sm text-muted-foreground">
-                {COMMAND.billing.emptySettled}
+                {B.emptySettled}
               </p>
             ) : (
               <div className="divide-y divide-border border border-border bg-card/50">
@@ -201,36 +226,35 @@ export function CommandBilling() {
           {reporting ? (
             <form onSubmit={(event) => void submitReport(event)}>
               <DialogHeader>
-                <DialogTitle>Report a payment — {reporting.number}</DialogTitle>
+                <DialogTitle>{B.reportDialog.title} — {reporting.number}</DialogTitle>
                 <DialogDescription>
-                  {formatMoney(reporting.totalCents, reporting.currency)} · tells the crew money is on the way.
-                  The invoice is marked paid only after ORBYT confirms receipt.
+                  {B.reportDialog.description(formatMoney(reporting.totalCents, reporting.currency), reporting.number)}
                 </DialogDescription>
               </DialogHeader>
               <div className="mt-4 space-y-3">
                 <div className="space-y-1.5">
-                  <Label htmlFor="claim-method">How did you pay?</Label>
+                  <Label htmlFor="claim-method">{B.reportDialog.methodLabel}</Label>
                   <Select name="method" defaultValue="BANK_TRANSFER">
                     <SelectTrigger id="claim-method"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {METHOD_OPTIONS.map((method) => (
                         <SelectItem key={method} value={method}>
-                          {METHOD_LABELS[method]}
+                          {B.methods[method] ?? method}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="claim-reference">Reference (transaction ID, transfer slip…)</Label>
-                  <Input id="claim-reference" name="reference" maxLength={120} placeholder="Optional, but it helps" />
+                  <Label htmlFor="claim-reference">{B.reportDialog.referenceLabel}</Label>
+                  <Input id="claim-reference" name="reference" maxLength={120} placeholder={B.reportDialog.referencePlaceholder} />
                 </div>
               </div>
               {reportError ? <p className="mt-3 text-sm text-red-600">{reportError}</p> : null}
               <DialogFooter className="mt-4">
                 <Button type="submit" disabled={reportBusy}>
                   {reportBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                  Report the payment
+                  {B.reportDialog.submit}
                 </Button>
               </DialogFooter>
             </form>

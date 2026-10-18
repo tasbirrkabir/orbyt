@@ -197,7 +197,7 @@ export function buildAttention(items: {
       status: "PENDING",
       date: invoice.dueDate.toISOString(),
       ctaLabel: "View",
-      href: "/workspace/billing",
+      href: "/workspace/invoices",
     });
   }
   return attention;
