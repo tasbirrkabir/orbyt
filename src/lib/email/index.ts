@@ -220,3 +220,36 @@ export function sendLeadReceivedEmail(to: string, name: string): void {
     rendered: leadReceivedEmail({ name }),
   });
 }
+
+// ── Deep links + named templates for the auth flows ──────────────
+
+/** Absolute links that appear inside transactional emails. */
+export const emailLinks = {
+  resetPassword: (rawToken: string): string =>
+    `${appBaseUrl()}/reset-password?token=${encodeURIComponent(rawToken)}`,
+};
+
+type TemplateEnvelope = {
+  to: string;
+  toName?: string;
+  organizationId?: string | null;
+};
+
+type TemplateBody =
+  | { key: "PASSWORD_RESET"; name: string; resetUrl: string; minutesValid: number };
+
+/**
+ * One named-template entry point for the auth routes: the route
+ * declares WHAT was decided (key + variables), this module owns HOW
+ * it reaches the inbox. Fire-and-forget like every send here.
+ */
+export async function sendTemplate(
+  envelope: TemplateEnvelope,
+  template: TemplateBody,
+): Promise<void> {
+  switch (template.key) {
+    case "PASSWORD_RESET":
+      sendPasswordResetEmail(envelope.to, template.resetUrl, template.minutesValid);
+      return;
+  }
+}

@@ -309,14 +309,20 @@ export function AdminProjectDetail({ projectId }: { projectId: string }) {
     <div>
       <Link
         href={STAFF_NAV_ITEMS.projects.href}
-        className="inline-block font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+        className="mb-4 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-foreground"
       >
+        <span aria-hidden="true">←</span>
         {STAFF_NAV_ITEMS.projects.label}
       </Link>
 
       <PageHeader
         eyebrow={COPY.eyebrow}
         title={project.code ? `${project.code} · ${project.title}` : project.title}
+        sub={
+          project.organizationName
+            ? `${project.organizationName} · ${project.clientId}`
+            : undefined
+        }
         actions={
           <Button size="sm" variant="outline" onClick={openEdit}>
             {COPY.editTitle}
@@ -377,7 +383,7 @@ export function AdminProjectDetail({ projectId }: { projectId: string }) {
           </Button>
         </div>
         {milestones.length === 0 ? (
-          <p className="border border-dashed border-border bg-muted/30 px-4 py-6 text-sm text-muted-foreground">
+          <p className="rounded-xl border border-dashed border-border bg-muted/20 px-4 py-6 text-sm text-muted-foreground">
             {COPY.milestonesEmpty}
           </p>
         ) : (
@@ -385,7 +391,7 @@ export function AdminProjectDetail({ projectId }: { projectId: string }) {
             {milestones.map((milestone) => (
               <li
                 key={milestone.id}
-                className="flex flex-wrap items-start justify-between gap-3 border border-border bg-card/50 px-4 py-3"
+                className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-border bg-card/60 px-4 py-3"
               >
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
@@ -450,13 +456,13 @@ export function AdminProjectDetail({ projectId }: { projectId: string }) {
           </Button>
         </div>
         {updates.length === 0 ? (
-          <p className="border border-dashed border-border bg-muted/30 px-4 py-6 text-sm text-muted-foreground">
+          <p className="rounded-xl border border-dashed border-border bg-muted/20 px-4 py-6 text-sm text-muted-foreground">
             {COPY.logEmpty}
           </p>
         ) : (
           <ul role="list" className="space-y-2">
             {updates.map((update) => (
-              <li key={update.id} className="border border-border bg-card/50 px-4 py-3">
+              <li key={update.id} className="rounded-xl border border-border bg-card/60 px-4 py-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex min-w-0 flex-wrap items-center gap-2">
                     <TagChip tag={update.tag} />
@@ -496,7 +502,7 @@ export function AdminProjectDetail({ projectId }: { projectId: string }) {
           </Button>
         </div>
         {deliverables.length === 0 ? (
-          <p className="border border-dashed border-border bg-muted/30 px-4 py-6 text-sm text-muted-foreground">
+          <p className="rounded-xl border border-dashed border-border bg-muted/20 px-4 py-6 text-sm text-muted-foreground">
             {COPY.deliverablesEmpty}
           </p>
         ) : (
@@ -504,7 +510,7 @@ export function AdminProjectDetail({ projectId }: { projectId: string }) {
             {deliverables.map((deliverable) => (
               <li
                 key={deliverable.id}
-                className="flex flex-wrap items-start justify-between gap-3 border border-border bg-card/50 px-4 py-3"
+                className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-border bg-card/60 px-4 py-3"
               >
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">

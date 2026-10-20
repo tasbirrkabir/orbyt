@@ -626,7 +626,7 @@ export function AdminSystems() {
             onAction={() => setCreating(true)}
           />
         ) : (
-          <ul role="list" className="divide-y divide-border border border-border bg-card/50">
+          <ul role="list" className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card/60">
             {data.systems.map((system) => (
               <SystemRow key={system.id} system={system} onSaved={refresh} />
             ))}

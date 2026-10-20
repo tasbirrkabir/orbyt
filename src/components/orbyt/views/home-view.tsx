@@ -22,7 +22,9 @@ import { CurtainReveal } from "../curtain-reveal";
 import { emphasize } from "../emphasize";
 import { GiantMarquee } from "../giant-marquee";
 import { Hero } from "../hero";
+import { LeakBoard } from "../leak-board";
 import { ManifestoWall } from "../manifesto-wall";
+import { ProcessRail } from "../process-rail";
 import { Reveal } from "../reveal";
 import { Section } from "../section";
 import { ServicesWithPreview } from "../services-with-preview";
@@ -109,6 +111,10 @@ function ProblemTeaser() {
         </div>
       </div>
 
+      <Reveal delay={0.08} className="mt-8">
+        <LeakBoard />
+      </Reveal>
+
       <Reveal delay={0.1} className="mt-10">
         <div className="border border-border bg-card p-6 shadow-pixel-orange md:p-8">
           <p className="text-lg leading-relaxed">{PROBLEM.position}</p>
@@ -158,22 +164,35 @@ function ProcessStrip() {
       title={PROCESS_SECTION.title}
       lede={PROCESS_SECTION.lede}
     >
-      <div className="mt-14 grid grid-cols-1 gap-px border border-border bg-border sm:grid-cols-2 lg:grid-cols-3">
-        {PROCESS_STEPS.map((step, i) => (
-          <Reveal
-            key={step.step}
-            delay={i * 0.05}
-            className="group min-w-0 bg-background p-6 transition-colors duration-200 hover:bg-card"
-          >
-            <p className="font-mono text-xs text-primary">{step.step}</p>
-            <p className="mt-3 font-display text-lg font-bold uppercase tracking-wide transition-colors duration-200 group-hover:text-primary">
-              {step.name}
-            </p>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              {step.what}
-            </p>
-          </Reveal>
-        ))}
+      <div className="relative mt-14">
+        {/* The rail: a pulse travels the process, left to right. */}
+        <ProcessRail />
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {PROCESS_STEPS.map((step, i) => (
+            <Reveal
+              key={step.step}
+              delay={i * 0.05}
+              className="group min-w-0 rounded-xl border border-border bg-card/40 p-6 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:bg-card"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <span className="inline-flex size-8 items-center justify-center rounded-lg bg-primary/10 font-mono text-[11px] font-bold text-primary">
+                  {step.step}
+                </span>
+                <ArrowRight
+                  aria-hidden="true"
+                  className="size-4 text-muted-foreground/40 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-primary"
+                />
+              </div>
+              <p className="mt-4 font-display text-lg font-bold uppercase tracking-wide transition-colors duration-200 group-hover:text-primary">
+                {step.name}
+              </p>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                {step.what}
+              </p>
+            </Reveal>
+          ))}
+        </div>
       </div>
 
       <div className="mt-10">

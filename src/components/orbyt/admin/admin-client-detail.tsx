@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { STAFF } from "@/content/admin";
+import { STAFF, STAFF_NAV_ITEMS } from "@/content/admin";
 import { ROLES, ROLE_LABELS, TIERS, formatDate, formatMoney } from "@/lib/portal/domain";
 import type { AdminOrgDetailPayload, AdminUserItem } from "@/lib/admin/types";
 import { usePortalFetch } from "@/components/orbyt/command/use-portal-fetch";
@@ -179,9 +179,18 @@ export function AdminClientDetail({ orgId }: { orgId: string }) {
 
   return (
     <div>
+      <Link
+        href={STAFF_NAV_ITEMS.clients.href}
+        className="mb-4 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <span aria-hidden="true">←</span>
+        {STAFF_NAV_ITEMS.clients.label}
+      </Link>
+
       <PageHeader
         eyebrow={COPY.eyebrow}
         title={org.name}
+        sub={`${COPY.colKey} ${org.clientId}${org.country ? ` · ${org.country}` : ""}`}
         actions={
           <Button size="sm" variant="outline" onClick={openEdit}>
             {COPY.editTitle}
@@ -237,7 +246,7 @@ export function AdminClientDetail({ orgId }: { orgId: string }) {
           </Button>
         </div>
         {users.length === 0 ? (
-          <p className="border border-dashed border-border bg-muted/30 px-4 py-6 text-sm text-muted-foreground">
+          <p className="rounded-xl border border-dashed border-border bg-muted/20 px-4 py-6 text-sm text-muted-foreground">
             {COPY.usersEmpty}
           </p>
         ) : (
@@ -245,7 +254,7 @@ export function AdminClientDetail({ orgId }: { orgId: string }) {
             {users.map((user) => (
               <li
                 key={user.id}
-                className="flex flex-wrap items-center justify-between gap-3 border border-border bg-card/50 px-4 py-3"
+                className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card/60 px-4 py-3"
               >
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium">{user.name ?? user.email}</p>
@@ -298,7 +307,7 @@ export function AdminClientDetail({ orgId }: { orgId: string }) {
       <section className="mt-10" aria-label={PROJECTS.colProject}>
         <ListLabel>{PROJECTS.colProject}</ListLabel>
         {projects.length === 0 ? (
-          <p className="border border-dashed border-border bg-muted/30 px-4 py-6 text-sm text-muted-foreground">
+          <p className="rounded-xl border border-dashed border-border bg-muted/20 px-4 py-6 text-sm text-muted-foreground">
             {PROJECTS.empty}
           </p>
         ) : (
@@ -306,7 +315,7 @@ export function AdminClientDetail({ orgId }: { orgId: string }) {
             {projects.map((project) => (
               <li
                 key={project.id}
-                className="flex flex-wrap items-start justify-between gap-3 border border-border bg-card/50 px-4 py-3 transition-colors hover:border-primary/50"
+                className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-border bg-card/60 px-4 py-3 transition-all duration-200 hover:border-primary/40 hover:bg-card"
               >
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">

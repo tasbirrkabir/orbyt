@@ -492,7 +492,7 @@ export function AdminReports() {
             onAction={() => setCreating(true)}
           />
         ) : (
-          <ul role="list" className="divide-y divide-border border border-border bg-card/50">
+          <ul role="list" className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card/60">
             {data.reports.map((report) => (
               <ReportRow key={report.id} report={report} onSaved={refresh} />
             ))}

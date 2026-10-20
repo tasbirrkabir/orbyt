@@ -79,6 +79,14 @@ export const log = {
 };
 
 /**
+ * Named-event sugar used by the auth guards: same output channel as
+ * log.info, but the call site reads as "this event happened".
+ */
+export function logEvent(component: string, event: string, fields?: LogFields): void {
+  log.info(component, event, fields);
+}
+
+/**
  * The one request log line, emitted by proxy.ts for every request.
  *
  * Honest scope: the edge hop runs before the route handler, so the

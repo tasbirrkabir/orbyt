@@ -153,7 +153,7 @@ export function AdminThreadDetail({ threadId }: { threadId: string }) {
           event.preventDefault();
           void sendReply();
         }}
-        className="border border-border bg-card/50 p-5"
+        className="rounded-xl border border-border bg-card/60 p-5"
       >
         <AreaField
           id="admin-thread-reply"

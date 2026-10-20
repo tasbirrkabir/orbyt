@@ -433,7 +433,7 @@ export function AdminFiles() {
               <span>{COPY.colUploaded}</span>
               <span aria-hidden="true" />
             </div>
-            <ul role="list" className="divide-y divide-border border border-border bg-card/50">
+            <ul role="list" className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card/60">
               {data.files.map((file) => (
                 <FileRow
                   key={file.id}

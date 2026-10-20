@@ -180,11 +180,11 @@ export function AdminMessages() {
       />
 
       {threads.length === 0 ? (
-        <p className="border border-dashed border-border bg-muted/30 px-4 py-6 text-sm text-muted-foreground">
+        <p className="rounded-xl border border-dashed border-border bg-muted/20 px-4 py-6 text-sm text-muted-foreground">
           {COPY.empty}
         </p>
       ) : (
-        <ul role="list" className="divide-y divide-border border border-border bg-card/50">
+        <ul role="list" className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card/60">
           {threads.map((thread, index) => {
             const clientWaiting = thread.lastSenderRole === "CLIENT";
             const unread = thread.unreadForClient > 0;

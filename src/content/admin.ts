@@ -11,14 +11,31 @@ export const STAFF_NAV_ITEMS = {
   projects: { label: "Projects", href: "/admin/projects" },
   requests: { label: "Requests", href: "/admin/requests" },
   approvals: { label: "Approvals", href: "/admin/approvals" },
-  activity: { label: "Audit log", href: "/admin/activity" },
   messages: { label: "Messages", href: "/admin/messages" },
+  billing: { label: "Billing", href: "/admin/billing" },
+  systems: { label: "Systems", href: "/admin/systems" },
   files: { label: "Files", href: "/admin/files" },
   meetings: { label: "Meetings", href: "/admin/meetings" },
-  systems: { label: "Systems", href: "/admin/systems" },
   reports: { label: "Reports", href: "/admin/reports" },
-  billing: { label: "Billing", href: "/admin/billing" },
+  activity: { label: "Audit log", href: "/admin/activity" },
   settings: { label: "Settings", href: "/admin/settings" },
+} as const;
+
+/** Lucide icon names per nav key; the shell maps them to components. */
+export const STAFF_NAV_ICONS = {
+  overview: "gauge",
+  clients: "users",
+  projects: "folder-kanban",
+  requests: "inbox",
+  approvals: "check-check",
+  messages: "message-circle",
+  billing: "receipt-text",
+  systems: "activity",
+  files: "folder-open",
+  meetings: "calendar",
+  reports: "bar-chart-3",
+  activity: "history",
+  settings: "settings-2",
 } as const;
 
 export type StaffNavItemKey = keyof typeof STAFF_NAV_ITEMS;
@@ -59,18 +76,42 @@ export const STAFF = {
   },
   nav: {
     groups: [
-      { label: "DESK", items: ["overview", "clients", "projects", "requests", "settings"] },
-      { label: "RECORDS", items: ["approvals", "activity"] },
-      { label: "EXCHANGE", items: ["messages", "files", "meetings"] },
-      { label: "OPERATIONS", items: ["systems", "reports", "billing"] },
+      { label: "WORK", items: ["overview", "clients", "projects"] },
+      { label: "INBOX", items: ["requests", "approvals", "messages"] },
+      { label: "OPERATIONS", items: ["billing", "systems", "files", "meetings", "reports"] },
+      { label: "ACCOUNT", items: ["activity", "settings"] },
     ] as { label: string; items: StaffNavItemKey[] }[],
     items: STAFF_NAV_ITEMS,
+    /** Which nav key each overview count lights up. */
+    badges: {
+      requests: "openRequests",
+      approvals: "pendingApprovals",
+      messages: "threadsAwaitingReply",
+      billing: "overdueInvoices",
+      systems: "systemsAttention",
+    } as Partial<Record<StaffNavItemKey, "openRequests" | "pendingApprovals" | "threadsAwaitingReply" | "overdueInvoices" | "systemsAttention">>,
   },
   mobilePrimary: ["overview", "clients", "projects", "requests"] as StaffNavItemKey[],
 
   overview: {
     eyebrow: "STAFF CONSOLE",
     sub: "The live state of every engagement. Everything here is a real count from the records.",
+    attention: {
+      label: "Needs you now",
+      sub: "Anything with a number is a real queue waiting on the desk. Empty means the board is clear.",
+      clear: "Board is clear",
+      clearSub: "Nothing is waiting on you. The queues below fill as clients move.",
+      requests: "Client requests",
+      requestsSub: "open and waiting for a first reply",
+      approvals: "Approvals",
+      approvalsSub: "waiting on a client decision",
+      messages: "Conversations",
+      messagesSub: "threads that need a reply",
+      billing: "Overdue invoices",
+      billingSub: "past due, need a nudge",
+      systems: "Systems",
+      systemsSub: "recorded issues need triage",
+    },
     stats: {
       clients: "Clients",
       activeProjects: "Active projects",
@@ -81,6 +122,7 @@ export const STAFF = {
       overdueInvoices: "Overdue invoices",
       systemsAttention: "Systems in trouble",
     },
+    queueLabel: "Queues",
     approvalsLabel: "Approvals waiting on clients",
     requestsLabel: "Requests filed by clients",
     threadsLabel: "Conversations awaiting a reply",

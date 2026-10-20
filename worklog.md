@@ -868,3 +868,35 @@ Work Log:
 - CLEANUP: deleted 20 command components (incl. overview, project-detail, search, bell), 16 workspace page folders, portal/views + quick-links/portal-nav/workspace-shell/deliverables-panel/message-composer/check-in-form/use-portal/portal-page-header/portal-states. API routes and Prisma schema untouched (backend contracts stay for PHASE 4).
 - HONESTY REPAIRS: public PortalPreview nav now mirrors the real panel (Project/Invoices/Contact + "Demo: invoice due" badge instead of the meetings badge); email deep-link helpers now point at /workspace, /workspace/invoices, /workspace/contact; mappers' invoice attention href -> /workspace/invoices.
 - E2E (agent-browser, ORB-DEMO): project room shows 57% / BUILD rail / 7 milestones / crew log with approved + sign-off rows / scope incl+excl / ৳15,000 outstanding strip; report-payment E2E (bKash + reference) flipped INV-0003 to "payment reported · awaiting confirmation", then the test Payment row was removed to keep demo data pristine; contact form E2E sent a note (thread created, then deleted as a test artifact); old routes (/workspace/settings, billing, messages) land on the project room; logout -> home; in-place gate sign-in -> project room; iPhone 14: scrollWidth-clientWidth = 0, 3-item bottom bar, invoice rows readable; desktop 1440 all rooms verified; lint exit 0; dev.log clean (EADDRINUSE line is from an old startup attempt, server healthy).
+---
+Task ID: AP-1 (admin desk redesign + auth repair + site lift)
+Agent: Z.ai Code (main)
+Task: User feedback: ① the admin panel had become complex-looking — make the UI and usability easy and beautiful; ② apart from the admin panel, the public site felt dull — make it better.
+
+Work Log:
+- BLOCKER FOUND: the whole auth layer was broken. /admin login hit a Turbopack build error (missing exports), and even after that no account could sign in. Root causes fixed:
+  - rate-limit.ts was missing the isRateLimited/requestIp helpers 8 auth routes import → added guard-style wrappers over checkRateLimit/clientIp (10 attempts / 10 min).
+  - observability.ts was missing logEvent → added as named-event sugar over log.info.
+  - credentials.ts, lib/mfa.ts and the auth API routes reference THREE prisma models that never existed (MfaEnrollment, AuthToken, PasswordResetAudit) → modeled them in schema.prisma (hashed single-use tokens, TOTP enrollment lifecycle, reset audit) and db:push.
+  - lib/email was missing emailLinks/sendTemplate used by password/forgot → added (reset deep link + named-template dispatcher); prefersEmail import removed (unused).
+  - authorize() spoke the OLD protocol only (clientId mandatory, legacy totp) while the admin form speaks the NEW two-step MFA protocol → rewrote authorize to dual protocol: (1) password path, clientId optional → staff lookup by email+role ADMIN, MFA via ACTIVE enrollment + verifySecondFactor; (2) ticket path — consumeMfaLoginTicket + second factor. Client portal login (clientId + email + password) verified unchanged.
+  - admin-login-form.tsx had a corrupted useState line (const faTicket, setMfaTicket]) → repaired; dead DEMO_ADMIN import removed; qrcode.react installed for MFA setup QR.
+  - No ADMIN user existed in the db → scripts/seed-staff.ts upserts staff@orbyt.com / orbyt-admin (documented in the gate demo note).
+- LEGACY REMOVAL: /admin used to render staff-console.tsx — a second key-gated console (PROVISION_API_KEY) inside the already-authenticated desk — plus 4 dead tab files (2400+ lines); deleted, /admin now renders AdminOverview. Also deleted the stale /dashboard route page + 7 orphaned orbyt/dashboard components (kept console-frame, still used), dead components services.tsx/insights.tsx, and the orphaned r2 storage provider; the portal file-download route rewritten to the honest reality (org-checked link redirect, no faked bytes).
+- CONTENT FIXES: flows.ts gained AUTH.forgot + the missing reset keys (error/invalidLink/requestNew/doneCta/passwordHint/saving) so /forgot-password and /reset-password render; portal-preview NAV typed; admin content regrouped.
+- ADMIN REDESIGN (the ask): 
+  - New shell: icon sidebar (lucide per room) grouped WORK / INBOX / OPERATIONS / ACCOUNT, LIVE queue count badges on Requests/Approvals/Messages/Billing/Systems (from /api/admin/overview), avatar-initials user card + destructive-hover sign-out; mobile bottom bar is now icon+tiny-label with badge dots; gate/no-access cards rounded.
+  - admin-kit rebuilt: StatCard (icon chip, tone = fact: amber outstanding, rose overdue, emerald square), AttentionRow, rounded AdminPanel/rows; every room swept to rounded-xl bg-card/60 with ember hover (13 files).
+  - Overview rebuilt as a command board: "Needs you now" attention band (only queues with real counts; emerald "Board is clear" when none) → 4 metric tiles → queues with accent bars + view-all → audit tail; Dhaka clock chip in the header.
+  - Detail rooms: ← back links, client/org sub lines, duplicate eyebrow removed.
+  - Mobile: 0px horizontal overflow (grids moved to minmax(0,1fr) tracks).
+- SITE LIFT (the dull part):
+  - NEW leak-board.tsx: live canvas instrument for the Problem section — six dot-matrix tool chips (WEBSITE→ADS→ANALYTICS→LEADS→AI→SHEETS) joined by a pipe; ember drops leak from the joints and die on a dashed "LOST BETWEEN TOOLS" floor; pointer over a joint widens the leak, the active leak wanders on its own; two-row fit-scaled layout on mobile; IO pause, DPR cap, reduced-motion still. Wired into ProblemTeaser between the F-rows and the position card.
+  - NEW process-rail.tsx + ProcessStrip rebuilt: hairline rail with a traveling ember pulse over six rounded step cards (number chips, hover lift).
+- VERIFIED (agent-browser): staff login → desk E2E; overview renders live counts + queues; requests expand + reply/status controls present; clients/projects/billing/settings/messages all coherent; project detail header fixed; client portal (ORB-DEMO) login + 3 rooms intact after the authorize rewrite; seat separation correct (client seat sees the staff-only panel); public pages all 200; home leak board animates on desktop + iPhone 14 (two rows, no overflow, scrollWidth delta 0); admin mobile bottom bar with badges; tsc clean (0 src errors), eslint clean; dev.log clean (stale error lines predate the fix).
+
+Stage Summary:
+- The desk is now usable and beautiful: one login, one gate, one shell, live counts everywhere, urgency-first overview; all 13 rooms share one rounded ember language on desktop and mobile.
+- The auth layer is whole again: schema-backed MFA/reset tables, dual-protocol authorize, honest email templates, seeded staff account. Nothing about the client portal changed from the user's point of view.
+- The public site gained two live instruments (leak board, process rail) in its own computed-not-stock language; zero new static images.
+- Reusable: STAFF_NAV_ICONS map + nav.badges wiring; StatCard/AttentionRow kit; leak-board's fit-scaled two-row dot-matrix rasterizer.

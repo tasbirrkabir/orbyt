@@ -95,8 +95,11 @@ model User {
   mfaSecret        String?
   mfaEnabledAt     DateTime?
 
-  resetTokens PasswordResetToken[]
-  backupCodes MfaBackupCode[]
+  resetTokens    PasswordResetToken[]
+  backupCodes    MfaBackupCode[]
+  mfaEnrollment  MfaEnrollment?
+  authTokens     AuthToken[]
+  passwordResets PasswordResetAudit[]
 
   @@index([organizationId])
 }
@@ -601,6 +604,53 @@ model MfaBackupCode {
   codeHash  String    @unique
   usedAt    DateTime?
   createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+/// The live TOTP enrollment for a user. PENDING while setup is being
+/// verified, ACTIVE once the first code proves the secret, DISABLED
+/// after a turn-off. One row per user (userId unique) — re-enrollment
+/// rewrites the row, history lives in the audit log.
+model MfaEnrollment {
+  id               String    @id @default(cuid())
+  userId           String    @unique
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status           String    @default("PENDING")
+  secretCipher     String
+  confirmedAt      DateTime?
+  lastUsedCode     String    @default("")
+  backupHashesJson String    @default("[]")
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+/// Single-use, hashed, expiring tokens: MFA login tickets and
+/// password-reset links live here. The raw token never touches the
+/// database — only its SHA-256 hash.
+model AuthToken {
+  id        String    @id @default(cuid())
+  kind      String
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, kind])
+}
+
+/// One row per password-reset request; completedAt/actorKind are
+/// stamped when the reset actually happens, giving the desk an
+/// honest answer to "was this account ever reset, by whom".
+model PasswordResetAudit {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  requestedAt DateTime  @default(now())
+  completedAt DateTime?
+  actorKind   String?
 
   @@index([userId])
 }

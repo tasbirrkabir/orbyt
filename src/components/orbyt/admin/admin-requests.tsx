@@ -184,7 +184,7 @@ export function AdminRequests() {
       </div>
 
       {visible.length === 0 ? (
-        <p className="border border-dashed border-border bg-muted/30 px-4 py-6 text-sm text-muted-foreground">
+        <p className="rounded-xl border border-dashed border-border bg-muted/20 px-4 py-6 text-sm text-muted-foreground">
           {COPY.empty}
         </p>
       ) : (
@@ -199,7 +199,7 @@ export function AdminRequests() {
                 initial={reduced ? false : { opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.35, delay: Math.min(index, 8) * 0.03, ease: "easeOut" }}
-                className="border border-border bg-card/50"
+                className="rounded-xl border border-border bg-card/60"
               >
                 <button
                   type="button"

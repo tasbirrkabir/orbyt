@@ -46,7 +46,7 @@ function ApprovalRow({ item, index }: { item: AdminApprovalItem; index: number }
       initial={reduced ? false : { opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay: Math.min(index, 8) * 0.03, ease: "easeOut" }}
-      className="border border-border bg-card/50 p-5"
+      className="rounded-xl border border-border bg-card/60 p-5"
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
@@ -117,7 +117,7 @@ export function AdminApprovals() {
           {COPY.waiting} · {waiting.length}
         </ListLabel>
         {waiting.length === 0 ? (
-          <p className="border border-dashed border-border bg-muted/30 px-4 py-6 text-sm text-muted-foreground">
+          <p className="rounded-xl border border-dashed border-border bg-muted/20 px-4 py-6 text-sm text-muted-foreground">
             {COPY.emptyWaiting}
           </p>
         ) : (
@@ -134,7 +134,7 @@ export function AdminApprovals() {
           {COPY.onRecord} · {decided.length}
         </ListLabel>
         {decided.length === 0 ? (
-          <p className="border border-dashed border-border bg-muted/30 px-4 py-6 text-sm text-muted-foreground">
+          <p className="rounded-xl border border-dashed border-border bg-muted/20 px-4 py-6 text-sm text-muted-foreground">
             {COPY.emptyDecided}
           </p>
         ) : (

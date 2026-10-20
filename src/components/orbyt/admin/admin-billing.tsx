@@ -332,7 +332,7 @@ export function AdminBilling() {
               <span>{COPY.colStatus}</span>
               <span aria-hidden="true" />
             </div>
-            <ul role="list" className="divide-y divide-border border border-border bg-card/50">
+            <ul role="list" className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card/60">
               {data.invoices.map((invoice) => (
                 <InvoiceRow key={invoice.id} invoice={invoice} onPay={() => setPaying(invoice)} />
               ))}

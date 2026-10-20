@@ -371,7 +371,7 @@ export function AdminMeetings() {
               <ListLabel>
                 {STATUS_LABELS.UPCOMING} · {upcoming.length}
               </ListLabel>
-              <ul role="list" className="divide-y divide-border border border-border bg-card/50">
+              <ul role="list" className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card/60">
                 {upcoming.map((meeting) => (
                   <MeetingRow
                     key={meeting.id}
@@ -388,7 +388,7 @@ export function AdminMeetings() {
               <ListLabel>
                 {STATUS_LABELS.COMPLETED} · {completed.length}
               </ListLabel>
-              <ul role="list" className="divide-y divide-border border border-border bg-card/50">
+              <ul role="list" className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card/60">
                 {completed.map((meeting) => (
                   <MeetingRow
                     key={meeting.id}

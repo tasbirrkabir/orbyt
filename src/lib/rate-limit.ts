@@ -123,3 +123,18 @@ export function clientIp(request: { headers: HeaderBag }): string {
   }
   return read("x-real-ip") || "unknown";
 }
+
+/**
+ * Guard-style helpers used by the auth endpoints: a boolean check with
+ * the platform default budget (10 attempts / 10 min window), plus an
+ * ip alias with the Request-shaped signature the guards expect.
+ */
+const GUARD_LIMIT_DEFAULT = 10;
+
+export function isRateLimited(bucket: string, identifier: string): boolean {
+  return !checkRateLimit(bucket, identifier, GUARD_LIMIT_DEFAULT).ok;
+}
+
+export function requestIp(request: { headers: HeaderBag }): string {
+  return clientIp(request);
+}

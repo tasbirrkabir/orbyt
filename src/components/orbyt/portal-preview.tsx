@@ -25,11 +25,11 @@ import { cn } from "@/lib/utils";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
-const NAV = [
+const NAV: { icon: typeof FolderKanban; label: string; active?: boolean }[] = [
   { icon: FolderKanban, label: "Project", active: true },
   { icon: ReceiptText, label: "Invoices" },
   { icon: Mail, label: "Contact" },
-] as const;
+];
 
 const CHART_BARS = [38, 52, 44, 66, 58, 80, 92] as const;
 

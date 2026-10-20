@@ -145,7 +145,7 @@ export function AdminProjects() {
           {data.projects.map((project) => (
             <li
               key={project.id}
-              className="flex flex-wrap items-start justify-between gap-3 border border-border bg-card/50 p-5 transition-colors hover:border-primary/50"
+              className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-border bg-card/60 p-5 transition-all duration-200 hover:border-primary/40 hover:bg-card"
             >
               <div className="min-w-0">
                 <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">

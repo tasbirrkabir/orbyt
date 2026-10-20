@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { newResetToken } from "@/lib/mfa";
-import { emailLinks, prefersEmail, sendTemplate } from "@/lib/email";
+import { emailLinks, sendTemplate } from "@/lib/email";
 import { isRateLimited, requestIp } from "@/lib/rate-limit";
 import { logEvent } from "@/lib/observability";
 

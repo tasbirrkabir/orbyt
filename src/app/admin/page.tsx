@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { StaffConsole } from "@/components/orbyt/admin/staff-console";
+import { AdminOverview } from "@/components/orbyt/admin/admin-overview";
 
 export const metadata: Metadata = {
   title: "Staff console · ORBYT",
@@ -8,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function AdminPage() {
-  return <StaffConsole />;
+  return <AdminOverview />;
 }

@@ -143,7 +143,7 @@ export function AdminClients() {
           {data.orgs.map((org) => (
             <li
               key={org.id}
-              className="flex flex-wrap items-start justify-between gap-3 border border-border bg-card/50 p-5 transition-colors hover:border-primary/50"
+              className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-border bg-card/60 p-5 transition-all duration-200 hover:border-primary/40 hover:bg-card"
             >
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
