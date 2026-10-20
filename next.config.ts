@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  serverExternalPackages: ["@prisma/client"],
   /**
    * Serve /foo/ with the same content as /foo instead of redirecting.
    * The preview gateway normalizes some paths to a trailing slash; without
