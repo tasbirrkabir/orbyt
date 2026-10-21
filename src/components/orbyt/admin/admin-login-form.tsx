@@ -200,13 +200,7 @@ export function AdminLoginForm({ onSignedIn }: { onSignedIn?: () => void }) {
         )}
       </Button>
 
-      <p className="border-t border-border pt-4 text-xs leading-relaxed text-muted-foreground">
-        <span className="mr-2 inline-block bg-primary px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-[0.14em] text-[#1B1B1A]">
-          {STAFF.shell.gate.demoTag}
-        </span>
-        {STAFF.shell.gate.demoNote}
-      </p>
-      <p className="text-center text-xs text-muted-foreground">
+      <p className="border-t border-border pt-4 text-center text-xs text-muted-foreground">
         <Link
           href="/login"
           className="font-mono text-[10px] uppercase tracking-[0.16em] underline-offset-4 transition-colors hover:text-foreground hover:underline"

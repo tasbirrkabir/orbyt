@@ -20,7 +20,6 @@ import type {
   ScopeItemItem,
 } from "@/lib/portal/types";
 import { cn } from "@/lib/utils";
-import { DEMO_CLIENT_IDS } from "./demo-ids";
 import { usePortalFetch } from "./use-portal-fetch";
 import { EmptyState, ErrorState, LoadingState, ProgressBar, Section } from "./primitives";
 import { StatusBadge } from "./status-badge";
@@ -369,7 +368,6 @@ export function CommandProject() {
   if (failed && !data) return <ErrorState onRetry={retry} />;
   if (!data) return null;
 
-  const isDemo = DEMO_CLIENT_IDS.includes(data.identity.clientId);
   const project = data.activeProject;
   const billing = data.billing;
 
@@ -386,14 +384,6 @@ export function CommandProject() {
           {project ? project.title : "Your project."}
         </h1>
         <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">{P.sub}</p>
-        {isDemo ? (
-          <p className="mt-4 inline-flex max-w-2xl items-start gap-2 border border-border bg-muted/40 px-3 py-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="shrink-0 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-primary">
-              {COMMAND.demoNote.tag}
-            </span>
-            <span>{COMMAND.demoNote.body}</span>
-          </p>
-        ) : null}
       </motion.header>
 
       {!project ? (

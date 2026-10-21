@@ -4,13 +4,8 @@ import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
-import { Eye, EyeOff, Loader2, Compass } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { AUTH } from "@/content/flows";
-import {
-  DEMO_CLIENT_ID,
-  DEMO_EMAIL,
-  DEMO_PASSWORD,
-} from "@/lib/demo";
 import { normalizeClientId } from "@/lib/client-id";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -72,7 +67,6 @@ export function PortalLoginForm({
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [pending, setPending] = useState(false);
-  const [demoPending, setDemoPending] = useState(false);
 
   function clearError(key: keyof FieldErrors) {
     setErrors((prev) => (prev[key] ? { ...prev, [key]: undefined } : prev));
@@ -177,43 +171,6 @@ export function PortalLoginForm({
     } catch {
       setErrors({ form: AUTH.login.error });
       setPending(false);
-    }
-  }
-
-  /**
-   * One click into the public demo: provision it (idempotent), sign in
-   * with the shared credentials, open the portal. The credentials are
-   * public by design; see src/lib/demo.ts.
-   */
-  async function handleDemo() {
-    if (demoPending || pending) return;
-    setDemoPending(true);
-    setErrors({});
-
-    try {
-      const response = await fetch("/api/demo", { method: "POST" });
-      if (!response.ok) throw new Error("demo provisioning failed");
-
-      const signInResult = await signIn("credentials", {
-        redirect: false,
-        clientId: DEMO_CLIENT_ID,
-        email: DEMO_EMAIL,
-        password: DEMO_PASSWORD,
-      });
-      if (signInResult?.ok) {
-        toast({ title: AUTH.demo.ready });
-        if (onSignedIn) {
-          onSignedIn();
-        } else {
-          router.push(nextPath ?? "/workspace");
-        }
-        return;
-      }
-      setErrors({ form: AUTH.demo.error });
-    } catch {
-      setErrors({ form: AUTH.demo.error });
-    } finally {
-      setDemoPending(false);
     }
   }
 
@@ -407,49 +364,6 @@ export function PortalLoginForm({
           </Link>
         </p>
       )}
-
-      <div className="mt-6 flex items-center gap-4" aria-hidden="true">
-        <span className="h-px flex-1 bg-border" />
-        <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-          {AUTH.shared.orDivider}
-        </span>
-        <span className="h-px flex-1 bg-border" />
-      </div>
-
-      <div className="mt-5 rounded-md border border-border bg-blueprint p-4">
-        <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-primary">
-          {AUTH.demo.eyebrow}
-        </p>
-        <Button
-          type="button"
-          variant="outline"
-          disabled={demoPending || pending}
-          onClick={handleDemo}
-          className="mt-3 h-12 w-full font-semibold"
-        >
-          {demoPending ? (
-            <Loader2 aria-hidden="true" className="animate-spin" />
-          ) : (
-            <Compass aria-hidden="true" className="size-4" />
-          )}
-          {demoPending ? AUTH.demo.submitting : AUTH.demo.label}
-        </Button>
-        {/* The shared demo credentials, in the open. Public by design. */}
-        <p className="mt-3 break-words font-mono text-[11px] leading-relaxed text-muted-foreground">
-          {AUTH.demo.credentialsLabel}{" "}
-          <span className="text-foreground">
-            {DEMO_CLIENT_ID} · {DEMO_EMAIL} · {DEMO_PASSWORD}
-          </span>
-        </p>
-        <p className="mt-1.5 break-words font-mono text-[10px] leading-relaxed text-muted-foreground">
-          <span className="text-foreground">ORB-NOVA · nova@orbyt.com · orbyt-nova</span>
-          <span aria-hidden="true"> · </span>
-          <span className="text-foreground">ORB-ATLAS · atlas@orbyt.com · orbyt-atlas</span>
-        </p>
-        <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-          {AUTH.demo.note}
-        </p>
-      </div>
 
       {showNoIdPanel ? (
         <div className="mt-6 border-t border-border pt-5">

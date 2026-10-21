@@ -296,7 +296,7 @@ export function PortalPreview() {
         transition={{ duration: 0.5, delay: 1.2, ease: EASE }}
       >
         <ReceiptText className="size-3 text-primary" />
-        Demo: invoice due
+        Invoice due
       </motion.div>
     </motion.div>
   );
