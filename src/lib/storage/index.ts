@@ -46,11 +46,13 @@ export function assertValidKey(key: string): string {
   return key;
 }
 
+import { getS3Provider } from "./providers/s3";
+
 type Provider = "local" | "s3";
 
 function activeProvider(): Provider {
   const raw = (process.env.STORAGE_PROVIDER ?? "").trim().toLowerCase();
-  if (raw === "s3") return "s3";
+  if (raw === "s3" || raw === "r2") return "s3";
   return "local";
 }
 
@@ -91,7 +93,13 @@ export async function putObject(
   if (data.byteLength <= 0) throw new Error("Empty object");
   if (data.byteLength > MAX_OBJECT_BYTES) throw new Error("Object too large");
   if (activeProvider() === "s3") {
-    throw new Error("S3 storage provider is not wired in this deployment; use local");
+    const s3 = getS3Provider();
+    await s3.put({
+      key,
+      body: Buffer.from(data),
+      contentType: _contentType || "application/octet-stream",
+    });
+    return { key, sizeBytes: data.byteLength, provider: "s3" };
   }
   const sizeBytes = await putLocal(key, data);
   return { key, sizeBytes, provider: "local" };
@@ -101,7 +109,9 @@ export async function putObject(
 export async function getObject(key: string): Promise<Uint8Array> {
   assertValidKey(key);
   if (activeProvider() === "s3") {
-    throw new Error("S3 storage provider is not wired in this deployment; use local");
+    const s3 = getS3Provider();
+    const buf = await s3.download(key);
+    return new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength);
   }
   try {
     return await readFile(localPath(key));
@@ -117,6 +127,10 @@ export async function objectInfo(
   key: string,
 ): Promise<{ sizeBytes: number } | null> {
   assertValidKey(key);
+  if (activeProvider() === "s3") {
+    const s3 = getS3Provider();
+    return await s3.head(key);
+  }
   try {
     const info = await stat(localPath(key));
     return info.isFile() ? { sizeBytes: info.size } : null;
@@ -128,7 +142,25 @@ export async function objectInfo(
 /** Delete an object. Deleting a missing key is a no-op (idempotent). */
 export async function deleteObject(key: string): Promise<void> {
   assertValidKey(key);
+  if (activeProvider() === "s3") {
+    const s3 = getS3Provider();
+    await s3.delete(key);
+    return;
+  }
   await rm(localPath(key), { force: true, recursive: false });
+}
+
+/** Get presigned download URL (when provider supports it). */
+export async function getSignedDownloadUrl(
+  key: string,
+  ttlSeconds = 3600,
+): Promise<string | null> {
+  assertValidKey(key);
+  if (activeProvider() === "s3") {
+    const s3 = getS3Provider();
+    return await s3.signedUrl(key, ttlSeconds);
+  }
+  return null;
 }
 
 /**
@@ -143,9 +175,6 @@ export async function storageProbe(): Promise<{
 }> {
   const provider = storageProviderName();
   try {
-    if (provider === "s3") {
-      return { ok: false, provider, detail: "s3 selected but adapter not wired" };
-    }
     const key = `probe/probe-${Date.now().toString(36)}`;
     const payload = new TextEncoder().encode(`orbyt-probe-${Date.now()}`);
     await putObject(key, payload);
