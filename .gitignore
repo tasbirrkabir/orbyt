@@ -48,6 +48,10 @@ local-*
 *.log
 dev.log
 dev.out.log
+test*.png
+orbyt-home-screen.png
+orbyt_mockup_poster.png
+runner_*.png
 test
 prompt
 

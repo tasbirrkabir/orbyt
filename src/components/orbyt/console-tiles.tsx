@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { displayFontFamily } from "./pixel-sign-404";
 
 /* ── Orbyt · Console instruments ───────────────────────────
    The gallery without photographs: five live instruments,
-   each drawn by code on the visitor's machine. Shared
-   harness handles DPR, resize, offscreen pausing, pointer
-   tracking and reduced-motion stills; each instrument only
-   describes how it moves. */
+   each drawn by code on the visitor's machine.
+   Elevated with rich physical dynamics, 3D perspective,
+   clean typographic dot matrices, gravitational physics,
+   and incandescent multi-spectral ember rendering.
+*/
 
 type InstrumentState = {
   ctx: CanvasRenderingContext2D;
@@ -35,7 +35,7 @@ function useInstrument(factory: Factory) {
   useEffect(() => {
     const canvas = ref.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) return;
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -69,7 +69,6 @@ function useInstrument(factory: Factory) {
       try {
         inst.step({ ctx, W, H, t, dt, hover, pointer });
       } catch (err) {
-        /* A broken instrument must not take the whole rAF loop down. */
         console.error("[instrument] step failed", err);
         stop();
         return;
@@ -141,99 +140,233 @@ function useInstrument(factory: Factory) {
   return ref;
 }
 
-/* 01 — the orbit: rings, satellites, a pulsing core. */
-const orbitInstrument: Factory = () => ({
-  step: ({ ctx, W, H, t, hover }) => {
-    ctx.clearRect(0, 0, W, H);
-    const cx = W / 2;
-    const cy = H * 0.55;
-    const speed = hover ? 1.9 : 1;
-    const R = Math.min(W * 0.42, H * 0.42);
-    const rings = [R * 0.52, R];
+/* 01 — THE ORBIT: The 5 Agency Disciplines in One Connected System Loop */
+const orbitInstrument: Factory = () => {
+  const DISCIPLINES = [
+    { label: "WEB", sub: "Conversion UI" },
+    { label: "ADS", sub: "Acquisition" },
+    { label: "DATA", sub: "Attribution" },
+    { label: "AI", sub: "Automations" },
+    { label: "OPS", sub: "Operations" },
+  ];
 
-    ctx.fillStyle = "#fd5a01";
-    rings.forEach((r, ri) => {
-      const n = Math.max(28, Math.floor((TAU * r) / 15));
-      for (let i = 0; i < n; i++) {
-        const a = (i / n) * TAU;
-        const dash = 0.5 + 0.5 * Math.sin(a * 10 + ri * 2 + t * 0.8);
-        ctx.globalAlpha = 0.18 + 0.2 * dash;
-        ctx.fillRect(cx + Math.cos(a) * r - 1.1, cy + Math.sin(a) * r * 0.9 - 1.1, 2.2, 2.2);
-      }
-    });
+  return {
+    step: ({ ctx, W, H, t, hover, pointer }) => {
+      ctx.clearRect(0, 0, W, H);
+      const cx = W / 2;
+      const cy = H * 0.52;
+      const speed = hover ? 1.5 : 1.0;
+      const R = Math.min(W * 0.36, H * 0.38);
 
-    const sats = [
-      { r: rings[1], sp: 0.55, ph: 0.4 },
-      { r: rings[1], sp: -0.38, ph: 2.6 },
-      { r: rings[0], sp: 0.95, ph: 1.8 },
-    ];
-    for (const s of sats) {
-      const a = s.ph + t * s.sp * speed;
-      for (let k = 5; k >= 1; k--) {
-        const a2 = a - Math.sign(s.sp) * k * 0.055;
-        ctx.globalAlpha = 0.34 * (1 - k / 6);
-        ctx.fillRect(
-          cx + Math.cos(a2) * s.r - 1.2,
-          cy + Math.sin(a2) * s.r * 0.9 - 1.2,
-          2.4,
-          2.4
-        );
+      // Interactive subtle 3D tilt tracking
+      let tiltX = 0;
+      let tiltY = 0;
+      if (pointer) {
+        tiltX = ((pointer.x - cx) / W) * 8;
+        tiltY = ((pointer.y - cy) / H) * 6;
       }
-      ctx.globalAlpha = 0.95;
-      ctx.fillStyle = "#ffc987";
-      ctx.fillRect(cx + Math.cos(a) * s.r - 1.8, cy + Math.sin(a) * s.r * 0.9 - 1.8, 3.6, 3.6);
+
+      // Draw outer dashed system bus ring
+      const ringDots = 64;
+      for (let i = 0; i < ringDots; i++) {
+        const a = (i / ringDots) * TAU;
+        const px = cx + tiltX + Math.cos(a) * R;
+        const py = cy + tiltY + Math.sin(a) * (R * 0.88);
+        const dash = 0.5 + 0.5 * Math.sin(a * 5 - t * 1.5 * speed);
+        ctx.globalAlpha = 0.15 + 0.25 * dash;
+        ctx.fillStyle = "#fd5a01";
+        ctx.fillRect(px - 1.2, py - 1.2, 2.4, 2.4);
+      }
+
+      // Draw inner circuit ring
+      const innerR = R * 0.62;
+      ctx.strokeStyle = "rgba(253,90,1,0.18)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.ellipse(cx + tiltX, cy + tiltY, innerR, innerR * 0.88, 0, 0, TAU);
+      ctx.stroke();
+
+      // Flowing data pulses between discipline nodes
+      const pulseCount = 4;
+      for (let p = 0; p < pulseCount; p++) {
+        const pulseAngle = (t * 0.45 * speed + (p / pulseCount) * TAU) % TAU;
+        
+        // Comet tail for pulse
+        for (let k = 6; k >= 1; k--) {
+          const lagA = pulseAngle - k * 0.05;
+          const tx = cx + tiltX + Math.cos(lagA) * R;
+          const ty = cy + tiltY + Math.sin(lagA) * (R * 0.88);
+          ctx.globalAlpha = 0.4 * (1 - k / 7);
+          ctx.fillStyle = "#fd5a01";
+          ctx.fillRect(tx - 1.5, ty - 1.5, 3, 3);
+        }
+
+        const hx = cx + tiltX + Math.cos(pulseAngle) * R;
+        const hy = cy + tiltY + Math.sin(pulseAngle) * (R * 0.88);
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = "#fff0db";
+        ctx.fillRect(hx - 2.5, hy - 2.5, 5, 5);
+      }
+
+      // The 5 Agency Discipline Nodes placed around the ring
+      DISCIPLINES.forEach((disc, i) => {
+        const angle = (i / 5) * TAU - Math.PI / 2;
+        const nx = cx + tiltX + Math.cos(angle) * R;
+        const ny = cy + tiltY + Math.sin(angle) * (R * 0.88);
+
+        // Radial connector spoke to core
+        ctx.strokeStyle = "rgba(253,90,1,0.15)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(cx + tiltX, cy + tiltY);
+        ctx.lineTo(nx, ny);
+        ctx.stroke();
+
+        // Node Card Box
+        const cardW = 60;
+        const cardH = 22;
+        ctx.fillStyle = "#161311";
+        ctx.strokeStyle = "#2c2622";
+        ctx.lineWidth = 1;
+        ctx.fillRect(nx - cardW / 2, ny - cardH / 2, cardW, cardH);
+        ctx.strokeRect(nx - cardW / 2, ny - cardH / 2, cardW, cardH);
+
+        // Active indicator dot
+        ctx.fillStyle = "#fd5a01";
+        ctx.fillRect(nx - cardW / 2 + 5, ny - 2.5, 5, 5);
+
+        // Node label
+        ctx.fillStyle = "#e8e3de";
+        ctx.font = "bold 9px monospace";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.fillText(disc.label, nx - cardW / 2 + 15, ny);
+      });
+
+      // Center Core: ORBYT SYSTEM ENGINE
+      const corePulse = 1.0 + 0.05 * Math.sin(t * 2.5);
+      const coreR = innerR * 0.5 * corePulse;
+      const glow = ctx.createRadialGradient(cx + tiltX, cy + tiltY, 0, cx + tiltX, cy + tiltY, coreR * 1.5);
+      glow.addColorStop(0, "rgba(253,90,1,0.22)");
+      glow.addColorStop(1, "rgba(253,90,1,0)");
+      ctx.fillStyle = glow;
+      ctx.fillRect(cx + tiltX - coreR * 1.5, cy + tiltY - coreR * 1.5, coreR * 3, coreR * 3);
+
+      // Core center badge
+      ctx.fillStyle = "#12100f";
+      ctx.strokeStyle = "#fd5a01";
+      ctx.lineWidth = 1.5;
+      const bW = 86;
+      const bH = 34;
+      ctx.fillRect(cx + tiltX - bW / 2, cy + tiltY - bH / 2, bW, bH);
+      ctx.strokeRect(cx + tiltX - bW / 2, cy + tiltY - bH / 2, bW, bH);
+
       ctx.fillStyle = "#fd5a01";
-    }
+      ctx.font = "bold 10px monospace";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("ORBYT CORE", cx + tiltX, cy + tiltY - 5);
 
-    const pulse = 1 + 0.07 * Math.sin(t * 2.2);
-    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, R * 0.36 * pulse);
-    g.addColorStop(0, hover ? "rgba(255,178,92,0.5)" : "rgba(255,178,92,0.32)");
-    g.addColorStop(1, "rgba(253,90,1,0)");
-    ctx.globalAlpha = 1;
-    ctx.fillStyle = g;
-    ctx.fillRect(cx - R * 0.4, cy - R * 0.4, R * 0.8, R * 0.8);
-    ctx.fillStyle = "#fd5a01";
-    ctx.fillRect(cx - 2.5, cy - 2.5, 5, 5);
-    ctx.globalAlpha = 1;
-  },
-});
+      ctx.fillStyle = "#4ade80";
+      ctx.font = "8px monospace";
+      ctx.fillText("100% CONNECTED", cx + tiltX, cy + tiltY + 7);
 
-/* 02 — the carrier: drops of work, falling in columns. */
+      ctx.globalAlpha = 1;
+    },
+  };
+};
+
+/* 02 — THE CARRIER: Telemetry data drops with particle splash & speed dynamics */
 const carrierInstrument: Factory = () => {
-  let cols: { x: number; y: number; sp: number; gap: number; a: number }[] = [];
+  type Drop = { x: number; y: number; sp: number; length: number; a: number; hex: string };
+  type Splash = { x: number; y: number; vx: number; vy: number; life: number; max: number };
+
+  let drops: Drop[] = [];
+  let splashes: Splash[] = [];
+
+  const HEX_CHARS = ["DEPLOY", "CAPI", "LEAD", "SYNC", "CRO", "v2.4", "API", "OK"];
+
   return {
     build: (W) => {
-      cols = [];
-      const cw = Math.max(12, W / 26);
-      for (let x = cw / 2; x < W; x += cw) {
-        cols.push({
+      drops = [];
+      splashes = [];
+      const colWidth = Math.max(14, W / 24);
+      for (let x = colWidth / 2; x < W; x += colWidth) {
+        drops.push({
           x,
-          y: Math.random() * 400,
-          sp: 16 + Math.random() * 52,
-          gap: 9,
-          a: 0.34 + Math.random() * 0.52,
+          y: Math.random() * 300,
+          sp: 28 + Math.random() * 65,
+          length: Math.floor(5 + Math.random() * 5),
+          a: 0.4 + Math.random() * 0.5,
+          hex: HEX_CHARS[Math.floor(Math.random() * HEX_CHARS.length)],
         });
       }
     },
     step: ({ ctx, W, H, t, dt, hover }) => {
       ctx.clearRect(0, 0, W, H);
-      const boost = hover ? 1.7 : 1;
-      for (const c of cols) {
-        c.y += c.sp * boost * dt;
-        if (c.y - 6 * c.gap > H) {
-          c.y = -Math.random() * H * 0.4;
-          c.sp = 16 + Math.random() * 52;
-          c.a = 0.34 + Math.random() * 0.52;
+      const speedMult = hover ? 1.85 : 1.0;
+      const gap = 8;
+
+      // Update and draw splashes
+      splashes = splashes.filter((s) => s.life < s.max);
+      for (const s of splashes) {
+        s.life += dt;
+        s.x += s.vx * dt;
+        s.y += s.vy * dt;
+        s.vy += 22 * dt; // gravity
+        const alpha = (1 - s.life / s.max) * 0.65;
+        ctx.globalAlpha = Math.max(0, alpha);
+        ctx.fillStyle = "#ffc987";
+        ctx.fillRect(s.x - 1, s.y - 1, 2, 2);
+      }
+
+      for (const d of drops) {
+        d.y += d.sp * speedMult * dt;
+
+        // When drop strikes floor, trigger splash
+        if (d.y > H - 8) {
+          d.y = -Math.random() * H * 0.35;
+          d.sp = 28 + Math.random() * 65;
+          d.a = 0.4 + Math.random() * 0.5;
+          d.hex = HEX_CHARS[Math.floor(Math.random() * HEX_CHARS.length)];
+
+          for (let k = 0; k < 2; k++) {
+            splashes.push({
+              x: d.x,
+              y: H - 8,
+              vx: (Math.random() - 0.5) * 14,
+              vy: -8 - Math.random() * 12,
+              life: 0,
+              max: 0.35 + Math.random() * 0.25,
+            });
+          }
         }
-        for (let k = 0; k < 6; k++) {
-          const y = c.y - k * c.gap;
-          if (y < -4 || y > H + 4) continue;
-          const a = (k === 0 ? 1 : 0.62 * (1 - k / 6.5)) * c.a;
-          ctx.globalAlpha = Math.min(1, a);
-          ctx.fillStyle =
-            k === 0 && Math.sin(t * 3 + c.x) > 0.55 ? "#ffc987" : "#fd5a01";
-          const sz = k === 0 ? 3 : 2;
-          ctx.fillRect(c.x - sz / 2, y - sz / 2, sz, sz);
+
+        // Draw falling packet trail
+        for (let k = 0; k < d.length; k++) {
+          const py = d.y - k * gap;
+          if (py < -6 || py > H + 4) continue;
+
+          const isHead = k === 0;
+          const alpha = (isHead ? 1.0 : 0.65 * (1 - k / d.length)) * d.a;
+          ctx.globalAlpha = Math.min(1, alpha);
+
+          if (isHead) {
+            // Bright leading spark + digital telemetry token
+            ctx.fillStyle = Math.sin(t * 4 + d.x) > 0.3 ? "#fff0db" : "#ffc987";
+            ctx.fillRect(d.x - 2, py - 2, 4, 4);
+            if (d.x % 32 < 16) {
+              ctx.font = "8px monospace";
+              ctx.fillStyle = "#fd5a01";
+              ctx.textAlign = "left";
+              ctx.fillText(d.hex, d.x + 6, py + 3);
+            }
+          } else {
+            // Body trail
+            ctx.fillStyle = "#fd5a01";
+            const sz = Math.max(1.5, 2.8 * (1 - k / (d.length + 2)));
+            ctx.fillRect(d.x - sz / 2, py - sz / 2, sz, sz);
+          }
         }
       }
       ctx.globalAlpha = 1;
@@ -241,46 +374,63 @@ const carrierInstrument: Factory = () => {
   };
 };
 
-/* 03 — the pull: a lattice that leans toward the pointer. */
+/* 03 — THE PULL: Interactive harmonic lattice with magnetic cursor vortex */
 const magnetInstrument: Factory = () => {
-  let dots: { hx: number; hy: number; x: number; y: number }[] = [];
+  type Node = { hx: number; hy: number; x: number; y: number; vx: number; vy: number };
+  let dots: Node[] = [];
+
   return {
     build: (W, H) => {
       dots = [];
-      const s = Math.max(15, Math.min(W, H) / 14);
-      for (let y = s * 0.9; y < H; y += s) {
-        for (let x = s * 0.7; x < W; x += s) {
-          dots.push({ hx: x, hy: y, x, y });
+      const step = Math.max(14, Math.min(W, H) / 13);
+      for (let y = step * 0.9; y < H; y += step) {
+        for (let x = step * 0.7; x < W; x += step) {
+          dots.push({ hx: x, hy: y, x, y, vx: 0, vy: 0 });
         }
       }
     },
-    step: ({ ctx, H, W, t, dt, pointer }) => {
+    step: ({ ctx, W, H, t, dt, pointer }) => {
       ctx.clearRect(0, 0, W, H);
-      const R = Math.min(W, H) * 0.6;
-      const sigma2 = 2 * R * R * 0.3;
-      ctx.fillStyle = "#fd5a01";
+      const R = Math.min(W, H) * 0.65;
+      const sigma2 = 2 * R * R * 0.28;
+
       for (const d of dots) {
-        const bx = d.hx + Math.sin(t * 1.2 + (d.hx + d.hy) * 0.02) * 1.2;
-        const by = d.hy + Math.cos(t * 1.1 + (d.hx - d.hy) * 0.02) * 1.2;
-        let tx = bx;
-        let ty = by;
+        // Organic idle harmonic wave
+        const waveX = Math.sin(t * 1.4 + (d.hx + d.hy) * 0.025) * 1.8;
+        const waveY = Math.cos(t * 1.2 + (d.hx - d.hy) * 0.025) * 1.8;
+        let tx = d.hx + waveX;
+        let ty = d.hy + waveY;
         let pull = 0;
+
         if (pointer) {
           const dx = pointer.x - d.hx;
           const dy = pointer.y - d.hy;
           const dist = Math.hypot(dx, dy);
           pull = Math.exp(-(dist * dist) / sigma2);
           if (pull > 0.02 && dist > 0.001) {
-            const f = Math.min(dist * 0.55, R * 0.45) * pull;
-            tx += (dx / dist) * f;
-            ty += (dy / dist) * f;
+            const force = Math.min(dist * 0.65, R * 0.48) * pull;
+            tx += (dx / dist) * force;
+            ty += (dy / dist) * force;
           }
         }
-        const k = Math.min(1, dt * 8);
+
+        // Spring smoothing
+        const k = Math.min(1, dt * 9);
         d.x += (tx - d.x) * k;
         d.y += (ty - d.y) * k;
-        ctx.globalAlpha = Math.min(0.95, 0.3 + 0.6 * pull);
-        const sz = 1.7 + 2.4 * pull;
+
+        // Render point
+        ctx.globalAlpha = Math.min(0.98, 0.28 + 0.7 * pull);
+        const sz = 1.8 + 2.8 * pull;
+
+        if (pull > 0.5) {
+          ctx.fillStyle = "#fff0db"; // incandescent white-hot near cursor
+        } else if (pull > 0.2) {
+          ctx.fillStyle = "#ffc987";
+        } else {
+          ctx.fillStyle = "#fd5a01";
+        }
+
         ctx.fillRect(d.x - sz / 2, d.y - sz / 2, sz, sz);
       }
       ctx.globalAlpha = 1;
@@ -288,74 +438,275 @@ const magnetInstrument: Factory = () => {
   };
 };
 
-/* 04 — the name: a dot-matrix sign cycling the vocabulary. */
-const WORDS = ["ORBYT", "BUILD", "SHIP", "MOVE"] as const;
+/* 04 — THE NAME: Precision hand-crafted 5x7 bitmap font LED matrix */
+const WORDS = ["ORBYT", "BUILD", "SCALE", "GROW"] as const;
+
+// Precision 5x7 bitmap definitions (1 = active pixel, 0 = inactive)
+const FONT_5X7: Record<string, number[]> = {
+  O: [
+    0, 1, 1, 1, 0,
+    1, 0, 0, 0, 1,
+    1, 0, 0, 0, 1,
+    1, 0, 0, 0, 1,
+    1, 0, 0, 0, 1,
+    1, 0, 0, 0, 1,
+    0, 1, 1, 1, 0,
+  ],
+  R: [
+    1, 1, 1, 1, 0,
+    1, 0, 0, 0, 1,
+    1, 0, 0, 0, 1,
+    1, 1, 1, 1, 0,
+    1, 0, 1, 0, 0,
+    1, 0, 0, 1, 0,
+    1, 0, 0, 0, 1,
+  ],
+  B: [
+    1, 1, 1, 1, 0,
+    1, 0, 0, 0, 1,
+    1, 0, 0, 0, 1,
+    1, 1, 1, 1, 0,
+    1, 0, 0, 0, 1,
+    1, 0, 0, 0, 1,
+    1, 1, 1, 1, 0,
+  ],
+  Y: [
+    1, 0, 0, 0, 1,
+    1, 0, 0, 0, 1,
+    0, 1, 0, 1, 0,
+    0, 0, 1, 0, 0,
+    0, 0, 1, 0, 0,
+    0, 0, 1, 0, 0,
+    0, 0, 1, 0, 0,
+  ],
+  T: [
+    1, 1, 1, 1, 1,
+    0, 0, 1, 0, 0,
+    0, 0, 1, 0, 0,
+    0, 0, 1, 0, 0,
+    0, 0, 1, 0, 0,
+    0, 0, 1, 0, 0,
+    0, 0, 1, 0, 0,
+  ],
+  U: [
+    1, 0, 0, 0, 1,
+    1, 0, 0, 0, 1,
+    1, 0, 0, 0, 1,
+    1, 0, 0, 0, 1,
+    1, 0, 0, 0, 1,
+    1, 0, 0, 0, 1,
+    0, 1, 1, 1, 0,
+  ],
+  I: [
+    1, 1, 1, 1, 1,
+    0, 0, 1, 0, 0,
+    0, 0, 1, 0, 0,
+    0, 0, 1, 0, 0,
+    0, 0, 1, 0, 0,
+    0, 0, 1, 0, 0,
+    1, 1, 1, 1, 1,
+  ],
+  L: [
+    1, 0, 0, 0, 0,
+    1, 0, 0, 0, 0,
+    1, 0, 0, 0, 0,
+    1, 0, 0, 0, 0,
+    1, 0, 0, 0, 0,
+    1, 0, 0, 0, 0,
+    1, 1, 1, 1, 1,
+  ],
+  D: [
+    1, 1, 1, 1, 0,
+    1, 0, 0, 0, 1,
+    1, 0, 0, 0, 1,
+    1, 0, 0, 0, 1,
+    1, 0, 0, 0, 1,
+    1, 0, 0, 0, 1,
+    1, 1, 1, 1, 0,
+  ],
+  S: [
+    0, 1, 1, 1, 1,
+    1, 0, 0, 0, 0,
+    1, 0, 0, 0, 0,
+    0, 1, 1, 1, 0,
+    0, 0, 0, 0, 1,
+    0, 0, 0, 0, 1,
+    1, 1, 1, 1, 0,
+  ],
+  C: [
+    0, 1, 1, 1, 1,
+    1, 0, 0, 0, 0,
+    1, 0, 0, 0, 0,
+    1, 0, 0, 0, 0,
+    1, 0, 0, 0, 0,
+    1, 0, 0, 0, 0,
+    0, 1, 1, 1, 1,
+  ],
+  A: [
+    0, 1, 1, 1, 0,
+    1, 0, 0, 0, 1,
+    1, 0, 0, 0, 1,
+    1, 1, 1, 1, 1,
+    1, 0, 0, 0, 1,
+    1, 0, 0, 0, 1,
+    1, 0, 0, 0, 1,
+  ],
+  G: [
+    0, 1, 1, 1, 1,
+    1, 0, 0, 0, 0,
+    1, 0, 0, 0, 0,
+    1, 0, 1, 1, 1,
+    1, 0, 0, 0, 1,
+    1, 0, 0, 0, 1,
+    0, 1, 1, 1, 0,
+  ],
+  W: [
+    1, 0, 0, 0, 1,
+    1, 0, 0, 0, 1,
+    1, 0, 0, 0, 1,
+    1, 0, 1, 0, 1,
+    1, 0, 1, 0, 1,
+    1, 1, 0, 1, 1,
+    1, 0, 0, 0, 1,
+  ],
+  H: [
+    1, 0, 0, 0, 1,
+    1, 0, 0, 0, 1,
+    1, 0, 0, 0, 1,
+    1, 1, 1, 1, 1,
+    1, 0, 0, 0, 1,
+    1, 0, 0, 0, 1,
+    1, 0, 0, 0, 1,
+  ],
+  P: [
+    1, 1, 1, 1, 0,
+    1, 0, 0, 0, 1,
+    1, 0, 0, 0, 1,
+    1, 1, 1, 1, 0,
+    1, 0, 0, 0, 0,
+    1, 0, 0, 0, 0,
+    1, 0, 0, 0, 0,
+  ],
+  M: [
+    1, 0, 0, 0, 1,
+    1, 1, 0, 1, 1,
+    1, 0, 1, 0, 1,
+    1, 0, 0, 0, 1,
+    1, 0, 0, 0, 1,
+    1, 0, 0, 0, 1,
+    1, 0, 0, 0, 1,
+  ],
+  V: [
+    1, 0, 0, 0, 1,
+    1, 0, 0, 0, 1,
+    1, 0, 0, 0, 1,
+    1, 0, 0, 0, 1,
+    0, 1, 0, 1, 0,
+    0, 1, 0, 1, 0,
+    0, 0, 1, 0, 0,
+  ],
+  E: [
+    1, 1, 1, 1, 1,
+    1, 0, 0, 0, 0,
+    1, 0, 0, 0, 0,
+    1, 1, 1, 1, 0,
+    1, 0, 0, 0, 0,
+    1, 0, 0, 0, 0,
+    1, 1, 1, 1, 1,
+  ],
+};
 
 const glyphInstrument: Factory = () => {
-  let masks: Set<string>[] = [];
-  let cell = 8;
-  let gw = 0;
-  let gh = 0;
+  let cell = 6;
+  let cols = 35;
+  let rows = 11;
+  let ox = 0;
   let oy = 0;
+
+  // Build binary word grids
+  const wordGrids: Uint8Array[] = WORDS.map((word) => {
+    // 5 letters * 5 + 4 spacing = 29 cols wide
+    const grid = new Uint8Array(35 * 11);
+    const wordWidth = word.length * 5 + (word.length - 1) * 1;
+    const startCol = Math.floor((35 - wordWidth) / 2);
+    const startRow = 2; // centered vertically in 11 rows
+
+    for (let charIdx = 0; charIdx < word.length; charIdx++) {
+      const char = word[charIdx];
+      const font = FONT_5X7[char];
+      if (!font) continue;
+      const charLeft = startCol + charIdx * 6;
+
+      for (let r = 0; r < 7; r++) {
+        for (let c = 0; c < 5; c++) {
+          if (font[r * 5 + c] === 1) {
+            const gx = charLeft + c;
+            const gy = startRow + r;
+            if (gx >= 0 && gx < 35 && gy >= 0 && gy < 11) {
+              grid[gy * 35 + gx] = 1;
+            }
+          }
+        }
+      }
+    }
+    return grid;
+  });
 
   return {
     build: (W, H) => {
-      cell = Math.max(5, Math.min(11, W / 24));
-      gw = Math.floor(W / cell);
-      gh = Math.floor((H * 0.6) / cell);
-      oy = Math.floor((H - gh * cell) / 2 / cell);
-      const off = document.createElement("canvas");
-      off.width = gw;
-      off.height = gh;
-      const octx = off.getContext("2d");
-      if (!octx) {
-        masks = [];
-        return;
-      }
-      const family = displayFontFamily();
-      masks = WORDS.map((word) => {
-        octx.fillStyle = "#000";
-        octx.fillRect(0, 0, gw, gh);
-        octx.fillStyle = "#fff";
-        octx.textAlign = "center";
-        octx.textBaseline = "middle";
-        octx.font = `900 ${Math.round(Math.min(gh * 0.92, gw * 0.28))}px ${family}`;
-        octx.fillText(word, gw / 2, gh / 2);
-        const data = octx.getImageData(0, 0, gw, gh).data;
-        const set = new Set<string>();
-        for (let y = 0; y < gh; y++) {
-          for (let x = 0; x < gw; x++) {
-            if (data[(y * gw + x) * 4] > 110) set.add(`${x},${y}`);
-          }
-        }
-        return set;
-      });
+      // Calculate responsive cell size
+      cell = Math.max(4.5, Math.min(8.5, W / 38));
+      cols = Math.floor(W / cell);
+      rows = Math.floor(H / cell);
+      ox = Math.floor((W - 35 * cell) / 2);
+      oy = Math.floor((H - 11 * cell) / 2);
     },
     step: ({ ctx, W, H, t }) => {
       ctx.clearRect(0, 0, W, H);
-      if (masks.length !== WORDS.length) return;
-      const dur = 2.6;
+      const dur = 2.8;
       const idx = Math.floor(t / dur) % WORDS.length;
       const ph = (t % dur) / dur;
-      const bw = ph < 0.86 ? 0 : (ph - 0.86) / 0.14;
-      const w = bw * bw * (3 - 2 * bw);
-      const A = masks[idx];
-      const B = masks[(idx + 1) % WORDS.length];
-      if (!A || !B) return;
-      const sz = Math.max(1.6, cell * 0.5);
 
-      for (let y = 0; y < gh; y++) {
-        for (let x = 0; x < gw; x++) {
-          const key = `${x},${y}`;
-          const aA = A.has(key) ? 1 : 0;
-          const aB = B.has(key) ? 1 : 0;
-          const a = aA * (1 - w) + aB * w;
-          if (a <= 0.04) continue;
-          const h = Math.abs(Math.sin(x * 12.9898 + y * 78.233) * 43758.5453) % 1;
-          const b = a * (0.74 + 0.26 * Math.sin(t * (2 + h * 5) + h * TAU));
-          ctx.globalAlpha = Math.min(1, b);
-          ctx.fillStyle = b > 0.85 ? "#ffc987" : "#fd5a01";
-          ctx.fillRect((x + 0.5) * cell - sz / 2, (oy + y + 0.5) * cell - sz / 2, sz, sz);
+      // Cascading wave transition
+      const transStart = 0.82;
+      const transProgress = ph < transStart ? 0 : (ph - transStart) / (1 - transStart);
+
+      const gridA = wordGrids[idx];
+      const gridB = wordGrids[(idx + 1) % WORDS.length];
+      const dotSz = Math.max(1.8, cell * 0.62);
+
+      for (let r = 0; r < 11; r++) {
+        for (let c = 0; c < 35; c++) {
+          const px = ox + c * cell + cell / 2;
+          const py = oy + r * cell + cell / 2;
+          if (px < 0 || px > W || py < 0 || py > H) continue;
+
+          const valA = gridA[r * 35 + c] ?? 0;
+          const valB = gridB[r * 35 + c] ?? 0;
+
+          // Horizontal cascade wipe
+          const colThreshold = c / 35;
+          const activeVal = transProgress > colThreshold ? valB : valA;
+
+          if (activeVal === 1) {
+            const noise = Math.abs(Math.sin(c * 12.9898 + r * 78.233) * 43758.5453) % 1;
+            const flicker = 0.8 + 0.2 * Math.sin(t * (3 + noise * 6) + noise * TAU);
+
+            // Glow bloom
+            ctx.globalAlpha = 0.45 * flicker;
+            ctx.fillStyle = "#fd5a01";
+            ctx.fillRect(px - dotSz * 0.9, py - dotSz * 0.9, dotSz * 1.8, dotSz * 1.8);
+
+            // Core LED dot
+            ctx.globalAlpha = Math.min(1, flicker * 1.2);
+            ctx.fillStyle = flicker > 0.88 ? "#fff0db" : "#fd5a01";
+            ctx.fillRect(px - dotSz / 2, py - dotSz / 2, dotSz, dotSz);
+          } else {
+            // Faint inactive hardware matrix grid dot
+            ctx.globalAlpha = 0.08;
+            ctx.fillStyle = "#fd5a01";
+            ctx.fillRect(px - 1, py - 1, 2, 2);
+          }
         }
       }
       ctx.globalAlpha = 1;
@@ -381,7 +732,7 @@ function InstrumentCanvas({
   );
 }
 
-/* 05 — the clock: Dhaka time, day progress, always on. */
+/* 05 — THE CLOCK: Dhaka time, day progress, always on */
 const timeFmt = new Intl.DateTimeFormat("en-GB", {
   timeZone: "Asia/Dhaka",
   hour: "2-digit",
@@ -417,14 +768,14 @@ export function ConsoleClock() {
 
   return (
     <div className="flex h-full flex-col px-6 py-5 sm:px-7">
-      <p className="font-mono text-4xl font-medium tabular-nums tracking-tight text-foreground sm:text-[2.75rem]">
+      <p className="font-mono text-4xl font-semibold tabular-nums tracking-tight text-foreground sm:text-[2.75rem]">
         {now?.time ?? "--:--:--"}
       </p>
       <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
         {now?.date ?? "···"} · Dhaka · UTC+06
       </p>
       <div
-        className="mt-4 h-1 w-full overflow-hidden rounded-sm bg-border/70"
+        className="mt-4 h-1.5 w-full overflow-hidden rounded-sm bg-border/70"
         role="progressbar"
         aria-label="Percent of the Dhaka day elapsed"
         aria-valuenow={now?.pct ?? 0}
@@ -432,7 +783,7 @@ export function ConsoleClock() {
         aria-valuemax={100}
       >
         <div
-          className="h-full bg-primary transition-[width] duration-700 ease-out"
+          className="h-full bg-gradient-to-r from-primary/80 to-primary transition-[width] duration-700 ease-out shadow-[0_0_12px_rgba(253,90,1,0.5)]"
           style={{ width: `${now?.pct ?? 0}%` }}
         />
       </div>
@@ -442,7 +793,7 @@ export function ConsoleClock() {
         <span>24:00</span>
       </div>
       <div className="mt-auto flex items-center gap-2 pt-4 font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
-        <span aria-hidden="true" className="size-1.5 animate-blink bg-primary" />
+        <span aria-hidden="true" className="size-1.5 animate-blink bg-primary shadow-[0_0_6px_#fd5a01]" />
         Live · computed on your machine
       </div>
     </div>

@@ -108,7 +108,7 @@ export function ShowcaseGallery() {
         >
           <InstrumentCanvas
             factory={orbitInstrument}
-            label="Animated orbital diagram: two dashed rings, three travelling satellites and a pulsing core"
+            label="Interactive digital system loop connecting Web, Ads, Data, AI, and Operations into one ring"
           />
         </InstrumentTile>
 
@@ -131,7 +131,7 @@ export function ShowcaseGallery() {
         >
           <InstrumentCanvas
             factory={carrierInstrument}
-            label="Animated columns of glowing dots falling like a telegraph stream"
+            label="Live telemetry stream of continuous digital releases and code drops"
           />
         </InstrumentTile>
 
@@ -143,7 +143,7 @@ export function ShowcaseGallery() {
         >
           <InstrumentCanvas
             factory={magnetInstrument}
-            label="Interactive dot lattice that leans toward the pointer"
+            label="Interactive customer conversion grid funneling visitors toward the center"
           />
         </InstrumentTile>
 
@@ -155,7 +155,7 @@ export function ShowcaseGallery() {
         >
           <InstrumentCanvas
             factory={glyphInstrument}
-            label="Dot-matrix sign cycling the words ORBYT, BUILD, SHIP and MOVE"
+            label="Dot-matrix sign cycling the agency verbs ORBYT, BUILD, SCALE and GROW"
           />
         </InstrumentTile>
 

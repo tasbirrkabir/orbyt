@@ -1,307 +1,295 @@
-/* ── Orbyt · Trot keyframes ────────────────────────────────
-   Eight hand-posed frames of a working trot, posed for
-   INSTANT recognition: the head is carried HIGH (the poll
-   sits well above the topline), the muzzle hangs forward-
-   down, a serrated mane rides the crest of the neck and a
-   full tail hangs and sways below the rump. High carriage +
-   mane + hanging tail is what makes a silhouette read
-   "horse" at a glance — a stretched flying gallop just
-   reads fox.
+/* ── Orbyt · Trot kinematics & anatomy ──────────────────────
+   Precision mathematical model of an equine working trot.
+   Anatomically sculpted: high carriage arched crest, pricked
+   ears, chiseled cheek, tapered muzzle with clean throatlatch,
+   athletic withers, saddle dip, rounded croup, lean tucked flank,
+   slender athletic cannons, angular hocks, and a continuous
+   sinusoidal flowing wind-blown tail and mane.
 
-   Units: "horse units". x+ forward (the horse faces right),
-   y+ up, ground at y = 0. Proportions of a real horse:
-
-     · body core span (rump→chest) ≈ 18, depth ≈ 10 (~2:1)
-     · height at withers ≈ 19; poll ≈ 25 → head above topline
-     · head length ≈ 5.7 (long muzzle, tapered)
-     · legs ~45% of the silhouette height, clearly visible
-     · mane crest + hanging tail — the horse signatures
-
-   Trot mechanics: diagonal pairs (near-fore + far-hind) and
-   (far-fore + near-hind) alternate — land, carry, push,
-   brief suspension — every pose hand-checked so limbs never
-   telescope:
-
-     front leg  shoulder→carpus ≈4.8-6 · carpus→fetlock ≈4.2-4.4
-                · fetlock→hoof ≈1.5-2
-     hind leg   hip→hock ≈5.3-6.6 · hock→fetlock ≈4.4-5.6
-                · fetlock→hoof ≈1.4-2.2                      */
+   Units: "horse units". x+ forward (faces right), y+ up, ground at y = 0.
+*/
 
 export type Pt = { x: number; y: number };
-export type Ball = { x: number; y: number; r: number; d?: number };
+export type Ball = { x: number; y: number; r: number; d?: number; hot?: boolean };
 export type Stroke = {
   x1: number;
   y1: number;
   x2: number;
   y2: number;
-  r: number;
+  r1: number;
+  r2: number;
   d?: number;
-};
-export type FramePrims = { balls: Ball[]; strokes: Stroke[] };
-
-type Joints = [Pt, Pt, Pt];
-
-type Pose = {
-  /** whole-body y offset (suspension lifts the barrel) */
-  bob: number;
-  /** body rotation in degrees, + = chest dips / rump rises */
-  pitch: number;
-  /** −1 gathered neck … +1 fully extended neck (subtle at trot) */
-  neck: number;
-  /** front legs: carpus, fetlock, hoof (world space) */
-  fN: Joints;
-  fF: Joints;
-  /** hind legs: hock, fetlock, hoof (world space) */
-  hN: Joints;
-  hF: Joints;
-  /** tail: three hanging points off the rump (world space) */
-  tail: Joints;
+  hot?: boolean;
 };
 
-const MID: Pt = { x: -2.5, y: 14.6 };
+export type FramePrims = {
+  balls: Ball[];
+  strokes: Stroke[];
+  hoofs: Pt[];
+  bbox: { minX: number; maxX: number; minY: number; maxY: number };
+};
 
-const SPINE: Array<{ p: Pt; r: number }> = [
-  { p: { x: -11.5, y: 15.2 }, r: 3.3 }, // tail root
-  { p: { x: -8.5, y: 15.5 }, r: 4.1 }, // croup
-  { p: MID, r: 4.3 }, // mid-back
-  { p: { x: 3.5, y: 15.1 }, r: 4.0 }, // withers
-  { p: { x: 6.5, y: 14.0 }, r: 3.7 }, // chest
-];
+const TAU = Math.PI * 2;
 
-const FILLS: Array<{ p: Pt; r: number }> = [
-  { p: { x: 4.6, y: 10.9 }, r: 2.9 }, // girth — deep chest
-  { p: { x: -7.6, y: 12.2 }, r: 3.2 }, // haunch
-  { p: { x: -10.6, y: 17.0 }, r: 2.5 }, // rump top
-  { p: { x: -2.4, y: 11.6 }, r: 2.35 }, // flank tuck
-];
-
-const SHOULDER: Pt = { x: 5.0, y: 11.5 };
-const HIP: Pt = { x: -8.0, y: 12.0 };
-
-/* Trot cycle — diagonal A (near fore + far hind) vs diagonal B
-   (far fore + near hind): land → carry → push → suspension. */
-const POSES: Pose[] = [
-  // T0 — A lands: near fore + far hind plant, B folding through
-  {
-    bob: 0.2,
-    pitch: 0,
-    neck: 0.1,
-    fN: [ { x: 6.0, y: 6.6 }, { x: 6.4, y: 2.5 }, { x: 6.6, y: 0.6 } ],
-    fF: [ { x: 7.6, y: 8.2 }, { x: 9.2, y: 6.0 }, { x: 10.0, y: 4.8 } ],
-    hN: [ { x: -4.6, y: 7.4 }, { x: -2.2, y: 3.6 }, { x: -1.2, y: 2.4 } ],
-    hF: [ { x: -8.4, y: 6.4 }, { x: -8.8, y: 2.0 }, { x: -9.0, y: 0.5 } ],
-    tail: [ { x: -14.2, y: 13.2 }, { x: -15.8, y: 10.0 }, { x: -16.6, y: 7.0 } ],
-  },
-  // T1 — A carries the weight, B folding tighter
-  {
-    bob: -0.2,
-    pitch: 0,
-    neck: 0,
-    fN: [ { x: 5.8, y: 6.6 }, { x: 6.1, y: 2.4 }, { x: 6.2, y: 0.5 } ],
-    fF: [ { x: 6.8, y: 7.8 }, { x: 7.6, y: 5.0 }, { x: 8.0, y: 3.8 } ],
-    hN: [ { x: -4.2, y: 7.6 }, { x: -1.4, y: 4.0 }, { x: -0.2, y: 3.0 } ],
-    hF: [ { x: -8.8, y: 6.2 }, { x: -9.2, y: 2.0 }, { x: -9.4, y: 0.5 } ],
-    tail: [ { x: -14.4, y: 13.0 }, { x: -16.2, y: 9.8 }, { x: -17.2, y: 6.8 } ],
-  },
-  // T2 — A pushes off, B tucked ready to reach
-  {
-    bob: 0.1,
-    pitch: -0.5,
-    neck: 0,
-    fN: [ { x: 5.6, y: 6.0 }, { x: 5.2, y: 2.0 }, { x: 4.9, y: 0.6 } ],
-    fF: [ { x: 6.2, y: 7.6 }, { x: 6.4, y: 4.4 }, { x: 6.6, y: 3.2 } ],
-    hN: [ { x: -4.0, y: 7.8 }, { x: -0.8, y: 4.4 }, { x: 0.4, y: 3.4 } ],
-    hF: [ { x: -8.8, y: 6.2 }, { x: -9.8, y: 2.2 }, { x: -10.4, y: 0.9 } ],
-    tail: [ { x: -14.6, y: 12.8 }, { x: -16.6, y: 9.6 }, { x: -17.6, y: 6.6 } ],
-  },
-  // T3 — suspension: B at full reach, A tucked under
-  {
-    bob: 1.0,
-    pitch: 0,
-    neck: 0.2,
-    fN: [ { x: 6.0, y: 7.8 }, { x: 6.8, y: 5.0 }, { x: 7.4, y: 3.8 } ],
-    fF: [ { x: 9.0, y: 7.6 }, { x: 11.8, y: 4.4 }, { x: 13.2, y: 3.0 } ],
-    hN: [ { x: -4.6, y: 6.8 }, { x: -0.8, y: 2.8 }, { x: 1.0, y: 1.6 } ],
-    hF: [ { x: -9.0, y: 7.0 }, { x: -10.6, y: 3.4 }, { x: -11.4, y: 2.4 } ],
-    tail: [ { x: -14.4, y: 13.0 }, { x: -16.2, y: 9.8 }, { x: -17.0, y: 6.8 } ],
-  },
-  // T4 — B lands: far fore + near hind plant, A folding through
-  {
-    bob: 0.2,
-    pitch: 0,
-    neck: 0,
-    fN: [ { x: 6.4, y: 7.6 }, { x: 7.4, y: 4.8 }, { x: 8.0, y: 3.6 } ],
-    fF: [ { x: 8.4, y: 6.8 }, { x: 9.4, y: 2.6 }, { x: 9.7, y: 1.0 } ],
-    hN: [ { x: -5.2, y: 6.8 }, { x: -3.6, y: 2.4 }, { x: -3.0, y: 1.0 } ],
-    hF: [ { x: -9.2, y: 6.8 }, { x: -10.8, y: 3.2 }, { x: -11.6, y: 2.2 } ],
-    tail: [ { x: -14.2, y: 13.2 }, { x: -15.6, y: 10.2 }, { x: -16.6, y: 7.4 } ],
-  },
-  // T5 — B carries the weight, A folding tighter
-  {
-    bob: -0.2,
-    pitch: 0,
-    neck: -0.1,
-    fN: [ { x: 5.8, y: 7.8 }, { x: 6.4, y: 4.8 }, { x: 6.8, y: 3.6 } ],
-    fF: [ { x: 8.2, y: 6.8 }, { x: 9.0, y: 2.6 }, { x: 9.2, y: 1.0 } ],
-    hN: [ { x: -4.8, y: 7.0 }, { x: -3.0, y: 2.6 }, { x: -2.2, y: 1.2 } ],
-    hF: [ { x: -9.4, y: 7.0 }, { x: -11.0, y: 3.6 }, { x: -11.8, y: 2.8 } ],
-    tail: [ { x: -14.4, y: 13.4 }, { x: -15.8, y: 10.6 }, { x: -16.8, y: 7.8 } ],
-  },
-  // T6 — B pushes off, A tucked ready to reach
-  {
-    bob: 0.1,
-    pitch: 0.5,
-    neck: -0.2,
-    fN: [ { x: 5.6, y: 7.8 }, { x: 5.8, y: 4.6 }, { x: 6.0, y: 3.4 } ],
-    fF: [ { x: 8.6, y: 6.6 }, { x: 9.8, y: 2.4 }, { x: 10.1, y: 0.9 } ],
-    hN: [ { x: -4.4, y: 6.6 }, { x: -2.8, y: 2.4 }, { x: -2.0, y: 0.9 } ],
-    hF: [ { x: -9.6, y: 7.2 }, { x: -11.4, y: 3.8 }, { x: -12.2, y: 3.0 } ],
-    tail: [ { x: -14.6, y: 13.6 }, { x: -15.8, y: 10.8 }, { x: -16.6, y: 8.0 } ],
-  },
-  // T7 — suspension: A at full reach, B tucked under
-  {
-    bob: 1.0,
-    pitch: 0,
-    neck: -0.1,
-    fN: [ { x: 6.4, y: 7.4 }, { x: 8.6, y: 4.0 }, { x: 9.8, y: 2.6 } ],
-    fF: [ { x: 7.0, y: 7.8 }, { x: 8.0, y: 5.0 }, { x: 8.6, y: 3.8 } ],
-    hN: [ { x: -4.4, y: 7.6 }, { x: -1.2, y: 4.0 }, { x: 0.0, y: 3.0 } ],
-    hF: [ { x: -9.8, y: 7.0 }, { x: -12.0, y: 2.6 }, { x: -13.4, y: 1.8 } ],
-    tail: [ { x: -14.4, y: 13.8 }, { x: -15.4, y: 11.0 }, { x: -15.6, y: 8.2 } ],
-  },
-];
-
-const rad = (deg: number) => (deg * Math.PI) / 180;
-
-function lerpPt(a: Pt, b: Pt, t: number): Pt {
-  return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
+function lerp(a: number, b: number, t: number): number {
+  return a + (b - a) * t;
 }
 
-function buildFrame(pose: Pose): FramePrims {
-  const th = rad(pose.pitch);
-  const cos = Math.cos(th);
-  const sin = Math.sin(th);
-  const att = (q: Pt): Pt => ({
-    x: MID.x + (q.x - MID.x) * cos - (q.y - MID.y) * sin,
-    y: MID.y + (q.x - MID.x) * sin + (q.y - MID.y) * cos + pose.bob,
-  });
+function lerpPt(a: Pt, b: Pt, t: number): Pt {
+  return { x: lerp(a.x, b.x, t), y: lerp(a.y, b.y, t) };
+}
+
+/**
+ * Procedural generation of a horse pose at stride phase p in [0, 1).
+ * Generates continuous smooth kinematics without jerky keyframe steps.
+ */
+export function generateHorsePose(phase: number): FramePrims {
+  const p = ((phase % 1) + 1) % 1;
+  const pTau = p * TAU;
+
+  // Stride suspension & bob: two bounces per stride (at p=0.25 and p=0.75)
+  const bob = Math.sin(pTau * 2) * 0.7;
+  const pitch = Math.sin(pTau * 2 - 0.4) * 1.4; // subtle chest dip / rise in degrees
+  const pitchRad = (pitch * Math.PI) / 180;
+  const cosP = Math.cos(pitchRad);
+  const sinP = Math.sin(pitchRad);
+
+  const midX = -1.0;
+  const midY = 15.0;
+
+  function att(pt: Pt): Pt {
+    const rx = pt.x - midX;
+    const ry = pt.y - midY;
+    return {
+      x: midX + rx * cosP - ry * sinP,
+      y: midY + rx * sinP + ry * cosP + bob,
+    };
+  }
+
+  // --- Spine & Torso points ---
+  const withers = att({ x: 4.2, y: 19.4 });
+  const midBack = att({ x: -1.8, y: 18.0 });
+  const croup = att({ x: -8.0, y: 19.0 });
+  const dock = att({ x: -11.8, y: 17.5 });
+
+  const chest = att({ x: 7.2, y: 14.2 });
+  const girth = att({ x: 3.2, y: 11.2 });
+  const flank = att({ x: -4.5, y: 13.0 });
+  const hip = att({ x: -8.2, y: 14.5 });
+
+  // --- Neck & Head (nodding rhythmically with stride momentum) ---
+  const headBob = Math.sin(pTau * 2 + 0.8) * 0.35;
+  const poll = att({ x: 11.5 + headBob * 0.2, y: 25.2 + headBob });
+  const throat = att({ x: 9.6, y: 20.8 });
+  const jawCheek = att({ x: 11.8, y: 22.0 });
+  const nasalBridge = att({ x: 14.8, y: 22.2 });
+  const muzzle = att({ x: 16.8, y: 20.8 });
+  const chin = att({ x: 15.2, y: 20.0 });
+  const earTipNear = att({ x: 11.2, y: 27.8 });
+  const earTipFar = att({ x: 12.4, y: 27.5 });
 
   const balls: Ball[] = [];
   const strokes: Stroke[] = [];
 
-  /* Barrel: spine chain subdivided for a smooth topline */
-  for (let i = 0; i < SPINE.length - 1; i++) {
-    const a = att(SPINE[i].p);
-    const ra = SPINE[i].r;
-    const b = att(SPINE[i + 1].p);
-    const rb = SPINE[i + 1].r;
-    for (let s = 0; s < 4; s++) {
-      const t = s / 4;
-      balls.push({
-        x: a.x + (b.x - a.x) * t,
-        y: a.y + (b.y - a.y) * t,
-        r: ra + (rb - ra) * t,
-      });
+  // Torso construction (smooth tapered blends)
+  strokes.push({ x1: withers.x, y1: withers.y, x2: midBack.x, y2: midBack.y, r1: 2.8, r2: 2.7, hot: true });
+  strokes.push({ x1: midBack.x, y1: midBack.y, x2: croup.x, y2: croup.y, r1: 2.7, r2: 3.2, hot: true });
+  strokes.push({ x1: croup.x, y1: croup.y, x2: dock.x, y2: dock.y, r1: 3.2, r2: 2.0 });
+
+  // Underside: chest to girth to flank to hip
+  strokes.push({ x1: chest.x, y1: chest.y, x2: girth.x, y2: girth.y, r1: 3.0, r2: 2.8 });
+  strokes.push({ x1: girth.x, y1: girth.y, x2: flank.x, y2: flank.y, r1: 2.8, r2: 2.2 });
+  strokes.push({ x1: flank.x, y1: flank.y, x2: hip.x, y2: hip.y, r1: 2.2, r2: 2.9 });
+
+  // Barrel volume fill
+  strokes.push({ x1: withers.x, y1: withers.y, x2: chest.x, y2: chest.y, r1: 2.8, r2: 3.0 });
+  strokes.push({ x1: midBack.x, y1: midBack.y, x2: girth.x, y2: girth.y, r1: 2.7, r2: 2.8 });
+  strokes.push({ x1: croup.x, y1: croup.y, x2: hip.x, y2: hip.y, r1: 3.2, r2: 2.9 });
+
+  // Neck (proud arched crest + refined throatlatch)
+  const neckBase = att({ x: 5.5, y: 17.5 });
+  const neckCrestMid = att({ x: 8.2, y: 22.0 });
+  strokes.push({ x1: neckBase.x, y1: neckBase.y, x2: neckCrestMid.x, y2: neckCrestMid.y, r1: 2.6, r2: 2.0, hot: true });
+  strokes.push({ x1: neckCrestMid.x, y1: neckCrestMid.y, x2: poll.x, y2: poll.y, r1: 2.0, r2: 1.4, hot: true });
+  strokes.push({ x1: chest.x, y1: chest.y, x2: throat.x, y2: throat.y, r1: 2.4, r2: 1.2 });
+  strokes.push({ x1: throat.x, y1: throat.y, x2: jawCheek.x, y2: jawCheek.y, r1: 1.2, r2: 1.5 });
+
+  // Head details
+  balls.push({ x: jawCheek.x, y: jawCheek.y, r: 1.5 }); // cheek muscle
+  strokes.push({ x1: poll.x, y1: poll.y, x2: nasalBridge.x, y2: nasalBridge.y, r1: 1.3, r2: 0.85, hot: true });
+  strokes.push({ x1: nasalBridge.x, y1: nasalBridge.y, x2: muzzle.x, y2: muzzle.y, r1: 0.85, r2: 0.65, hot: true });
+  strokes.push({ x1: muzzle.x, y1: muzzle.y, x2: chin.x, y2: chin.y, r1: 0.65, r2: 0.5 });
+  strokes.push({ x1: chin.x, y1: chin.y, x2: jawCheek.x, y2: jawCheek.y, r1: 0.5, r2: 1.3 });
+  balls.push({ x: muzzle.x, y: muzzle.y, r: 0.65, hot: true }); // refined muzzle
+
+  // Ears (pricked forward alert)
+  strokes.push({ x1: poll.x, y1: poll.y, x2: earTipNear.x, y2: earTipNear.y, r1: 0.45, r2: 0.18, hot: true });
+  strokes.push({ x1: poll.x + 0.6, y1: poll.y, x2: earTipFar.x, y2: earTipFar.y, r1: 0.4, r2: 0.15, d: 0.7 });
+
+  // Mane: flowing wind-blown locks along the crest
+  for (let i = 0; i <= 6; i++) {
+    const tMane = i / 6;
+    const basePt = lerpPt(neckBase, poll, tMane);
+    const wave = Math.sin(pTau * 2 - i * 0.7) * 0.45;
+    const lockTip = {
+      x: basePt.x - 1.3 - (1 - tMane) * 0.8,
+      y: basePt.y + 0.8 + wave,
+    };
+    strokes.push({ x1: basePt.x, y1: basePt.y, x2: lockTip.x, y2: lockTip.y, r1: 0.6, r2: 0.25, hot: true });
+  }
+
+  // --- Dynamic Flowing Tail (Undulating liquid wave) ---
+  const tailSegments = 6;
+  let prevTail = dock;
+  for (let i = 1; i <= tailSegments; i++) {
+    const tailProgress = i / tailSegments;
+    const waveX = Math.sin(pTau * 2 - i * 0.85) * (0.8 + tailProgress * 1.5);
+    const waveY = Math.cos(pTau * 2 - i * 0.85) * (0.5 + tailProgress * 1.0);
+    const tailPt = {
+      x: dock.x - i * 1.6 - waveX,
+      y: dock.y - i * 1.8 + waveY,
+    };
+    const r1 = lerp(1.7, 0.4, (i - 1) / tailSegments);
+    const r2 = lerp(1.7, 0.4, i / tailSegments);
+    strokes.push({ x1: prevTail.x, y1: prevTail.y, x2: tailPt.x, y2: tailPt.y, r1, r2, hot: i < 3 });
+    prevTail = tailPt;
+  }
+
+  // --- Trot Leg Kinematics ---
+  function getForeLeg(subPhase: number, shoulderPt: Pt, isFar: boolean) {
+    const sp = ((subPhase % 1) + 1) % 1;
+    let carpus: Pt;
+    let fetlock: Pt;
+    let hoof: Pt;
+
+    if (sp < 0.5) {
+      const st = sp / 0.5; // Stance: 0 -> 1
+      const groundX = lerp(7.8, 4.2, st);
+      const groundY = 0.5;
+      hoof = { x: groundX, y: groundY };
+      fetlock = { x: groundX + 0.2, y: 2.2 };
+      carpus = { x: lerp(7.2, 5.8, st), y: 7.0 };
+    } else {
+      const sw = (sp - 0.5) / 0.5; // Swing: 0 -> 1
+      const lift = Math.sin(sw * Math.PI);
+      const swingX = lerp(4.2, 8.2, sw);
+      const swingY = 0.5 + lift * 4.2;
+      hoof = { x: swingX, y: swingY };
+      fetlock = { x: swingX - 0.4, y: swingY + 1.8 };
+      carpus = { x: lerp(5.8, 7.8, sw) - lift * 0.8, y: 7.0 + lift * 1.8 };
     }
+
+    const d = isFar ? 0.65 : undefined;
+    const hot = !isFar;
+    // Scapula to Carpus (Forearm)
+    strokes.push({ x1: shoulderPt.x, y1: shoulderPt.y, x2: carpus.x, y2: carpus.y, r1: 1.4, r2: 0.65, d, hot });
+    // Carpus joint
+    balls.push({ x: carpus.x, y: carpus.y, r: 0.65, d, hot });
+    // Carpus to Fetlock (Cannon)
+    strokes.push({ x1: carpus.x, y1: carpus.y, x2: fetlock.x, y2: fetlock.y, r1: 0.62, r2: 0.48, d, hot });
+    // Fetlock joint
+    balls.push({ x: fetlock.x, y: fetlock.y, r: 0.5, d, hot });
+    // Pastern to Hoof
+    strokes.push({ x1: fetlock.x, y1: fetlock.y, x2: hoof.x, y2: hoof.y, r1: 0.46, r2: 0.42, d, hot });
+    // Hoof wedge
+    balls.push({ x: hoof.x, y: hoof.y, r: 0.52, d, hot });
+
+    return hoof;
   }
-  const lastSpine = SPINE[SPINE.length - 1];
-  balls.push({ ...att(lastSpine.p), r: lastSpine.r });
 
-  for (const f of FILLS) {
-    const q = att(f.p);
-    balls.push({ x: q.x, y: q.y, r: f.r });
+  function getHindLeg(subPhase: number, hipPt: Pt, isFar: boolean) {
+    const sp = ((subPhase % 1) + 1) % 1;
+    let stifle: Pt;
+    let hock: Pt;
+    let fetlock: Pt;
+    let hoof: Pt;
+
+    if (sp < 0.5) {
+      const st = sp / 0.5; // Stance: 0 -> 1
+      const groundX = lerp(-6.5, -11.5, st);
+      const groundY = 0.5;
+      hoof = { x: groundX, y: groundY };
+      fetlock = { x: groundX + 0.3, y: 2.4 };
+      hock = { x: lerp(-7.8, -10.5, st), y: 7.2 };
+      stifle = { x: -5.8, y: 11.2 };
+    } else {
+      const sw = (sp - 0.5) / 0.5; // Swing: 0 -> 1
+      const lift = Math.sin(sw * Math.PI);
+      const swingX = lerp(-11.5, -5.8, sw);
+      const swingY = 0.5 + lift * 3.8;
+      hoof = { x: swingX, y: swingY };
+      fetlock = { x: swingX - 0.4, y: swingY + 1.8 };
+      hock = { x: lerp(-10.5, -7.5, sw) - lift * 1.0, y: 7.2 + lift * 1.5 };
+      stifle = { x: -5.8 + lift * 0.5, y: 11.2 };
+    }
+
+    const d = isFar ? 0.65 : undefined;
+    const hot = !isFar;
+    // Hip to Stifle (Thigh)
+    strokes.push({ x1: hipPt.x, y1: hipPt.y, x2: stifle.x, y2: stifle.y, r1: 2.2, r2: 1.4, d, hot });
+    // Stifle to Hock (Gaskin)
+    strokes.push({ x1: stifle.x, y1: stifle.y, x2: hock.x, y2: hock.y, r1: 1.4, r2: 0.65, d, hot });
+    // Hock sharp backward joint
+    balls.push({ x: hock.x, y: hock.y, r: 0.65, d, hot });
+    // Hock to Fetlock (Cannon)
+    strokes.push({ x1: hock.x, y1: hock.y, x2: fetlock.x, y2: fetlock.y, r1: 0.62, r2: 0.48, d, hot });
+    // Fetlock
+    balls.push({ x: fetlock.x, y: fetlock.y, r: 0.5, d, hot });
+    // Pastern to Hoof
+    strokes.push({ x1: fetlock.x, y1: fetlock.y, x2: hoof.x, y2: hoof.y, r1: 0.46, r2: 0.42, d, hot });
+    // Hoof wedge
+    balls.push({ x: hoof.x, y: hoof.y, r: 0.52, d, hot });
+
+    return hoof;
   }
 
-  /* Neck — carried HIGH (steep ~60° rise), so the head sits well
-     above the topline. The muzzle always hangs below the poll. */
-  const g = (pose.neck + 1) / 2;
-  const base = att({ x: 5.8, y: 15.4 });
-  const midN = att(lerpPt({ x: 8.8, y: 20.4 }, { x: 9.4, y: 19.8 }, g));
-  const poll = att(lerpPt({ x: 10.5, y: 24.7 }, { x: 11.4, y: 23.8 }, g));
-  const skull = att(lerpPt({ x: 12.1, y: 24.85 }, { x: 13.0, y: 23.95 }, g));
-  const jaw = att(lerpPt({ x: 14.4, y: 23.8 }, { x: 15.4, y: 22.85 }, g));
-  const tip = att(lerpPt({ x: 16.4, y: 22.7 }, { x: 17.4, y: 21.75 }, g));
-  const earA = att(lerpPt({ x: 10.2, y: 26.1 }, { x: 11.1, y: 25.2 }, g));
-  const earB = att(lerpPt({ x: 11.4, y: 26.0 }, { x: 12.3, y: 25.1 }, g));
+  const shoulderNear = att({ x: 6.2, y: 13.5 });
+  const shoulderFar = att({ x: 6.8, y: 14.0 });
+  const hipNear = att({ x: -8.0, y: 13.8 });
+  const hipFar = att({ x: -7.5, y: 14.2 });
 
-  strokes.push({ x1: base.x, y1: base.y, x2: midN.x, y2: midN.y, r: 1.95 });
-  strokes.push({ x1: midN.x, y1: midN.y, x2: poll.x, y2: poll.y, r: 1.2 });
-  balls.push({ x: skull.x, y: skull.y, r: 1.5 });
-  strokes.push({ x1: skull.x, y1: skull.y, x2: jaw.x, y2: jaw.y, r: 0.95 });
-  strokes.push({ x1: jaw.x, y1: jaw.y, x2: tip.x, y2: tip.y, r: 0.68 });
-  balls.push({ x: tip.x, y: tip.y, r: 0.68 });
-  strokes.push({ x1: poll.x, y1: poll.y, x2: earA.x, y2: earA.y, r: 0.42 });
-  strokes.push({ x1: poll.x, y1: poll.y, x2: earB.x, y2: earB.y, r: 0.42 });
+  // Far legs (rendered beneath body)
+  const hF_hoof = getHindLeg(p, hipFar, true); // Diagonal A (far hind)
+  const fF_hoof = getForeLeg(p + 0.5, shoulderFar, true); // Diagonal B (far fore)
 
-  /* Mane — a serrated crest riding the back edge of the neck,
-     plus a small forelock at the poll. THE horse signifier. */
-  const nx = poll.x - base.x;
-  const ny = poll.y - base.y;
-  const nl = Math.hypot(nx, ny) || 1;
-  const px = -ny / nl; // perpendicular, pointing up-back
-  const py = nx / nl;
-  const maneT = [0.16, 0.34, 0.52, 0.7, 0.88];
-  maneT.forEach((t, i) => {
-    const r = 1.95 + (1.2 - 1.95) * t;
-    const off = r + 0.48;
-    const mx = base.x + nx * t + px * off;
-    const my = base.y + ny * t + py * off;
-    balls.push({ x: mx, y: my, r: 0.82 - i * 0.045 });
-  });
-  strokes.push({
-    x1: poll.x,
-    y1: poll.y,
-    x2: poll.x + px * 1.5 - 0.2,
-    y2: poll.y + py * 1.5 + 0.3,
-    r: 0.42,
-  });
-  strokes.push({
-    x1: poll.x,
-    y1: poll.y,
-    x2: poll.x + px * 1.1 + 0.35,
-    y2: poll.y + py * 1.1 + 0.5,
-    r: 0.4,
-  });
+  // Near legs (rendered on top)
+  const fN_hoof = getForeLeg(p, shoulderNear, false); // Diagonal A (near fore)
+  const hN_hoof = getHindLeg(p + 0.5, hipNear, false); // Diagonal B (near hind)
 
-  /* Tail — hangs down off the rump and sways with the stride */
-  const root = att(SPINE[0].p);
-  const t1 = att(pose.tail[0]);
-  const t2 = att(pose.tail[1]);
-  const t3 = att(pose.tail[2]);
-  strokes.push({ x1: root.x, y1: root.y, x2: t1.x, y2: t1.y, r: 1.4 });
-  strokes.push({ x1: t1.x, y1: t1.y, x2: t2.x, y2: t2.y, r: 1.15 });
-  strokes.push({ x1: t2.x, y1: t2.y, x2: t3.x, y2: t3.y, r: 0.85 });
-  balls.push({ x: t3.x, y: t3.y, r: 0.8 });
+  // Calculate bounding box
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
 
-  /* Legs — far pair drawn dimmer so the near pair reads on top */
-  const leg = (
-    anchor: Pt,
-    joints: Joints,
-    radii: [number, number, number],
-    d: number | undefined
-  ) => {
-    const [c, f, h] = joints;
-    strokes.push({ x1: anchor.x, y1: anchor.y, x2: c.x, y2: c.y, r: radii[0], d });
-    strokes.push({ x1: c.x, y1: c.y, x2: f.x, y2: f.y, r: radii[1], d });
-    strokes.push({ x1: f.x, y1: f.y, x2: h.x, y2: h.y, r: radii[2], d });
-    balls.push({ x: h.x, y: h.y, r: radii[2] + 0.2, d });
+  for (const b of balls) {
+    minX = Math.min(minX, b.x - b.r);
+    maxX = Math.max(maxX, b.x + b.r);
+    minY = Math.min(minY, b.y - b.r);
+    maxY = Math.max(maxY, b.y + b.r);
+  }
+  for (const s of strokes) {
+    const maxR = Math.max(s.r1, s.r2);
+    minX = Math.min(minX, s.x1 - maxR, s.x2 - maxR);
+    maxX = Math.max(maxX, s.x1 + maxR, s.x2 + maxR);
+    minY = Math.min(minY, s.y1 - maxR, s.y2 - maxR);
+    maxY = Math.max(maxY, s.y1 + maxR, s.y2 + maxR);
+  }
+
+  return {
+    balls,
+    strokes,
+    hoofs: [fN_hoof, fF_hoof, hN_hoof, hF_hoof],
+    bbox: { minX, maxX, minY, maxY },
   };
-  const sh = att(SHOULDER);
-  const hp = att(HIP);
-  leg(hp, pose.hF, [1.3, 0.78, 0.52], 0.68); // far hind
-  leg(sh, pose.fF, [1.05, 0.7, 0.5], 0.68); // far fore
-  leg(hp, pose.hN, [1.45, 0.85, 0.55], undefined); // near hind
-  leg(sh, pose.fN, [1.15, 0.72, 0.5], undefined); // near fore
-
-  return { balls, strokes };
 }
 
-export const HORSE_FRAMES: FramePrims[] = POSES.map(buildFrame);
-
-/** Hoof world positions per frame — used for dust timing. [fN,fF,hN,hF] */
-export const HORSE_HOOFS: Array<{ x: number; y: number }[]> = POSES.map(
-  (p) => [p.fN[2], p.fF[2], p.hN[2], p.hF[2]]
+// Pre-baked frame list for legacy/static usage
+export const HORSE_FRAMES: FramePrims[] = Array.from({ length: 16 }, (_, i) =>
+  generateHorsePose(i / 16)
 );
+
+export const HORSE_HOOFS: Array<Pt[]> = HORSE_FRAMES.map((f) => f.hoofs);
 
 export const HORSE_BBOX = (() => {
   let minX = Infinity;
@@ -309,19 +297,10 @@ export const HORSE_BBOX = (() => {
   let minY = Infinity;
   let maxY = -Infinity;
   for (const fr of HORSE_FRAMES) {
-    for (const b of fr.balls) {
-      minX = Math.min(minX, b.x - b.r);
-      maxX = Math.max(maxX, b.x + b.r);
-      minY = Math.min(minY, b.y - b.r);
-      maxY = Math.max(maxY, b.y + b.r);
-    }
-    for (const s of fr.strokes) {
-      const r = Math.max(s.r, s.r);
-      minX = Math.min(minX, s.x1 - r, s.x2 - r);
-      maxX = Math.max(maxX, s.x1 + r, s.x2 + r);
-      minY = Math.min(minY, s.y1 - r, s.y2 - r);
-      maxY = Math.max(maxY, s.y1 + r, s.y2 + r);
-    }
+    minX = Math.min(minX, fr.bbox.minX);
+    maxX = Math.max(maxX, fr.bbox.maxX);
+    minY = Math.min(minY, fr.bbox.minY);
+    maxY = Math.max(maxY, fr.bbox.maxY);
   }
   return { minX, maxX, minY, maxY };
 })();

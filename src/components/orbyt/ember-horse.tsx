@@ -2,65 +2,88 @@
 
 import { useEffect, useRef } from "react";
 import {
-  HORSE_FRAMES,
-  HORSE_HOOFS,
+  generateHorsePose,
   HORSE_BBOX,
-  type Stroke,
-  type Ball,
+  type FramePrims,
+  type Pt,
 } from "./horse-frames";
 
 /* ── Orbyt · Ember Horse ───────────────────────────────────
-   The working trot, rebuilt in code. Eight hand-posed
-   keyframes (see horse-frames.ts — high head carriage, mane
-   crest, hanging tail) sampled every frame into a grid of
-   glowing ember dots, with brief crossfades between poses,
-   per-dot flicker, hoof-strike dust and a ground track that
-   scrolls with the stride. No video, no stock. */
+   The working trot, rebuilt in real-time procedural code.
+   Features an anatomically proportioned thoroughbred silhouette:
+   proud arched crest, pricked ears, sculpted cheek & muzzle,
+   athletic withers, saddle dip, rounded croup, lean tucked flank,
+   slender cannons, angular hocks, dynamic flowing tail waves,
+   wind-blown mane locks, multi-tone incandescent ember lighting,
+   trailing stardust sparks, hoof-strike dust, and a ground reflection.
+   No video, no stock.
+*/
 
-type Particle = { x: number; y: number; vx: number; vy: number; life: number; max: number };
+type Particle = {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  max: number;
+  size: number;
+  color: string;
+};
 
-const FRAMES = HORSE_FRAMES.length;
-/** keyframe steps per second at pace 1 — a full trot stride ≈ 1s */
-const STEPS_PER_SEC = 8;
-/** ground units the world travels per stride */
-const GROUND_PER_CYCLE = 18;
 const TAU = Math.PI * 2;
+const STEPS_PER_SEC = 1.4; // 1.4 full trot cycles (2.8 steps) per sec at standard pace
+const GROUND_PER_CYCLE = 22;
 
-function hitStroke(s: Stroke, x: number, y: number): boolean {
+function hitStroke(
+  s: { x1: number; y1: number; x2: number; y2: number; r1: number; r2: number; d?: number; hot?: boolean },
+  x: number,
+  y: number
+): { hit: boolean; d: number; hot: boolean } {
   const ax = s.x2 - s.x1;
   const ay = s.y2 - s.y1;
   const len2 = ax * ax + ay * ay;
   let t = len2 === 0 ? 0 : ((x - s.x1) * ax + (y - s.y1) * ay) / len2;
-  t = t < 0 ? 0 : t > 1 ? 1 : t;
-  const dx = x - (s.x1 + t * ax);
-  const dy = y - (s.y1 + t * ay);
-  return dx * dx + dy * dy < s.r * s.r;
+  t = Math.max(0, Math.min(1, t));
+  const cx = s.x1 + t * ax;
+  const cy = s.y1 + t * ay;
+  const dx = x - cx;
+  const dy = y - cy;
+  const r = s.r1 + (s.r2 - s.r1) * t;
+  const hit = dx * dx + dy * dy < r * r;
+  return { hit, d: s.d ?? 1, hot: !!s.hot };
 }
 
-function hitBall(b: Ball, x: number, y: number): boolean {
-  const dx = x - b.x;
-  const dy = y - b.y;
-  return dx * dx + dy * dy < b.r * b.r;
-}
-
-/** Brightness weight of the silhouette at a point (far legs are dimmer). */
-function sampleFrame(fr: (typeof HORSE_FRAMES)[number], x: number, y: number): number {
+function samplePose(
+  pose: FramePrims,
+  wx: number,
+  wy: number
+): { d: number; hot: boolean } {
   let best = 0;
-  for (const b of fr.balls) {
-    if (hitBall(b, x, y)) {
+  let isHot = false;
+
+  for (let i = 0; i < pose.balls.length; i++) {
+    const b = pose.balls[i];
+    const dx = wx - b.x;
+    const dy = wy - b.y;
+    if (dx * dx + dy * dy < b.r * b.r) {
       const d = b.d ?? 1;
-      if (d > best) best = d;
-    }
-  }
-  if (best < 1) {
-    for (const s of fr.strokes) {
-      if (hitStroke(s, x, y)) {
-        const d = s.d ?? 1;
-        if (d > best) best = d;
+      if (d > best) {
+        best = d;
+        isHot = !!b.hot;
       }
     }
   }
-  return best;
+
+  for (let i = 0; i < pose.strokes.length; i++) {
+    const s = pose.strokes[i];
+    const res = hitStroke(s, wx, wy);
+    if (res.hit && res.d > best) {
+      best = res.d;
+      isHot = res.hot;
+    }
+  }
+
+  return { d: best, hot: isHot };
 }
 
 export function EmberHorse({ className }: { className?: string }) {
@@ -69,7 +92,7 @@ export function EmberHorse({ className }: { className?: string }) {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) return;
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -79,21 +102,40 @@ export function EmberHorse({ className }: { className?: string }) {
     let W = 0;
     let H = 0;
     let unit = 10;
-    let cell = 8;
+    let cell = 4.2;
     let cx = 0;
     let gy = 0;
-    let glow: HTMLCanvasElement | null = null;
+    let glowNear: HTMLCanvasElement | null = null;
+    let glowHot: HTMLCanvasElement | null = null;
     let glowSize = 0;
 
     const BW = HORSE_BBOX.maxX - HORSE_BBOX.minX;
     const BH = HORSE_BBOX.maxY - Math.min(0, HORSE_BBOX.minY);
 
-    let cycle = 0;
+    let stridePhase = 0;
     let pace = 1;
     const targetPace = { current: 1 };
     let last = performance.now();
     let dust: Particle[] = [];
-    const prevHoofY = [9, 9, 9, 9];
+    let embers: Particle[] = [];
+    const prevHoofY = [1, 1, 1, 1];
+
+    const createGlow = (innerColor: string, outerColor: string, size: number) => {
+      const g = document.createElement("canvas");
+      g.width = size;
+      g.height = size;
+      const gctx = g.getContext("2d");
+      if (gctx) {
+        const rad = size / 2;
+        const grad = gctx.createRadialGradient(rad, rad, 0, rad, rad, rad);
+        grad.addColorStop(0, innerColor);
+        grad.addColorStop(0.35, outerColor);
+        grad.addColorStop(1, "rgba(253,90,1,0)");
+        gctx.fillStyle = grad;
+        gctx.fillRect(0, 0, size, size);
+      }
+      return g;
+    };
 
     const build = () => {
       const rect = canvas.getBoundingClientRect();
@@ -104,110 +146,130 @@ export function EmberHorse({ className }: { className?: string }) {
       canvas.width = Math.floor(W * dpr);
       canvas.height = Math.floor(H * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      gy = H * 0.87;
-      unit = Math.min((W * 0.92) / BW, (gy * 0.96) / BH);
-      /* finer grid than the body needs so head/ears/legs keep their
-         detail when the silhouette is sampled to ember dots */
-      cell = unit * 0.6;
+
+      gy = H * 0.84;
+      unit = Math.min((W * 0.88) / BW, (gy * 0.94) / BH);
+      // High-definition micro-LED matrix density (doubled detail from old 0.6)
+      cell = Math.max(3.0, unit * 0.32);
       cx = W / 2 - ((HORSE_BBOX.minX + HORSE_BBOX.maxX) / 2) * unit;
 
-      glowSize = Math.ceil(cell * 2.4);
-      const g = document.createElement("canvas");
-      g.width = glowSize;
-      g.height = glowSize;
-      const gctx = g.getContext("2d");
-      if (gctx) {
-        const grad = gctx.createRadialGradient(
-          glowSize / 2,
-          glowSize / 2,
-          0,
-          glowSize / 2,
-          glowSize / 2,
-          glowSize / 2
-        );
-        grad.addColorStop(0, "rgba(255,178,92,0.85)");
-        grad.addColorStop(0.4, "rgba(253,90,1,0.35)");
-        grad.addColorStop(1, "rgba(253,90,1,0)");
-        gctx.fillStyle = grad;
-        gctx.fillRect(0, 0, glowSize, glowSize);
-      }
-      glow = g;
+      glowSize = Math.ceil(cell * 2.8);
+      glowNear = createGlow("rgba(253,90,1,0.85)", "rgba(253,90,1,0.25)", glowSize);
+      glowHot = createGlow("rgba(255,235,190,0.95)", "rgba(253,130,20,0.35)", glowSize);
     };
 
     const draw = (dt: number) => {
-      pace += (targetPace.current - pace) * Math.min(1, dt * 3);
-      const prevCycle = cycle;
-      cycle += dt * pace * STEPS_PER_SEC;
-      if (cycle >= FRAMES) cycle -= FRAMES;
+      pace += (targetPace.current - pace) * Math.min(1, dt * 3.5);
+      const prevPhase = stridePhase;
+      stridePhase += dt * pace * STEPS_PER_SEC;
+      if (stridePhase >= 1) stridePhase -= 1;
 
       ctx.clearRect(0, 0, W, H);
-      if (!glow) return;
+      if (!glowNear || !glowHot) return;
 
-      const f = Math.floor(cycle) % FRAMES;
-      const t = cycle - Math.floor(cycle);
-      /* brief crossfade into the next pose at the end of each step */
-      const bw = t < 0.7 ? 0 : (t - 0.7) / 0.3;
-      const w = bw * bw * (3 - 2 * bw);
-      const frA = HORSE_FRAMES[f];
-      const frB = HORSE_FRAMES[(f + 1) % FRAMES];
+      // Compute exact continuous procedural horse pose
+      const pose = generateHorsePose(stridePhase);
 
-      /* hoof-strike dust on frame boundaries */
-      if (Math.floor(cycle) !== Math.floor(prevCycle) && pace > 0.35) {
-        const hoofs = HORSE_HOOFS[(f + 1) % FRAMES];
+      // Hoof-strike dust trigger when hooves touch down
+      if (pace > 0.3) {
         for (let i = 0; i < 4; i++) {
-          if (prevHoofY[i] > 0.9 && hoofs[i].y <= 0.9) {
-            for (let k = 0; k < 2; k++) {
+          const hoof = pose.hoofs[i];
+          if (hoof && prevHoofY[i] > 0.65 && hoof.y <= 0.65) {
+            // Hoof impact!
+            const count = Math.floor(2 + Math.random() * 3);
+            for (let k = 0; k < count; k++) {
               dust.push({
-                x: hoofs[i].x + (Math.random() - 0.5) * 2,
-                y: 0.4 + Math.random(),
-                vx: -5 - Math.random() * 9,
-                vy: 3 + Math.random() * 8,
+                x: hoof.x + (Math.random() - 0.5) * 1.5,
+                y: 0.3 + Math.random() * 0.4,
+                vx: -6 - Math.random() * 10 * pace,
+                vy: 2.5 + Math.random() * 6.5,
                 life: 0,
-                max: 0.6 + Math.random() * 0.7,
+                max: 0.5 + Math.random() * 0.6,
+                size: Math.max(1.4, cell * 0.28),
+                color: Math.random() > 0.4 ? "#ffc987" : "#fd5a01",
               });
             }
           }
-          prevHoofY[i] = hoofs[i].y;
+          if (hoof) prevHoofY[i] = hoof.y;
         }
       }
 
-      /* Ground: dotted track scrolling with the stride */
-      const scroll = ((cycle / FRAMES) * GROUND_PER_CYCLE * unit) % (cell * 2.4);
-      ctx.fillStyle = "rgba(253,90,1,0.4)";
-      for (let x = -scroll; x < W; x += cell * 2.4) {
-        ctx.fillRect(x, gy + cell * 0.45, cell * 0.5, cell * 0.5);
-      }
-      ctx.fillStyle = "rgba(253,90,1,0.15)";
-      for (let x = -scroll * 0.7 - cell; x < W; x += cell * 2.4) {
-        ctx.fillRect(x, gy + cell * 1.6, cell * 0.4, cell * 0.4);
+      // Floating wind ember sparks detached from mane and tail
+      if (Math.random() < 0.35 * pace) {
+        const isMane = Math.random() > 0.5;
+        const spawnX = isMane ? 5 + Math.random() * 6 : -12 - Math.random() * 6;
+        const spawnY = isMane ? 20 + Math.random() * 5 : 12 + Math.random() * 6;
+        embers.push({
+          x: spawnX,
+          y: spawnY,
+          vx: -7 - Math.random() * 12 * pace,
+          vy: (Math.random() - 0.3) * 4,
+          life: 0,
+          max: 0.8 + Math.random() * 0.9,
+          size: Math.max(1.2, cell * 0.22),
+          color: Math.random() > 0.3 ? "#ffc987" : "#fd5a01",
+        });
       }
 
-      /* Dust kicked at hoof-strike */
+      // --- Ground: dotted telemetry track scrolling with stride ---
+      const scroll = ((stridePhase * GROUND_PER_CYCLE * unit) % (cell * 2.5));
+      ctx.fillStyle = "rgba(253,90,1,0.35)";
+      for (let x = -scroll; x < W; x += cell * 2.5) {
+        ctx.fillRect(x, gy + cell * 0.5, cell * 0.45, cell * 0.45);
+      }
+      ctx.fillStyle = "rgba(253,90,1,0.12)";
+      for (let x = -scroll * 0.7 - cell; x < W; x += cell * 2.5) {
+        ctx.fillRect(x, gy + cell * 1.6, cell * 0.35, cell * 0.35);
+      }
+
+      // --- Ground Reflection (Faint inverted mirage under gy) ---
+      const reflY = gy + cell * 0.8;
+      const reflGrad = ctx.createLinearGradient(0, reflY, 0, Math.min(H, gy + cell * 12));
+      reflGrad.addColorStop(0, "rgba(253,90,1,0.09)");
+      reflGrad.addColorStop(1, "rgba(253,90,1,0)");
+      ctx.fillStyle = reflGrad;
+      ctx.fillRect(0, reflY, W, Math.min(H - reflY, cell * 12));
+
+      // --- Particle Physics: Dust & Embers ---
       dust = dust.filter((p) => p.life < p.max);
       for (const p of dust) {
         p.life += dt;
         p.x += p.vx * dt;
         p.y += p.vy * dt;
-        p.vy -= 13 * dt;
-        const a = Math.sin((p.life / p.max) * Math.PI) * 0.5;
-        ctx.globalAlpha = a;
-        ctx.fillStyle = "#fd5a01";
+        p.vy -= 14 * dt; // gravity
+        const alpha = Math.sin((p.life / p.max) * Math.PI) * 0.7;
+        ctx.globalAlpha = Math.max(0, alpha);
+        ctx.fillStyle = p.color;
         const sx = cx + p.x * unit;
         const sy = gy - p.y * unit;
-        ctx.fillRect(sx, sy, Math.max(1.5, cell * 0.22), Math.max(1.5, cell * 0.22));
+        ctx.fillRect(sx - p.size / 2, sy - p.size / 2, p.size, p.size);
       }
 
-      /* The horse, sampled to LED dots */
-      const pad = cell;
-      const sx0 = cx + HORSE_BBOX.minX * unit - pad;
-      const sx1 = cx + HORSE_BBOX.maxX * unit + pad;
-      const sy0 = gy - HORSE_BBOX.maxY * unit - pad;
+      embers = embers.filter((p) => p.life < p.max);
+      for (const p of embers) {
+        p.life += dt;
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        const alpha = Math.sin((p.life / p.max) * Math.PI) * 0.85;
+        ctx.globalAlpha = Math.max(0, alpha);
+        ctx.fillStyle = p.color;
+        const sx = cx + p.x * unit;
+        const sy = gy - p.y * unit;
+        ctx.fillRect(sx - p.size / 2, sy - p.size / 2, p.size, p.size);
+      }
+
+      // --- The Horse: Sampled Micro-LED Matrix ---
+      const pad = cell * 1.5;
+      const sx0 = cx + pose.bbox.minX * unit - pad;
+      const sx1 = cx + pose.bbox.maxX * unit + pad;
+      const sy0 = gy - pose.bbox.maxY * unit - pad;
       const sy1 = gy + pad;
+
       const gx0 = Math.max(0, Math.floor(sx0 / cell));
-      const gx1 = Math.min(W, Math.ceil(sx1 / cell));
+      const gx1 = Math.min(Math.ceil(W / cell), Math.ceil(sx1 / cell));
       const gy0 = Math.max(0, Math.floor(sy0 / cell));
-      const gy1 = Math.min(H, Math.ceil(sy1 / cell));
-      const core = Math.max(1.5, cell * 0.5);
+      const gy1 = Math.min(Math.ceil(H / cell), Math.ceil(sy1 / cell));
+      const core = Math.max(1.6, cell * 0.58);
 
       for (let row = gy0; row < gy1; row++) {
         for (let col = gx0; col < gx1; col++) {
@@ -216,29 +278,32 @@ export function EmberHorse({ className }: { className?: string }) {
           const hx = (sx - cx) / unit;
           const hy = (gy - sy) / unit;
 
-          const aA = sampleFrame(frA, hx, hy);
-          let a = aA;
-          if (w > 0) {
-            const aB = sampleFrame(frB, hx, hy);
-            a = aA * (1 - w) + aB * w;
-          }
-          if (a <= 0.04) continue;
+          const sample = samplePose(pose, hx, hy);
+          if (sample.d <= 0.04) continue;
 
-          /* per-dot flicker + sweep + edge-of-field falloff */
-          const h = Math.abs(Math.sin(col * 12.9898 + row * 78.233) * 43758.5453) % 1;
-          const flicker = 0.78 + 0.22 * Math.sin((3 + h * 9) * TAU * 0.35 + h * TAU);
-          const sweep = 0.9 + 0.1 * Math.sin(hx * 0.55 - cycle * 1.4);
-          const edge =
-            0.6 + 0.4 * Math.max(0, Math.min(1, 1 - Math.abs(hx) / (BW / 2 + 4)));
-          const b = a * flicker * sweep * edge;
+          // Organic LED shimmer + horizon sweep + edge attenuation
+          const noise = Math.abs(Math.sin(col * 12.9898 + row * 78.233) * 43758.5453) % 1;
+          const flicker = 0.82 + 0.18 * Math.sin((3 + noise * 8) * TAU * 0.35 + noise * TAU);
+          const sweep = 0.92 + 0.08 * Math.sin(hx * 0.45 - stridePhase * TAU * 1.2);
+          const brightness = sample.d * flicker * sweep;
 
-          ctx.globalAlpha = Math.min(1, b);
-          ctx.drawImage(glow, sx - glowSize / 2, sy - glowSize / 2);
-          ctx.globalAlpha = Math.min(1, b * 1.45);
-          ctx.fillStyle = b > 0.82 ? "#ffc987" : "#fd5a01";
+          // Multi-tone color palette: hot white-amber vs electric orange vs dark far-limb
+          const glowCanvas = sample.hot ? glowHot : glowNear;
+          const dotColor = sample.hot
+            ? (brightness > 0.75 ? "#fff4df" : "#ffc987")
+            : (sample.d < 0.9 ? "#b83800" : "#fd5a01");
+
+          // Glow bloom
+          ctx.globalAlpha = Math.min(1, brightness * 0.85);
+          ctx.drawImage(glowCanvas, sx - glowSize / 2, sy - glowSize / 2);
+
+          // Crisp core LED
+          ctx.globalAlpha = Math.min(1, brightness * 1.25);
+          ctx.fillStyle = dotColor;
           ctx.fillRect(sx - core / 2, sy - core / 2, core, core);
         }
       }
+
       ctx.globalAlpha = 1;
     };
 
@@ -249,18 +314,18 @@ export function EmberHorse({ className }: { className?: string }) {
       raf = requestAnimationFrame(loop);
     };
 
-    const start = () => {
-      if (running || reduced) return;
-      running = true;
-      last = performance.now();
-      raf = requestAnimationFrame(loop);
+    build();
+
+    const onEnter = () => {
+      targetPace.current = 1.65; // Accelerate working trot on hover
     };
-    const stop = () => {
-      running = false;
-      cancelAnimationFrame(raf);
+    const onLeave = () => {
+      targetPace.current = 1.0;
     };
 
-    build();
+    canvas.addEventListener("pointerenter", onEnter);
+    canvas.addEventListener("pointerleave", onLeave);
+
     const ro = new ResizeObserver(() => {
       build();
       if (reduced) draw(0.016);
@@ -268,27 +333,33 @@ export function EmberHorse({ className }: { className?: string }) {
     ro.observe(canvas);
 
     if (reduced) {
-      cycle = 0;
       draw(0.016);
       return () => {
-        stop();
         ro.disconnect();
+        canvas.removeEventListener("pointerenter", onEnter);
+        canvas.removeEventListener("pointerleave", onLeave);
       };
     }
 
     const io = new IntersectionObserver(
-      (entries) => entries.forEach((en) => (en.isIntersecting ? start() : stop())),
+      (entries) => {
+        entries.forEach((en) => {
+          if (en.isIntersecting && !running) {
+            running = true;
+            last = performance.now();
+            raf = requestAnimationFrame(loop);
+          } else if (!en.isIntersecting && running) {
+            running = false;
+            cancelAnimationFrame(raf);
+          }
+        });
+      },
       { threshold: 0.05 }
     );
     io.observe(canvas);
 
-    const onEnter = () => (targetPace.current = 2.2);
-    const onLeave = () => (targetPace.current = 1);
-    canvas.addEventListener("pointerenter", onEnter);
-    canvas.addEventListener("pointerleave", onLeave);
-
     return () => {
-      stop();
+      cancelAnimationFrame(raf);
       ro.disconnect();
       io.disconnect();
       canvas.removeEventListener("pointerenter", onEnter);
@@ -299,8 +370,9 @@ export function EmberHorse({ className }: { className?: string }) {
   return (
     <canvas
       ref={canvasRef}
-      aria-hidden="true"
-      className={className ?? "absolute inset-0 h-full w-full"}
+      className={className ?? "h-full w-full"}
+      role="img"
+      aria-label="High-resolution procedural ember horse in working trot animation rendered live in code"
     />
   );
 }
