@@ -1,6 +1,12 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { CONTACT, SITE, SYSTEMS_SECTION, SYSTEM_BLUEPRINTS } from "@/content/orbyt";
+import { ArrowRight, ExternalLink } from "lucide-react";
+import {
+  CONTACT,
+  FEATURED_CASE_STUDY,
+  SITE,
+  SYSTEMS_SECTION,
+  SYSTEM_BLUEPRINTS,
+} from "@/content/orbyt";
 import { Button } from "@/components/ui/button";
 import { CurtainReveal } from "../curtain-reveal";
 import { PageHero } from "../page-hero";
@@ -62,6 +68,82 @@ export function WorkView() {
           <p className="max-w-3xl border-l-2 border-primary pl-5 text-lg leading-relaxed text-foreground/90 md:text-xl">
             {SYSTEMS_SECTION.lede}
           </p>
+        </Reveal>
+
+        {/* Featured Live Client Case Study — Sadia's IELTS Academy */}
+        <Reveal className="mt-12 border border-primary/40 bg-card p-6 md:p-10 shadow-pixel-orange">
+          <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-12">
+            <div className="min-w-0 lg:col-span-5">
+              <div className="flex items-center gap-2">
+                <span className="size-2 animate-pulse bg-emerald-500" />
+                <p className="font-mono text-xs uppercase tracking-[0.18em] text-primary">
+                  VERIFIED CLIENT CASE STUDY // 01
+                </p>
+              </div>
+              <h3 className="mt-3 font-display text-3xl font-bold leading-[1.05] tracking-tight md:text-4xl">
+                {FEATURED_CASE_STUDY.client}
+              </h3>
+              <p className="mt-2 font-mono text-xs text-muted-foreground">
+                {FEATURED_CASE_STUDY.category}
+              </p>
+              <p className="mt-4 text-base leading-relaxed text-foreground/90">
+                {FEATURED_CASE_STUDY.tagline}
+              </p>
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                {FEATURED_CASE_STUDY.story}
+              </p>
+
+              <div className="mt-6">
+                <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                  Delivered Architecture
+                </p>
+                <ul className="mt-2.5 space-y-1.5">
+                  {FEATURED_CASE_STUDY.components.map((c) => (
+                    <li key={c} className="flex gap-2.5 text-xs text-foreground/85">
+                      <span className="mt-1 size-1 shrink-0 bg-primary" />
+                      <span>{c}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="mt-6 flex flex-wrap gap-2">
+                {FEATURED_CASE_STUDY.measured.map((m) => (
+                  <span
+                    key={m}
+                    className="border border-border bg-background px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-foreground/90"
+                  >
+                    {m}
+                  </span>
+                ))}
+              </div>
+
+              <div className="mt-8">
+                <Button asChild className="h-11 px-6 font-semibold">
+                  <a
+                    href={FEATURED_CASE_STUDY.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2"
+                  >
+                    Visit Live Platform
+                    <ExternalLink className="size-4" />
+                  </a>
+                </Button>
+              </div>
+            </div>
+
+            <div className="min-w-0 lg:col-span-7">
+              <ParallaxImage
+                src={FEATURED_CASE_STUDY.image}
+                alt="Sadia's IELTS Academy live homepage displayed inside a studio monitor mockup"
+                label="SADIA'S IELTS // PRODUCTION DEPLOYMENT"
+                caption="High-converting edtech platform & admissions pipeline built by ORBYT"
+                priority
+                travel={20}
+              />
+            </div>
+          </div>
         </Reveal>
 
         {/* Blueprint detail panels — alternating editorial layout */}

@@ -1,8 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ExternalLink } from "lucide-react";
 import { ESSAYS } from "@/content/insights";
 import {
+  FEATURED_CASE_STUDY,
   INSIGHTS_SECTION,
   PRINCIPLES,
   PROCESS_SECTION,
@@ -214,7 +215,64 @@ function SystemsTeaser() {
       eyebrow={SYSTEMS_SECTION.eyebrow}
       title={SYSTEMS_SECTION.title}
     >
-      <div className="mt-14 grid grid-cols-1 gap-4 md:grid-cols-3">
+      {/* Featured Verified Client Case Study */}
+      <Reveal className="mt-14">
+        <div className="relative overflow-hidden border border-primary/40 bg-card shadow-pixel-orange">
+          <div className="grid grid-cols-1 items-center lg:grid-cols-12">
+            <div className="p-6 md:p-10 lg:col-span-5">
+              <div className="flex items-center gap-2">
+                <span className="size-2 animate-pulse bg-emerald-500" />
+                <p className="font-mono text-xs uppercase tracking-[0.18em] text-primary">
+                  VERIFIED CLIENT CASE STUDY
+                </p>
+              </div>
+              <h3 className="mt-3 font-display text-2xl font-bold tracking-tight md:text-3xl">
+                {FEATURED_CASE_STUDY.client}
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                {FEATURED_CASE_STUDY.tagline}
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {FEATURED_CASE_STUDY.measured.slice(0, 3).map((m) => (
+                  <span
+                    key={m}
+                    className="border border-border bg-background px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-foreground/90"
+                  >
+                    {m}
+                  </span>
+                ))}
+              </div>
+              <div className="mt-6 flex flex-wrap items-center gap-4">
+                <Button asChild className="h-10 px-5 text-sm font-semibold">
+                  <Link href="/work">
+                    See Case Study
+                    <ArrowRight className="size-4" />
+                  </Link>
+                </Button>
+                <a
+                  href={FEATURED_CASE_STUDY.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-primary"
+                >
+                  Visit sadiasielts.com
+                  <ExternalLink className="size-3.5" />
+                </a>
+              </div>
+            </div>
+            <div className="relative aspect-[16/10] overflow-hidden border-t border-border lg:col-span-7 lg:border-l lg:border-t-0">
+              <CurtainReveal
+                src={FEATURED_CASE_STUDY.image}
+                alt="Sadia's IELTS Academy live platform mockup"
+                sizes="(min-width: 1024px) 600px, 100vw"
+                priority
+              />
+            </div>
+          </div>
+        </div>
+      </Reveal>
+
+      <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
         {SYSTEM_BLUEPRINTS.map((blueprint, i) => {
           const img = SYSTEM_CARD_IMAGES[blueprint.id];
           return (

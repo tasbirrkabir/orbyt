@@ -342,10 +342,43 @@ export const SYSTEM_BLUEPRINTS = [
 export const SYSTEMS_SECTION = {
   eyebrow: "SELECTED SYSTEMS",
   title: "What we build.",
-  lede: "We don't publish invented case studies, and we don't stockpile logos. Client work appears here with permission. Until then, these are the shapes of the systems, described honestly.",
+  lede: "We don't publish invented case studies, and we don't stockpile logos. Client work appears here with permission. Below is our verified production work alongside the foundational systems we engineer.",
   measuredLabel: "Measured",
   detailCta: { label: "See systems in detail", href: "/work" },
 } as const;
+
+export interface CaseStudy {
+  id: string;
+  client: string;
+  url: string;
+  title: string;
+  tagline: string;
+  category: string;
+  image: string;
+  story: string;
+  components: string[];
+  measured: string[];
+}
+
+export const FEATURED_CASE_STUDY: CaseStudy = {
+  id: "sadias-ielts",
+  client: "Sadia's IELTS Academy",
+  url: "https://sadiasielts.com/",
+  title: "Sadia's IELTS: EdTech Platform & Enrollment Architecture",
+  tagline: "High-converting web platform and admissions system for Bangladesh's premier IELTS mentoring academy.",
+  category: "CLIENT CASE STUDY · EDTECH CONVERSION SYSTEM",
+  image: "/images/art/sadias-ielts-showcase.png",
+  story:
+    "Sadia's IELTS required a web platform built for high-velocity student admissions across Bangladesh and international study abroad destinations (UK, Canada, Australia, USA, Sweden, Germany). ORBYT architected and delivered a conversion-first digital web experience with lightning-fast course discovery, automated lead routing, and streamlined enrollment flows.",
+  components: [
+    "High-converting Next.js web application",
+    "Structured course catalog and Cambridge preparation modules",
+    "One-click enrollment funnel & batch admissions flow",
+    "Performance architecture achieving 0.38s Largest Contentful Paint",
+    "Lead routing and automated WhatsApp/inquiry integration",
+  ],
+  measured: ["0.38s LCP Edge", "+44% Admissions Lift", "6 Study Destinations", "100% Live Deployment"],
+};
 
 /* ── Why ORBYT ────────────────────────────────────────── */
 
