@@ -41,15 +41,15 @@ export function CurtainReveal({
       whileInView={
         reduced ? { opacity: 1 } : { clipPath: "inset(0 0% 0 0)" }
       }
-      viewport={{ once: true, margin: "-60px" }}
-      transition={{ duration: 0.9, delay, ease: [0.22, 1, 0.36, 1] }}
+      viewport={{ once: true, amount: 0.05 }}
+      transition={{ duration: 0.8, delay, ease: [0.22, 1, 0.36, 1] }}
     >
       <motion.div
         className="absolute inset-0"
-        initial={reduced ? undefined : { scale: 1.16 }}
+        initial={reduced ? undefined : { scale: 1.12 }}
         whileInView={reduced ? undefined : { scale: 1 }}
-        viewport={{ once: true, margin: "-60px" }}
-        transition={{ duration: 1.3, delay, ease: [0.22, 1, 0.36, 1] }}
+        viewport={{ once: true, amount: 0.05 }}
+        transition={{ duration: 1.1, delay, ease: [0.22, 1, 0.36, 1] }}
       >
         <Image
           src={src}
@@ -67,8 +67,8 @@ export function CurtainReveal({
           className="absolute inset-y-0 left-0 w-0.5 bg-primary"
           initial={{ opacity: 1, x: 0 }}
           whileInView={{ opacity: 0, x: "100%" }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.9, delay, ease: [0.22, 1, 0.36, 1] }}
+          viewport={{ once: true, amount: 0.05 }}
+          transition={{ duration: 0.8, delay, ease: [0.22, 1, 0.36, 1] }}
         />
       )}
     </motion.div>

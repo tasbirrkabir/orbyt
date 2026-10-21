@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ORBYT — Design Studio Showcase Poster</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #0d0d0e;
+      color: #1a1a1a;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    /* Actions Bar */
+    .controls {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 1.5rem;
+      align-items: center;
+    }
+
+    .btn {
+      background: #FD5A01;
+      color: #ffffff;
+      border: none;
+      padding: 10px 20px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      border-radius: 9999px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: 0.05em;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px rgba(253, 90, 1, 0.4);
+    }
+    .btn:hover {
+      background: #e04f00;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: #222;
+      color: #eee;
+      box-shadow: none;
+    }
+    .btn-secondary:hover {
+      background: #333;
+    }
+
+    /* Poster Frame (4:3 aspect ratio matching the mockup) */
+    .poster-canvas {
+      width: 1200px;
+      height: 900px;
+      max-width: 100%;
+      aspect-ratio: 4 / 3;
+      background: #eceae5;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05);
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+    }
+
+    /* Background Geometric Elements */
+    .bg-shape-orange {
+      position: absolute;
+      left: -180px;
+      bottom: 60px;
+      width: 820px;
+      height: 600px;
+      background: #FD5A01;
+      border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+      transform: rotate(-16deg);
+      z-index: 1;
+      opacity: 0.95;
+    }
+
+    .bg-shape-orange-right {
+      position: absolute;
+      right: -80px;
+      bottom: 100px;
+      width: 480px;
+      height: 480px;
+      background: radial-gradient(circle, #FD5A01 0%, #ff7020 70%, transparent 72%);
+      border-radius: 50%;
+      z-index: 1;
+      opacity: 0.85;
+    }
+
+    /* Decorative Vector Loops */
+    .bg-loop {
+      position: absolute;
+      z-index: 2;
+      pointer-events: none;
+      opacity: 0.8;
+    }
+    .bg-loop-1 {
+      left: 100px;
+      top: 220px;
+      width: 140px;
+      height: 280px;
+    }
+    .bg-loop-2 {
+      right: 180px;
+      top: 140px;
+      width: 220px;
+      height: 380px;
+    }
+
+    /* Poster Top Header */
+    .poster-header {
+      position: absolute;
+      top: 36px;
+      left: 48px;
+      right: 48px;
+      display: flex;
+      align-items: center;
+      gap: 36px;
+      z-index: 20;
+    }
+
+    .brand-mark-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .brand-icon {
+      width: 22px;
+      height: 22px;
+      background: #111;
+      mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 4h16v4H8v4h12v8H4z'/%3E%3C/svg%3E") no-repeat center;
+      -webkit-mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 4h16v4H8v4h12v8H4z'/%3E%3C/svg%3E") no-repeat center;
+    }
+
+    .brand-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #111;
+      display: flex;
+      align-items: flex-start;
+    }
+    .brand-title sup {
+      font-size: 0.55rem;
+      margin-left: 2px;
+      top: 2px;
+    }
+
+    .brand-category {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      color: #1b1b1a;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    /* Slatted Acoustic Desk at Bottom */
+    .desk-surface {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 110px;
+      background: #101011;
+      border-top: 3px solid #232325;
+      z-index: 10;
+      display: flex;
+      align-items: flex-start;
+      overflow: hidden;
+      box-shadow: 0 -15px 35px rgba(0,0,0,0.4);
+    }
+
+    /* Acoustic Slat texture */
+    .slat-pattern {
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        90deg,
+        #141416 0px,
+        #141416 8px,
+        #09090a 8px,
+        #09090a 16px,
+        #202024 16px,
+        #141416 17px
+      );
+      opacity: 0.95;
+    }
+
+    /* Audio Speaker Box on the Desk */
+    .desk-speaker {
+      position: absolute;
+      bottom: 85px;
+      left: 70px;
+      width: 170px;
+      height: 75px;
+      background: linear-gradient(135deg, #1c1c1f, #121214);
+      border-radius: 6px;
+      z-index: 11;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.1);
+      border-top: 1px solid #333;
+    }
+
+    /* Monitor Showcase */
+    .monitor-wrapper {
+      position: absolute;
+      left: 50%;
+      bottom: 95px;
+      transform: translateX(-50%);
+      z-index: 12;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Monitor Stand */
+    .monitor-stand-neck {
+      width: 110px;
+      height: 140px;
+      background: linear-gradient(180deg, #44474d 0%, #2b2d31 60%, #1e1f22 100%);
+      margin-top: -30px;
+      z-index: -1;
+      position: relative;
+      border-radius: 4px;
+      box-shadow: inset 0 2px 4px rgba(255,255,255,0.15), 0 10px 20px rgba(0,0,0,0.5);
+    }
+
+    .monitor-stand-hole {
+      position: absolute;
+      bottom: 35px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #111;
+      box-shadow: inset 0 3px 6px rgba(0,0,0,0.8), 0 1px 1px rgba(255,255,255,0.1);
+    }
+
+    .monitor-stand-base {
+      position: absolute;
+      bottom: 0;
+      width: 180px;
+      height: 10px;
+      background: #2a2c30;
+      border-radius: 2px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.6);
+    }
+
+    /* Monitor Frame */
+    .monitor-frame {
+      width: 760px;
+      height: 485px;
+      background: #0f1012;
+      border-radius: 12px;
+      padding: 10px;
+      box-shadow: 
+        0 30px 70px -10px rgba(0, 0, 0, 0.7),
+        0 10px 25px rgba(0, 0, 0, 0.4),
+        0 0 0 1.5px #2a2b2f,
+        inset 0 1px 1px rgba(255, 255, 255, 0.15);
+      position: relative;
+    }
+
+    /* Monitor Screen / Website UI */
+    .monitor-screen {
+      width: 100%;
+      height: 100%;
+      background: #0d0c0b;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      box-shadow: inset 0 0 30px rgba(0,0,0,0.8);
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    /* Screen Ambient Grid */
+    .screen-grid {
+      position: absolute;
+      inset: 0;
+      background-image: 
+        linear-gradient(rgba(253, 90, 1, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(253, 90, 1, 0.05) 1px, transparent 1px);
+      background-size: 28px 28px;
+      pointer-events: none;
+    }
+
+    /* Website Header */
+    .site-nav {
+      height: 46px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      background: rgba(13, 12, 11, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 5;
+    }
+
+    .site-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pixel-runner-badge {
+      width: 22px;
+      height: 22px;
+      background: #FD5A01;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pixel-runner-badge svg {
+      width: 14px;
+      height: 14px;
+      fill: #111;
+    }
+
+    .site-logo-text {
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.95rem;
+      letter-spacing: 0.08em;
+    }
+
+    .site-links {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      list-style: none;
+    }
+
+    .site-links a {
+      color: #8e8d8a;
+      text-decoration: none;
+      font-size: 0.72rem;
+      font-family: 'JetBrains Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      transition: color 0.2s;
+    }
+    .site-links a.active, .site-links a:hover {
+      color: #FD5A01;
+    }
+
+    .site-cta-btn {
+      background: #FD5A01;
+      color: #111;
+      font-weight: 700;
+      font-size: 0.72rem;
+      padding: 5px 12px;
+      border-radius: 9999px;
+      text-decoration: none;
+      letter-spacing: 0.02em;
+    }
+
+    /* Website Hero Inside Monitor */
+    .screen-hero {
+      flex: 1;
+      padding: 24px 32px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      z-index: 2;
+    }
+
+    .screen-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      color: #FD5A01;
+      font-size: 0.68rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .screen-eyebrow::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      background: #FD5A01;
+      border-radius: 1px;
+    }
+
+    .screen-h1 {
+      font-size: 2.3rem;
+      font-weight: 800;
+      line-height: 1.05;
+      color: #ffffff;
+      letter-spacing: -0.02em;
+      max-width: 580px;
+    }
+
+    .screen-h1 span.accent {
+      color: #FD5A01;
+      position: relative;
+    }
+
+    /* Floating Pill Badges (Exact Two26Studio Style) */
+    .pill-tags-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 20px;
+      margin-bottom: 22px;
+    }
+
+    .pill-tag {
+      background: #191816;
+      color: #fff;
+      border: 1px solid rgba(253, 90, 1, 0.4);
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+    .pill-tag.orange {
+      background: #FD5A01;
+      color: #111;
+      border-color: #FD5A01;
+    }
+
+    /* Screen Visual Graphics (Pixel Circuit & Runner) */
+    .screen-visual-grid {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 16px;
+      margin-top: auto;
+    }
+
+    .screen-metric {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .screen-metric-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      color: #777;
+      text-transform: uppercase;
+    }
+
+    .screen-metric-val {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #FD5A01;
+    }
+
+    /* Right Laptop Screen in Perspective */
+    .laptop-peek {
+      position: absolute;
+      right: -30px;
+      bottom: 85px;
+      width: 170px;
+      height: 340px;
+      background: #0e0f11;
+      border-left: 3px solid #28292d;
+      border-top: 3px solid #28292d;
+      border-radius: 10px 0 0 0;
+      z-index: 11;
+      box-shadow: -15px 0 35px rgba(0,0,0,0.6);
+      overflow: hidden;
+      padding: 12px 10px;
+    }
+
+    .laptop-inner {
+      width: 100%;
+      height: 100%;
+      background: #141312;
+      border-radius: 4px;
+      border: 1px solid rgba(253, 90, 1, 0.15);
+      padding: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.55rem;
+      color: #FD5A01;
+      line-height: 1.4;
+      opacity: 0.85;
+    }
+
+    /* Bottom Poster Typography (The Editorial Client Footer) */
+    .poster-footer {
+      position: absolute;
+      bottom: 24px;
+      left: 48px;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .client-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      color: #777779;
+      text-transform: uppercase;
+    }
+
+    .client-title-row {
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+    }
+
+    .client-name {
+      font-size: 1.55rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+    }
+
+    .client-tag {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #d6f345; /* Neon lime matching the reference /DesignStudio/ */
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    /* Print / Clean View */
+    @media print {
+      body {
+        padding: 0;
+        background: transparent;
+      }
+      .controls {
+        display: none;
+      }
+      .poster-canvas {
+        box-shadow: none;
+        border-radius: 0;
+        width: 100vw;
+        height: 100vh;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Controller Buttons -->
+  <div class="controls">
+    <button class="btn" onclick="window.print()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
+      Print / Export PDF
+    </button>
+    <a href="/" class="btn btn-secondary">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Back to ORBYT Site
+    </a>
+  </div>
+
+  <!-- The Poster Canvas -->
+  <div class="poster-canvas" id="poster">
+
+    <!-- Top Left Studio Title -->
+    <header class="poster-header">
+      <div class="brand-mark-group">
+        <div class="brand-icon"></div>
+        <div class="brand-title">Studio<sup>®</sup></div>
+      </div>
+      <div class="brand-category">Web Design and Development</div>
+    </header>
+
+    <!-- Studio Background Art -->
+    <div class="bg-shape-orange"></div>
+    <div class="bg-shape-orange-right"></div>
+
+    <!-- Abstract Vector Loops matching the reference -->
+    <svg class="bg-loop bg-loop-1" viewBox="0 0 100 200" fill="none">
+      <path d="M50 10 C 90 40, 90 120, 40 150 C -10 180, 20 200, 80 180" stroke="#FD5A01" stroke-width="4" stroke-linecap="round"/>
+    </svg>
+    <svg class="bg-loop bg-loop-2" viewBox="0 0 160 300" fill="none">
+      <path d="M20 20 C 140 10, 160 140, 90 200 C 20 260, 60 290, 140 270" stroke="#FD5A01" stroke-width="5" stroke-linecap="round"/>
+    </svg>
+
+    <!-- Centerpiece Monitor Workspace -->
+    <div class="monitor-wrapper">
+      <div class="monitor-frame">
+        <div class="monitor-screen">
+          <div class="screen-grid"></div>
+
+          <!-- Website Header inside Monitor -->
+          <div class="site-nav">
+            <div class="site-logo">
+              <div class="pixel-runner-badge">
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm1 7h-2l-3 4 2 2 2-3v8h2v-6l2-2 3 3 1.5-1.5L15 9z"/>
+                </svg>
+              </div>
+              <span class="site-logo-text">ORBYT</span>
+            </div>
+            <ul class="site-links">
+              <li><a href="#" class="active">Services</a></li>
+              <li><a href="#">Process</a></li>
+              <li><a href="#">Work</a></li>
+              <li><a href="#">About</a></li>
+              <li><a href="#">Insights</a></li>
+            </ul>
+            <a href="#" class="site-cta-btn">Start a project</a>
+          </div>
+
+          <!-- Website Hero inside Monitor -->
+          <div class="screen-hero">
+            <div class="screen-eyebrow">Digital Systems Built For Growth</div>
+            <h1 class="screen-h1">
+              BUILD THE SYSTEM <br>
+              BEHIND YOUR <span class="accent">GROWTH.</span>
+            </h1>
+
+            <!-- Stylized Pill Badges (exact style from reference poster) -->
+            <div class="pill-tags-row">
+              <span class="pill-tag orange">AI Automation</span>
+              <span class="pill-tag">Connected Web</span>
+              <span class="pill-tag orange">Growth Systems</span>
+              <span class="pill-tag">Continuous Telemetry</span>
+            </div>
+
+            <!-- Bottom Metric Bar inside Monitor -->
+            <div class="screen-visual-grid">
+              <div class="screen-metric">
+                <span class="screen-metric-label">Status</span>
+                <span class="screen-metric-val">100% OPERATIONAL</span>
+              </div>
+              <div class="screen-metric">
+                <span class="screen-metric-label">Data Pipeline</span>
+                <span class="screen-metric-val">CONNECTED</span>
+              </div>
+              <div class="screen-metric">
+                <span class="screen-metric-label">Brand Engine</span>
+                <span class="screen-metric-val">V1.0 LIVE</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Monitor Stand -->
+      <div class="monitor-stand-neck">
+        <div class="monitor-stand-hole"></div>
+      </div>
+      <div class="monitor-stand-base"></div>
+    </div>
+
+    <!-- Right Laptop Edge in Perspective -->
+    <div class="laptop-peek">
+      <div class="laptop-inner">
+        // ORBYT SYSTEM CORE<br>
+        const orbyt = await sys.connect({<br>
+        &nbsp;&nbsp;telemetry: true,<br>
+        &nbsp;&nbsp;growthSync: 'active'<br>
+        });<br><br>
+        &gt; SYSTEM WIRED<br>
+        &gt; ZERO DATA LEAKAGE<br>
+        &gt; RUN FORWARD.
+      </div>
+    </div>
+
+    <!-- Desk Speaker / Soundbar -->
+    <div class="desk-speaker"></div>
+
+    <!-- Acoustic Slatted Desk -->
+    <div class="desk-surface">
+      <div class="slat-pattern"></div>
+    </div>
+
+    <!-- Bottom Left Client Typography (Matching the reference poster) -->
+    <div class="poster-footer">
+      <span class="client-label">Client</span>
+      <div class="client-title-row">
+        <span class="client-name">ORBYT</span>
+        <span class="client-tag">/DigitalSystems/</span>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>

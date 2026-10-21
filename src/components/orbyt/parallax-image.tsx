@@ -46,7 +46,7 @@ export function ParallaxImage({
       ref={ref}
       initial={reduced ? false : { clipPath: "inset(0 0 100% 0)" }}
       whileInView={reduced ? undefined : { clipPath: "inset(0 0 0% 0)" }}
-      viewport={{ once: true, margin: "0px 0px -60px 0px" }}
+      viewport={{ once: true, amount: 0.05 }}
       transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
       className={cn(
         "tint-sweep group relative overflow-hidden border border-border bg-card transition-colors duration-300 hover:border-primary/50",
