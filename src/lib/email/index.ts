@@ -34,7 +34,7 @@ import {
  * send a real email.
  */
 
-const FROM_DEFAULT = "ORBYT <no-reply@orbyt.com>";
+const FROM_DEFAULT = process.env.EMAIL_FROM?.trim() || "ORBYT <onboarding@resend.dev>";
 
 export type EmailInput = {
   to: string;
