@@ -17,11 +17,10 @@ type CurtainRevealProps = {
 };
 
 /**
- * CurtainReveal — images arrive like a curtain lifting: a clip-path wipe
- * left-to-right on first scroll into view while the photo settles from a
- * slight zoom. Hover scale stays on the img itself, so the reveal (clip)
- * and interactions (transform) never fight over the same property.
- * Reduced motion: no wipe, image just fades in.
+ * CurtainReveal — smooth, reliable image display.
+ * Uses safe opacity transition instead of aggressive inset clipPath wipes
+ * so images can NEVER get stuck in a clipped/black state on SSR, hydration,
+ * or mobile viewports.
  */
 export function CurtainReveal({
   src,
@@ -37,20 +36,12 @@ export function CurtainReveal({
   return (
     <motion.div
       className={cn("relative size-full overflow-hidden", className)}
-      initial={reduced ? { opacity: 0 } : { clipPath: "inset(0 100% 0 0)" }}
-      whileInView={
-        reduced ? { opacity: 1 } : { clipPath: "inset(0 0% 0 0)" }
-      }
+      initial={priority || reduced ? false : { opacity: 0 }}
+      whileInView={{ opacity: 1 }}
       viewport={{ once: true, amount: 0.05 }}
-      transition={{ duration: 0.8, delay, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.5, delay, ease: [0.22, 1, 0.36, 1] }}
     >
-      <motion.div
-        className="absolute inset-0"
-        initial={reduced ? undefined : { scale: 1.12 }}
-        whileInView={reduced ? undefined : { scale: 1 }}
-        viewport={{ once: true, amount: 0.05 }}
-        transition={{ duration: 1.1, delay, ease: [0.22, 1, 0.36, 1] }}
-      >
+      <div className="relative size-full">
         <Image
           src={src}
           alt={alt}
@@ -59,18 +50,7 @@ export function CurtainReveal({
           priority={priority}
           className={cn("object-cover", imageClassName)}
         />
-      </motion.div>
-      {/* Edge seam: a 2px ember line that rides the wipe and fades out */}
-      {!reduced && (
-        <motion.span
-          aria-hidden="true"
-          className="absolute inset-y-0 left-0 w-0.5 bg-primary"
-          initial={{ opacity: 1, x: 0 }}
-          whileInView={{ opacity: 0, x: "100%" }}
-          viewport={{ once: true, amount: 0.05 }}
-          transition={{ duration: 0.8, delay, ease: [0.22, 1, 0.36, 1] }}
-        />
-      )}
+      </div>
     </motion.div>
   );
 }

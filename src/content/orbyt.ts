@@ -340,11 +340,11 @@ export const SYSTEM_BLUEPRINTS = [
 ] as const;
 
 export const SYSTEMS_SECTION = {
-  eyebrow: "SELECTED SYSTEMS",
+  eyebrow: "VERIFIED CLIENT WORK",
   title: "What we build.",
-  lede: "We don't publish invented case studies, and we don't stockpile logos. Client work appears here with permission. Below is our verified production work alongside the foundational systems we engineer.",
+  lede: "We don't publish invented case studies, and we don't stockpile logos. Every system featured here is an active production deployment engineered by ORBYT.",
   measuredLabel: "Measured",
-  detailCta: { label: "See systems in detail", href: "/work" },
+  detailCta: { label: "Explore case studies", href: "/work" },
 } as const;
 
 export interface CaseStudy {

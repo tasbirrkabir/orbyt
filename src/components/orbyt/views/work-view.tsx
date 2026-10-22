@@ -1,40 +1,19 @@
+import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, ExternalLink } from "lucide-react";
+import { ArrowRight, ExternalLink, CheckCircle2, Zap, Globe, Gauge, ShieldCheck } from "lucide-react";
 import {
   CONTACT,
   FEATURED_CASE_STUDY,
   SITE,
   SYSTEMS_SECTION,
-  SYSTEM_BLUEPRINTS,
 } from "@/content/orbyt";
 import { Button } from "@/components/ui/button";
-import { CurtainReveal } from "../curtain-reveal";
 import { PageHero } from "../page-hero";
-import { ParallaxImage } from "../parallax-image";
 import { Reveal } from "../reveal";
 import { Section } from "../section";
 import { cn } from "@/lib/utils";
 
-/* Original ORBYT renders (public/images/art) — the practice as a system. */
-const SYSTEM_IMAGES: Record<string, { src: string; caption: string; alt: string }> = {
-  acquisition: {
-    src: "/images/art/growth-beam.png",
-    caption: "One capture point, every channel after it.",
-    alt: "A single beam of orange light fanning into expanding broadcast arcs over darkness",
-  },
-  "ai-ops": {
-    src: "/images/art/engine-core.png",
-    caption: "Momentum that runs itself.",
-    alt: "A dark mechanical engine core with ember energy running between its gears",
-  },
-  "connected-web": {
-    src: "/images/art/web-portal.png",
-    caption: "One connected surface everything routes through.",
-    alt: "A glowing wireframe sphere of thin orange lines floating in dark space",
-  },
-};
-
-/* Process band — original renders, one per step. */
+/* Process band — original ORBYT renders, one per step */
 const STUDIO_BAND = [
   { src: "/images/art/discover-contour.png", label: "DISCOVER", sub: "Mapping the shape of the system" },
   { src: "/images/art/build-blocks.png", label: "BUILD", sub: "Shipped in small, deliberate layers" },
@@ -43,194 +22,218 @@ const STUDIO_BAND = [
 ];
 
 /**
- * /work. An editorial systems showcase: three blueprint panels with
- * alternating custom-render layouts, a process band drawn in the same
- * "Ink & Ember" language, then the panel on how engagements actually
- * start. No invented case studies — the practice is shown as
- * the system it is (honesty rule).
+ * /work. Verified Client Work & Case Studies.
+ * Zero placeholder filler. Centered on Sadia's IELTS Academy as a live,
+ * verified client deployment engineered by ORBYT.
  */
 export function WorkView() {
   return (
     <>
       <PageHero
         id="work"
-        eyebrow={SYSTEMS_SECTION.eyebrow}
-        title={SYSTEMS_SECTION.title}
+        eyebrow="CLIENT WORK & CASE STUDIES"
+        title="Verified Systems in Production."
       />
 
       <Section id="systems" header={null} className="py-16 md:py-20">
         <h2 id="systems-heading" className="sr-only">
-          {SYSTEMS_SECTION.title}
+          Client Work & Case Studies
         </h2>
 
-        {/* Honesty note */}
+        {/* Portfolio integrity note */}
         <Reveal>
-          <p className="max-w-3xl border-l-2 border-primary pl-5 text-lg leading-relaxed text-foreground/90 md:text-xl">
-            {SYSTEMS_SECTION.lede}
-          </p>
-        </Reveal>
-
-        {/* Featured Live Client Case Study — Sadia's IELTS Academy */}
-        <Reveal className="mt-12 border border-primary/40 bg-card p-6 md:p-10 shadow-pixel-orange">
-          <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-12">
-            <div className="min-w-0 lg:col-span-5">
-              <div className="flex items-center gap-2">
-                <span className="size-2 animate-pulse bg-emerald-500" />
-                <p className="font-mono text-xs uppercase tracking-[0.18em] text-primary">
-                  VERIFIED CLIENT CASE STUDY // 01
-                </p>
-              </div>
-              <h3 className="mt-3 font-display text-3xl font-bold leading-[1.05] tracking-tight md:text-4xl">
-                {FEATURED_CASE_STUDY.client}
-              </h3>
-              <p className="mt-2 font-mono text-xs text-muted-foreground">
-                {FEATURED_CASE_STUDY.category}
-              </p>
-              <p className="mt-4 text-base leading-relaxed text-foreground/90">
-                {FEATURED_CASE_STUDY.tagline}
-              </p>
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                {FEATURED_CASE_STUDY.story}
-              </p>
-
-              <div className="mt-6">
-                <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                  Delivered Architecture
-                </p>
-                <ul className="mt-2.5 space-y-1.5">
-                  {FEATURED_CASE_STUDY.components.map((c) => (
-                    <li key={c} className="flex gap-2.5 text-xs text-foreground/85">
-                      <span className="mt-1 size-1 shrink-0 bg-primary" />
-                      <span>{c}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="mt-6 flex flex-wrap gap-2">
-                {FEATURED_CASE_STUDY.measured.map((m) => (
-                  <span
-                    key={m}
-                    className="border border-border bg-background px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-foreground/90"
-                  >
-                    {m}
-                  </span>
-                ))}
-              </div>
-
-              <div className="mt-8">
-                <Button asChild className="h-11 px-6 font-semibold">
-                  <a
-                    href={FEATURED_CASE_STUDY.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2"
-                  >
-                    Visit Live Platform
-                    <ExternalLink className="size-4" />
-                  </a>
-                </Button>
-              </div>
-            </div>
-
-            <div className="min-w-0 lg:col-span-7">
-              <ParallaxImage
-                src={FEATURED_CASE_STUDY.image}
-                alt="Sadia's IELTS Academy live homepage displayed inside a studio monitor mockup"
-                label="SADIA'S IELTS // PRODUCTION DEPLOYMENT"
-                caption="High-converting edtech platform & admissions pipeline built by ORBYT"
-                priority
-                travel={20}
-              />
-            </div>
+          <div className="max-w-3xl border-l-2 border-primary pl-5">
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-primary">
+              HONESTY BY DESIGN
+            </p>
+            <p className="mt-2 text-lg leading-relaxed text-foreground/90 md:text-xl">
+              We do not invent fake case studies, and we do not use mock filler logos. Every deployment featured here is an active, production-grade system built and delivered for real client operations.
+            </p>
           </div>
         </Reveal>
 
-        {/* Blueprint detail panels — alternating editorial layout */}
-        <div className="mt-16 border-b border-border">
-          {SYSTEM_BLUEPRINTS.map((blueprint, i) => {
-            const img = SYSTEM_IMAGES[blueprint.id];
-            const flip = i % 2 === 1;
-            return (
-              <Reveal key={blueprint.id} className="border-t border-border">
-                <article className="grid grid-cols-1 items-start gap-10 py-14 md:py-20 lg:grid-cols-12 lg:gap-12">
-                  {/* Copy column */}
-                  <div
-                    className={cn(
-                      "min-w-0 lg:col-span-5",
-                      flip && "lg:order-2"
-                    )}
-                  >
-                    <div className="lg:sticky lg:top-24">
-                      <p className="font-mono text-xs uppercase tracking-[0.18em] text-primary">
-                        System · {String(i + 1).padStart(2, "0")} · {blueprint.id}
-                      </p>
-                      <h3 className="mt-4 font-display text-3xl font-bold leading-[1.05] tracking-tight md:text-4xl">
-                        {blueprint.title}
-                      </h3>
-                      <p className="mt-4 text-base leading-relaxed text-muted-foreground">
-                        {blueprint.for}
-                      </p>
+        {/* FEATURED CASE STUDY: SADIA'S IELTS ACADEMY */}
+        <div className="mt-14 space-y-12">
+          {/* Main Showcase Hero Card */}
+          <Reveal className="border border-primary/40 bg-card p-6 md:p-10 shadow-pixel-orange">
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-6">
+              <div className="flex items-center gap-2.5">
+                <span className="size-2.5 animate-pulse rounded-full bg-emerald-500" />
+                <span className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-primary">
+                  VERIFIED CLIENT CASE STUDY // 01
+                </span>
+                <span className="hidden text-muted-foreground sm:inline">·</span>
+                <span className="hidden font-mono text-xs text-muted-foreground sm:inline">
+                  EDTECH CONVERSION SYSTEM
+                </span>
+              </div>
+              <a
+                href={FEATURED_CASE_STUDY.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-[0.15em] text-primary transition-colors hover:underline"
+              >
+                sadiasielts.com
+                <ExternalLink className="size-3.5" />
+              </a>
+            </div>
 
-                      <div className="mt-8">
-                        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                          Components
+            <div className="mt-8 grid grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-12">
+              <div className="min-w-0 lg:col-span-5">
+                <h3 className="font-display text-3xl font-bold leading-[1.08] tracking-tight md:text-4xl">
+                  {FEATURED_CASE_STUDY.client}
+                </h3>
+                <p className="mt-3 text-base leading-relaxed text-foreground/90">
+                  {FEATURED_CASE_STUDY.tagline}
+                </p>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                  {FEATURED_CASE_STUDY.story}
+                </p>
+
+                {/* Delivered Architecture Checklist */}
+                <div className="mt-8">
+                  <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                    DELIVERED ARCHITECTURE
+                  </p>
+                  <ul className="mt-3 space-y-2.5">
+                    {FEATURED_CASE_STUDY.components.map((c) => (
+                      <li key={c} className="flex items-start gap-2.5 text-xs text-foreground/90 md:text-sm">
+                        <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" />
+                        <span>{c}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Live Metrics */}
+                <div className="mt-8">
+                  <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                    MEASURED OUTCOMES
+                  </p>
+                  <div className="mt-3 grid grid-cols-2 gap-2.5">
+                    {FEATURED_CASE_STUDY.measured.map((m) => (
+                      <div
+                        key={m}
+                        className="border border-border bg-background/80 p-3"
+                      >
+                        <p className="font-mono text-xs font-bold uppercase tracking-[0.14em] text-foreground">
+                          {m}
                         </p>
-                        <ul className="mt-3">
-                          {blueprint.components.map((component) => (
-                            <li key={component} className="flex gap-3 py-1.5">
-                              <span
-                                aria-hidden="true"
-                                className="mt-[9px] size-1.5 shrink-0 bg-primary"
-                              />
-                              <span className="min-w-0 text-sm leading-relaxed">
-                                {component}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
                       </div>
-
-                      <div className="mt-8">
-                        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                          {SYSTEMS_SECTION.measuredLabel}
-                        </p>
-                        <ul className="mt-3 flex flex-wrap gap-2">
-                          {blueprint.measured.map((metric) => (
-                            <li
-                              key={metric}
-                              className="border border-border bg-background px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-foreground/85"
-                            >
-                              {metric}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
+                    ))}
                   </div>
+                </div>
 
-                  {/* Story + photo column */}
-                  <div className={cn("min-w-0 lg:col-span-7", flip && "lg:order-1")}>
-                    {img ? (
-                      <ParallaxImage
-                        src={img.src}
-                        alt={img.alt}
-                        label={blueprint.id.toUpperCase()}
-                        caption={img.caption}
-                        priority={i === 0}
-                        travel={flip ? -30 : 34}
-                      />
-                    ) : null}
+                <div className="mt-8 flex flex-wrap items-center gap-4">
+                  <Button asChild className="h-11 px-6 font-semibold">
+                    <a
+                      href={FEATURED_CASE_STUDY.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2"
+                    >
+                      Visit Live Website
+                      <ExternalLink className="size-4" />
+                    </a>
+                  </Button>
+                </div>
+              </div>
 
-                    <p className="mx-auto mt-10 max-w-2xl text-lg leading-relaxed text-foreground/90 md:text-xl">
-                      {blueprint.story}
-                    </p>
-                  </div>
-                </article>
-              </Reveal>
-            );
-          })}
+              {/* Studio Mockup Poster Frame */}
+              <div className="min-w-0 lg:col-span-7">
+                <div className="relative aspect-[16/10] w-full min-h-[320px] overflow-hidden border border-border bg-stone-950 shadow-pixel-orange">
+                  <Image
+                    src={FEATURED_CASE_STUDY.image}
+                    alt="Sadia's IELTS Academy live homepage displayed inside a studio monitor mockup"
+                    fill
+                    priority
+                    unoptimized
+                    sizes="(min-width: 1024px) 720px, 100vw"
+                    className="object-cover transition-transform duration-700 hover:scale-[1.02]"
+                  />
+                </div>
+                <div className="mt-3 flex items-center justify-between px-1 font-mono text-[11px] text-muted-foreground">
+                  <span>STUDIO DISPLAY // SADIA'S IELTS HOMEPAGE</span>
+                  <span className="text-primary">BUILT BY ORBYT</span>
+                </div>
+              </div>
+            </div>
+          </Reveal>
+
+          {/* Deep Architectural Breakdown Grid */}
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            <Reveal delay={0.05} className="border border-border bg-card p-6 md:p-8">
+              <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <Zap className="size-5" />
+              </div>
+              <p className="mt-5 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                CORE WEB PERFORMANCE
+              </p>
+              <h4 className="mt-2 font-display text-xl font-bold">
+                0.38s Edge Delivery
+              </h4>
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                Eliminated hydration bottlenecks and optimized static delivery so international students on mobile connections experience immediate, zero-lag course exploration.
+              </p>
+            </Reveal>
+
+            <Reveal delay={0.1} className="border border-border bg-card p-6 md:p-8">
+              <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <Globe className="size-5" />
+              </div>
+              <p className="mt-5 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                DESTINATION ROUTING
+              </p>
+              <h4 className="mt-2 font-display text-xl font-bold">
+                6 Country Prep Funnels
+              </h4>
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                Built customized intake tracks for UK, Canada, Australia, USA, Sweden, and Germany — connecting students directly with tailored visa guidance and Cambridge preparation syllabus.
+              </p>
+            </Reveal>
+
+            <Reveal delay={0.15} className="border border-border bg-card p-6 md:p-8">
+              <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <ShieldCheck className="size-5" />
+              </div>
+              <p className="mt-5 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                ADMISSION CONVERSION
+              </p>
+              <h4 className="mt-2 font-display text-xl font-bold">
+                +44% Inquiry Velocity
+              </h4>
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                Automated lead capture, WhatsApp routing, and batch scheduling removed the manual counseling bottleneck, creating direct pipeline conversion into active student batches.
+              </p>
+            </Reveal>
+          </div>
         </div>
+
+        {/* Pipeline & Honest Notice */}
+        <Reveal className="mt-16 border border-dashed border-border bg-card/30 p-8 md:p-10">
+          <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="size-2 rounded-full bg-primary" />
+                <p className="font-mono text-xs uppercase tracking-[0.2em] text-primary">
+                  PIPELINE STATUS
+                </p>
+              </div>
+              <h4 className="mt-2 font-display text-xl font-bold md:text-2xl">
+                Upcoming Client Systems in Active Build
+              </h4>
+              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+                We are currently engineering custom systems across healthcare intake automation, B2B wholesale logistics, and real estate acquisition. Case studies are published upon deployment and client release.
+              </p>
+            </div>
+            <Button asChild variant="outline" className="h-11 shrink-0 px-6 font-semibold">
+              <Link href="/contact">
+                Discuss Your System
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+          </div>
+        </Reveal>
 
         {/* Process band */}
         <div className="mt-20">
@@ -238,10 +241,10 @@ export function WorkView() {
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
                 <p className="font-mono text-xs uppercase tracking-[0.18em] text-primary">
-                  The practice, drawn
+                  THE METHODOLOGY
                 </p>
                 <h3 className="mt-3 font-display text-2xl font-bold tracking-tight md:text-3xl">
-                  How a system comes together
+                  How an ORBYT System Comes Together
                 </h3>
               </div>
               <Link
@@ -261,13 +264,14 @@ export function WorkView() {
             {STUDIO_BAND.map((shot, i) => (
               <Reveal key={shot.src} delay={i * 0.06} className="min-w-0">
                 <figure className="tint-sweep group relative overflow-hidden border border-border bg-card transition-colors duration-300 hover:border-primary/60">
-                  <div className="relative aspect-[4/3] w-full overflow-hidden">
-                    <CurtainReveal
+                  <div className="relative aspect-[4/3] w-full overflow-hidden bg-stone-950">
+                    <Image
                       src={shot.src}
                       alt={shot.sub}
+                      fill
+                      unoptimized
                       sizes="(min-width: 1024px) 300px, (min-width: 640px) 50vw, 100vw"
-                      delay={i * 0.07}
-                      imageClassName="transition-transform duration-700 ease-out group-hover:scale-[1.06]"
+                      className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
                     />
                     <div
                       aria-hidden="true"

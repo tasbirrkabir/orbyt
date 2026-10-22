@@ -11,7 +11,6 @@ import {
   PROBLEM,
   SERVICES,
   SERVICES_SECTION,
-  SYSTEM_BLUEPRINTS,
   SYSTEMS_SECTION,
   WHY_SECTION,
 } from "@/content/orbyt";
@@ -33,22 +32,6 @@ import { ShowcaseGallery } from "../showcase-gallery";
 import { SpotlightCard } from "../spotlight-card";
 import { TeamSection } from "../team-section";
 import { WorkedWith } from "../worked-with";
-
-/* Original ORBYT renders (public/images/art) — no stock imagery. */
-const SYSTEM_CARD_IMAGES: Record<string, { src: string; alt: string }> = {
-  acquisition: {
-    src: "/images/art/growth-beam.png",
-    alt: "A single beam of orange light fanning into expanding broadcast arcs over darkness — one capture point, every channel after it",
-  },
-  "ai-ops": {
-    src: "/images/art/engine-core.png",
-    alt: "A dark mechanical engine core with ember energy running between its gears — momentum that runs itself",
-  },
-  "connected-web": {
-    src: "/images/art/web-portal.png",
-    alt: "A glowing wireframe sphere of thin orange lines floating in dark space — one connected surface everything routes through",
-  },
-};
 
 /**
  * Home. Rich but composed: every section here is a teaser that hands off
@@ -260,60 +243,33 @@ function SystemsTeaser() {
                 </a>
               </div>
             </div>
-            <div className="relative aspect-[16/10] overflow-hidden border-t border-border lg:col-span-7 lg:border-l lg:border-t-0">
-              <CurtainReveal
+            <div className="relative aspect-[16/10] w-full min-h-[280px] overflow-hidden border-t border-border bg-stone-950 lg:col-span-7 lg:border-l lg:border-t-0">
+              <Image
                 src={FEATURED_CASE_STUDY.image}
                 alt="Sadia's IELTS Academy live platform mockup"
-                sizes="(min-width: 1024px) 600px, 100vw"
+                fill
                 priority
+                unoptimized
+                sizes="(min-width: 1024px) 680px, 100vw"
+                className="object-cover"
               />
             </div>
           </div>
         </div>
       </Reveal>
 
-      <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
-        {SYSTEM_BLUEPRINTS.map((blueprint, i) => {
-          const img = SYSTEM_CARD_IMAGES[blueprint.id];
-          return (
-            <Reveal key={blueprint.id} delay={i * 0.06} className="min-w-0">
-              <SpotlightCard className="h-full">
-                {img ? (
-                  <div className="tint-sweep relative aspect-[16/9] overflow-hidden border-b border-border">
-                    <CurtainReveal
-                      src={img.src}
-                      alt={img.alt}
-                      sizes="(min-width: 768px) 360px, 100vw"
-                      delay={i * 0.08}
-                      imageClassName="transition-transform duration-700 ease-out group-hover/spot:scale-[1.05]"
-                    />
-                    <div
-                      aria-hidden="true"
-                      className="pointer-events-none absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent"
-                    />
-                  </div>
-                ) : null}
-                <div className="p-6">
-                  <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground transition-colors duration-200 group-hover/spot:text-primary">
-                    {blueprint.id}
-                  </p>
-                  <h3 className="mt-3 font-display text-xl font-bold tracking-tight transition-colors duration-200 group-hover/spot:text-primary">
-                    {blueprint.title}
-                  </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    {blueprint.for}
-                  </p>
-                </div>
-              </SpotlightCard>
-            </Reveal>
-          );
-        })}
-      </div>
-
-      <div className="mt-10">
-        <Button asChild variant="outline" className="h-11 px-6">
-          <Link href={SYSTEMS_SECTION.detailCta.href}>
-            {SYSTEMS_SECTION.detailCta.label}
+      <div className="mt-8 flex flex-col items-center justify-between gap-4 border border-border bg-card/50 p-6 md:flex-row md:p-8">
+        <div>
+          <p className="font-mono text-xs uppercase tracking-[0.18em] text-primary">
+            PORTFOLIO INTEGRITY
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            We only showcase verified production systems built for real clients. Discover our architecture, live telemetry, and delivered stack.
+          </p>
+        </div>
+        <Button asChild variant="outline" className="h-11 shrink-0 px-6">
+          <Link href="/work">
+            View All Work & Case Studies
             <ArrowRight aria-hidden="true" />
           </Link>
         </Button>

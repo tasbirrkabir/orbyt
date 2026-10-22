@@ -44,10 +44,10 @@ export function ParallaxImage({
   return (
     <motion.div
       ref={ref}
-      initial={reduced ? false : { clipPath: "inset(0 0 100% 0)" }}
-      whileInView={reduced ? undefined : { clipPath: "inset(0 0 0% 0)" }}
+      initial={priority || reduced ? false : { opacity: 0 }}
+      whileInView={{ opacity: 1 }}
       viewport={{ once: true, amount: 0.05 }}
-      transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       className={cn(
         "tint-sweep group relative overflow-hidden border border-border bg-card transition-colors duration-300 hover:border-primary/50",
         clipped && "[clip-path:polygon(0_0,calc(100%-26px)_0,100%_26px,100%_100%,0_100%)]",
