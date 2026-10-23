@@ -68,28 +68,28 @@ async function composite() {
     .png()
     .toBuffer();
 
-  // ORBYT Agency Studio Case Study Branding Overlays
+  // ORBYT Agency Studio Case Study Branding Overlays with generous safe margins
   const brandingSvg = `
   <svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
     <!-- Top-left ORBYT Agency Case Study Tag -->
-    <g transform="translate(60, 48)">
-      <rect x="0" y="0" width="12" height="12" fill="#fd5a01"/>
-      <text x="24" y="11" fill="#fd5a01" font-family="Consolas, monospace" font-size="15" font-weight="bold" letter-spacing="2">ORBYT // VERIFIED CLIENT CASE STUDY</text>
-      <text x="0" y="44" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="900" letter-spacing="-0.5">Sadia's IELTS Academy</text>
-      <text x="0" y="74" fill="#a8a096" font-family="Consolas, monospace" font-size="14" letter-spacing="1">https://sadiasielts.com/ · FULL ARCHITECTURE &amp; DEPLOYMENT</text>
+    <g transform="translate(70, 60)">
+      <rect x="0" y="0" width="14" height="14" fill="#fd5a01"/>
+      <text x="26" y="12" fill="#fd5a01" font-family="Consolas, monospace" font-size="16" font-weight="bold" letter-spacing="2">ORBYT // VERIFIED CLIENT CASE STUDY</text>
+      <text x="0" y="48" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="900" letter-spacing="-0.5">Sadia's IELTS Academy</text>
+      <text x="0" y="80" fill="#a8a096" font-family="Consolas, monospace" font-size="15" letter-spacing="1">https://sadiasielts.com/ · FULL ARCHITECTURE &amp; DEPLOYMENT</text>
     </g>
 
     <!-- Top-right Performance Telemetry -->
-    <g transform="translate(${W - 60}, 48)">
-      <text x="0" y="11" fill="#10b981" font-family="Consolas, monospace" font-size="14" font-weight="bold" text-anchor="end" letter-spacing="2">● LIVE IN PRODUCTION</text>
-      <text x="0" y="44" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="bold" text-anchor="end">High-Converting EdTech Platform</text>
-      <text x="0" y="74" fill="#a8a096" font-family="Consolas, monospace" font-size="13" text-anchor="end" letter-spacing="1">LATENCY: 0.38s · SCORE: 98/100 · BUILT BY ORBYT</text>
+    <g transform="translate(${W - 70}, 60)">
+      <text x="0" y="12" fill="#10b981" font-family="Consolas, monospace" font-size="15" font-weight="bold" text-anchor="end" letter-spacing="2">● LIVE IN PRODUCTION</text>
+      <text x="0" y="48" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="bold" text-anchor="end">High-Converting EdTech Platform</text>
+      <text x="0" y="80" fill="#a8a096" font-family="Consolas, monospace" font-size="14" text-anchor="end" letter-spacing="1">LATENCY: 0.38s · SCORE: 98/100 · BUILT BY ORBYT</text>
     </g>
 
     <!-- Bottom Metadata Bar -->
-    <g transform="translate(60, ${H - 42})">
-      <text x="0" y="0" fill="#78716c" font-family="Consolas, monospace" font-size="13" letter-spacing="1.5">CLIENT: SADIA'S IELTS · SYSTEM: FULL WEB PLATFORM &amp; ENROLLMENT PIPELINE</text>
-      <text x="${W - 120}" y="0" fill="#fd5a01" font-family="Consolas, monospace" font-size="13" font-weight="bold" text-anchor="end" letter-spacing="2">2026 // CASE STUDY 01</text>
+    <g transform="translate(70, ${H - 55})">
+      <text x="0" y="0" fill="#78716c" font-family="Consolas, monospace" font-size="14" letter-spacing="1.5">CLIENT: SADIA'S IELTS · SYSTEM: FULL WEB PLATFORM &amp; ENROLLMENT PIPELINE</text>
+      <text x="${W - 140}" y="0" fill="#fd5a01" font-family="Consolas, monospace" font-size="14" font-weight="bold" text-anchor="end" letter-spacing="2">2026 // CASE STUDY 01</text>
     </g>
   </svg>
   `;
@@ -105,7 +105,6 @@ async function composite() {
     .toBuffer();
 
   await sharp(finalImage).toFile('public/images/art/sadias-ielts-showcase.png');
-  // Also save a WebP version for maximum speed and compatibility
   await sharp(finalImage).webp({ quality: 92 }).toFile('public/images/art/sadias-ielts-showcase.webp');
 
   console.log('✓ Successfully created public/images/art/sadias-ielts-showcase.png & .webp');

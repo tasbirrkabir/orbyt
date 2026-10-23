@@ -141,7 +141,7 @@ export function WorkView() {
 
               {/* Studio Mockup Poster Frame */}
               <div className="min-w-0 lg:col-span-7">
-                <div className="relative aspect-[16/10] w-full min-h-[320px] overflow-hidden border border-border bg-stone-950 shadow-pixel-orange">
+                <div className="relative aspect-[4/3] w-full overflow-hidden border border-border bg-stone-950 shadow-pixel-orange">
                   <Image
                     src={FEATURED_CASE_STUDY.image}
                     alt="Sadia's IELTS Academy live homepage displayed inside a studio monitor mockup"

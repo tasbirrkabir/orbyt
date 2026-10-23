@@ -54,9 +54,19 @@ export function Hero() {
           {/* Copy */}
           <div className="min-w-0 lg:col-span-7">
             <FadeUp>
-              <p className="font-mono text-xs uppercase tracking-[0.18em] text-primary">
-                <Scramble text={HERO.eyebrow} speed={22} />
-              </p>
+              <div className="flex flex-wrap items-center gap-3">
+                <p className="font-mono text-xs uppercase tracking-[0.18em] text-primary">
+                  <Scramble text={HERO.eyebrow} speed={22} />
+                </p>
+                <Link
+                  href="/work"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.16em] text-primary transition-colors hover:border-primary/60 hover:bg-primary/20"
+                >
+                  <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Latest Work: Sadia's IELTS
+                  <ArrowRight className="size-3" />
+                </Link>
+              </div>
             </FadeUp>
 
             {/* Masked line reveal */}

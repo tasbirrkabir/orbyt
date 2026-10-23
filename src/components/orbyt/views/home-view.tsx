@@ -44,13 +44,13 @@ export function HomeView() {
       <BootSequence />
       <Hero />
       <WorkedWith />
+      <SystemsTeaser />
       <ShowcaseGallery />
       <GiantMarquee />
       <ManifestoWall />
       <ProblemTeaser />
       <ServicesOverview />
       <ProcessStrip />
-      <SystemsTeaser />
       <TeamSection />
       <PrinciplesSection />
       <InsightsTeaser />
@@ -204,8 +204,8 @@ function SystemsTeaser() {
           <div className="grid grid-cols-1 items-center lg:grid-cols-12">
             <div className="p-6 md:p-10 lg:col-span-5">
               <div className="flex items-center gap-2">
-                <span className="size-2 animate-pulse bg-emerald-500" />
-                <p className="font-mono text-xs uppercase tracking-[0.18em] text-primary">
+                <span className="size-2.5 animate-pulse rounded-full bg-emerald-500" />
+                <p className="font-mono text-xs font-bold uppercase tracking-[0.18em] text-primary">
                   VERIFIED CLIENT CASE STUDY
                 </p>
               </div>
@@ -215,7 +215,18 @@ function SystemsTeaser() {
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                 {FEATURED_CASE_STUDY.tagline}
               </p>
-              <div className="mt-4 flex flex-wrap gap-2">
+
+              {/* Delivered architecture badges */}
+              <div className="mt-5 space-y-2">
+                {FEATURED_CASE_STUDY.components.slice(0, 3).map((comp) => (
+                  <div key={comp} className="flex items-center gap-2 text-xs text-foreground/85">
+                    <span className="size-1.5 shrink-0 bg-primary" />
+                    <span>{comp}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-5 flex flex-wrap gap-2">
                 {FEATURED_CASE_STUDY.measured.slice(0, 3).map((m) => (
                   <span
                     key={m}
@@ -225,6 +236,7 @@ function SystemsTeaser() {
                   </span>
                 ))}
               </div>
+
               <div className="mt-6 flex flex-wrap items-center gap-4">
                 <Button asChild className="h-10 px-5 text-sm font-semibold">
                   <Link href="/work">
@@ -243,14 +255,16 @@ function SystemsTeaser() {
                 </a>
               </div>
             </div>
-            <div className="relative aspect-[16/10] w-full min-h-[280px] overflow-hidden border-t border-border bg-stone-950 lg:col-span-7 lg:border-l lg:border-t-0">
+
+            {/* 4:3 Studio Mockup Poster Frame - 0% Cropping, 100% Crisp */}
+            <div className="relative aspect-[4/3] w-full overflow-hidden border-t border-border bg-stone-950 lg:col-span-7 lg:border-l lg:border-t-0">
               <Image
                 src={FEATURED_CASE_STUDY.image}
                 alt="Sadia's IELTS Academy live platform mockup"
                 fill
                 priority
                 unoptimized
-                sizes="(min-width: 1024px) 680px, 100vw"
+                sizes="(min-width: 1024px) 720px, 100vw"
                 className="object-cover"
               />
             </div>
