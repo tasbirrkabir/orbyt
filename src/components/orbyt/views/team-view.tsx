@@ -44,7 +44,42 @@ export function TeamView() {
 
       {/* The crew */}
       <Section id="crew" eyebrow="THE SEATS" title="Who actually does the work.">
-        <div className="mt-14 grid grid-cols-1 gap-4 md:grid-cols-2">
+        {/* Leadership Spotlight */}
+        <Reveal className="mt-10 mb-8">
+          <SpotlightCard className="border border-primary/40 bg-card p-6 md:p-10 shadow-pixel-orange">
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-4">
+              <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">
+                FOUNDER & SYSTEMS ARCHITECTURE // BANGLADESH
+              </span>
+              <a
+                href="https://github.com/tasbirrkabir"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-mono text-xs text-muted-foreground hover:text-primary transition-colors"
+              >
+                github.com/tasbirrkabir →
+              </a>
+            </div>
+            <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-12 md:items-center">
+              <div className="md:col-span-8">
+                <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+                  Founder & Lead Systems Architect
+                </span>
+                <h3 className="mt-2 text-3xl font-bold tracking-tight">Tasbir Kabir</h3>
+                <p className="mt-3 text-base leading-relaxed text-foreground/90">
+                  Tasbir leads software architecture, technical direction, and engineering execution at ORBYT ONWARD. Specializing in full-stack TypeScript, Next.js, relational database architecture, and automated workflow pipelines, he ensures that every client system is architected for long-term scalability and business growth.
+                </p>
+              </div>
+              <div className="rounded-lg border border-border bg-card/60 p-5 font-mono text-xs text-muted-foreground md:col-span-4 space-y-2.5">
+                <div><span className="text-primary font-bold">Focus:</span> Systems Architecture & Full-Stack</div>
+                <div><span className="text-primary font-bold">Location:</span> Dhaka, Bangladesh</div>
+                <div><span className="text-primary font-bold">Direct Access:</span> Hands-on on all client projects</div>
+              </div>
+            </div>
+          </SpotlightCard>
+        </Reveal>
+
+        <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
           {TEAM.crew.map((member, i) => (
             <Reveal key={member.id} delay={i * 0.05} className="h-full">
               <SpotlightCard className="p-6 md:p-8">

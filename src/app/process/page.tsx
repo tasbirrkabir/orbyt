@@ -4,12 +4,18 @@ import { SiteShell } from "@/components/orbyt/site-shell";
 import { ProcessView } from "@/components/orbyt/views/process-view";
 
 export const metadata: Metadata = {
-  title: "ORBYT: Process",
-  description: PROCESS_SECTION.lede,
+  title: "Engineering Process | ORBYT ONWARD — Discovery, Architecture, Build & Scale",
+  description:
+    "How ORBYT ONWARD designs and builds connected software systems: Discovery, Architecture, Build, Connect, and Scale. Rigorous sprints with measurable verification.",
+  alternates: {
+    canonical: "/process",
+  },
   openGraph: {
-    title: "ORBYT: Process",
-    description: PROCESS_SECTION.lede,
-    siteName: "ORBYT",
+    title: "Engineering Process | ORBYT ONWARD — Discovery, Architecture, Build & Scale",
+    description:
+      "How ORBYT ONWARD designs and builds connected software systems: Discovery, Architecture, Build, Connect, and Scale.",
+    url: "https://orbytonward.tech/process",
+    siteName: "ORBYT ONWARD",
     type: "website",
   },
 };

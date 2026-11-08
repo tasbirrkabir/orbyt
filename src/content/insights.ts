@@ -204,6 +204,140 @@ export const ESSAYS: Essay[] = [
       },
     ],
   },
+  {
+    slug: "how-to-choose-software-development-company-bangladesh",
+    title: "How to choose a software development company in Bangladesh",
+    dek: "The software agency market in Bangladesh is divided between low-cost outsourcing shops and product-minded systems builders. Here is how to evaluate real technical capability.",
+    minutes: 6,
+    blocks: [
+      {
+        type: "p",
+        text: "Selecting a software engineering partner in Bangladesh often starts with a portfolio review and ends in misaligned expectations. Hundreds of agencies claim full-stack competence, but when projects start, companies discover their software was outsourced to junior subcontractors or built on abandoned template engines.",
+      },
+      {
+        type: "p",
+        text: "The difference between an outsourcing shop and an engineering partner comes down to architecture and accountability. You are not buying hours of coding; you are purchasing the reliability of your operational backbone.",
+      },
+      { type: "h2", text: "Three questions to ask before signing" },
+      {
+        type: "list",
+        items: [
+          "Who actually writes and reviews the code? Speak directly with the systems architect who will design your database schema and API layer, not just an account executive.",
+          "What is their approach to performance and observability? Ask about their Core Web Vitals thresholds, error tracking telemetry, and relational schema migrations.",
+          "Do they understand business workflow or just software syntax? Software that does not integrate with your real customer lifecycle creates expensive technical debt.",
+        ],
+      },
+      {
+        type: "quote",
+        text: "A low hourly rate is the most expensive way to build custom software when the architecture has to be rewritten eighteen months later.",
+      },
+      { type: "h2", text: "The modern technical baseline" },
+      {
+        type: "p",
+        text: "In 2026, serious software engineering requires full TypeScript type safety, modern relational databases like PostgreSQL, automated CI/CD pipelines, and sub-second page rendering. When vetting an agency in Dhaka or across Bangladesh, inspect their live production deployments and ask to inspect their commit history and code review process.",
+      },
+    ],
+  },
+  {
+    slug: "custom-software-vs-ready-made",
+    title: "Custom software vs ready-made SaaS: making the strategic decision",
+    dek: "When does an off-the-shelf subscription stop being economical, and when is building proprietary software the only way to protect your business margin?",
+    minutes: 5,
+    blocks: [
+      {
+        type: "p",
+        text: "Every growing company reaches the SaaS plateau: you started with two affordable software subscriptions, and three years later you are paying for eight separate tools, none of which talk to each other without human intervention.",
+      },
+      {
+        type: "p",
+        text: "The debate between custom software and off-the-shelf SaaS is rarely an either-or decision. It is an economic calculation of operational efficiency versus subscription lock-in.",
+      },
+      { type: "h2", text: "When ready-made SaaS wins" },
+      {
+        type: "list",
+        items: [
+          "Standardized commodity workflows like accounting, payroll, and corporate email.",
+          "Early-stage hypothesis testing before your actual operational process has stabilized.",
+          "When existing tools satisfy 90% of your workflow without requiring manual daily workarounds.",
+        ],
+      },
+      { type: "h2", text: "When custom software becomes essential" },
+      {
+        type: "list",
+        items: [
+          "Your competitive moat lives in a proprietary process or operational algorithm.",
+          "Seat-based SaaS fees scale faster than your profit margins as your team expands.",
+          "Critical business data is trapped across disparate platforms with no unified reporting.",
+          "Compliance, data sovereignty, or unique regional payment gateway requirements demand direct database ownership.",
+        ],
+      },
+      {
+        type: "quote",
+        text: "If your core operational workflow is what makes your business valuable, running it on someone else's generic platform is a strategic vulnerability.",
+      },
+    ],
+  },
+  {
+    slug: "software-development-cost-bangladesh",
+    title: "Understanding software development costs in Bangladesh",
+    dek: "A transparent breakdown of custom software development pricing in Bangladesh: what drives costs, where budgets leak, and how to structure milestones.",
+    minutes: 6,
+    blocks: [
+      {
+        type: "p",
+        text: "Software development pricing in Bangladesh spans an enormous range. A company may receive quotes ranging from 50,000 BDT from a solo freelancer to millions of BDT from enterprise consulting firms for seemingly identical project briefs. Understanding why this variance exists is essential for realistic budgeting.",
+      },
+      { type: "h2", text: "What actually drives software cost" },
+      {
+        type: "list",
+        items: [
+          "Architectural complexity: simple CRUD dashboards require significantly less engineering than distributed event pipelines, multi-tenant databases, or high-concurrency systems.",
+          "System integrations: connecting third-party payment gateways, legacy ERPs, CRMs, and messaging webhooks involves rigorous error recovery and edge-case handling.",
+          "Observability and security: role-based access control, encrypted session management, automated backups, and zero-compromise Core Web Vitals optimization.",
+        ],
+      },
+      {
+        type: "quote",
+        text: "The cost of building software is dwarfed by the cost of maintaining broken, undocumented code. Always budget for architecture before features.",
+      },
+      { type: "h2", text: "How ORBYT structures project delivery" },
+      {
+        type: "p",
+        text: "Rather than open-ended billing that drifts over time, we structure projects around fixed-scope milestones with verifiable technical criteria. You receive direct access to live staging environments, weekly architecture reviews, and complete code repository ownership from Day 1.",
+      },
+    ],
+  },
+  {
+    slug: "how-saas-products-are-built",
+    title: "How modern SaaS products are built: from architecture to scale",
+    dek: "A technical blueprint for launching scalable software-as-a-service: multi-tenancy, billing lifecycles, authentication, and edge infrastructure.",
+    minutes: 7,
+    blocks: [
+      {
+        type: "p",
+        text: "Building a software-as-a-service (SaaS) product requires an entirely different engineering mindset than building a traditional website or internal tool. SaaS platforms must maintain strict tenant isolation, handle dynamic billing subscriptions, and survive traffic spikes without manual intervention.",
+      },
+      { type: "h2", text: "The foundational SaaS layers" },
+      {
+        type: "list",
+        items: [
+          "Tenant isolation: choosing between row-level security (RLS) in PostgreSQL or separate database schemas depending on regulatory and security requirements.",
+          "Billing infrastructure: building robust webhook handlers for Stripe, Lemon Squeezy, or regional payment systems that gracefully handle failed charges, upgrades, and cancellations.",
+          "Authentication and RBAC: managing organizational teams, invite links, and granular member permissions.",
+          "Edge distribution: serving static assets and dynamic cached API responses from global edge nodes for sub-second latency.",
+        ],
+      },
+      {
+        type: "quote",
+        text: "A successful SaaS product is an engineering system where customer acquisition, billing, and feature delivery operate in total harmony.",
+      },
+      { type: "h2", text: "Avoiding Day 1 overengineering" },
+      {
+        type: "p",
+        text: "The most common fatal mistake in early-stage SaaS development is microservice premature optimization. A modular monolithic architecture built with Next.js, TypeScript, and PostgreSQL can easily scale to hundreds of thousands of active users with near-zero infrastructure overhead, allowing founders to focus on user feedback and unit economics.",
+      },
+    ],
+  },
 ];
 
 export function getEssay(slug: string): Essay | undefined {

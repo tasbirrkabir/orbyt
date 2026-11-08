@@ -1,8 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Providers } from "@/components/providers";
+import { RootJsonLd } from "@/components/seo/json-ld";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -19,33 +20,85 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#09090b",
+  colorScheme: "dark",
+  width: "device-width",
+  initialScale: 1,
+};
+
 export const metadata: Metadata = {
-  title: "ORBYT: Digital systems built for growth",
+  metadataBase: new URL("https://orbytonward.tech"),
+  title: {
+    default:
+      "ORBYT ONWARD | Software Development & AI Solutions Company in Bangladesh",
+    template: "%s | ORBYT ONWARD",
+  },
   description:
-    "ORBYT builds the connected system behind growth: AI & automation, web & digital experiences, performance marketing, tracking & data. Strategy, build, connect, measure, improve.",
+    "ORBYT ONWARD is a Bangladesh-based software development and digital systems company building custom software, web applications, SaaS platforms, AI automation, and connected digital growth systems.",
   keywords: [
-    "AI automation agency",
-    "AI agents",
-    "business automation",
-    "web development",
-    "digital systems",
-    "growth systems",
-    "performance marketing",
-    "conversion optimization",
-    "tracking and analytics",
-    "AI consulting",
-    "digital transformation",
+    "software development company bangladesh",
+    "custom software development bangladesh",
+    "web application development bangladesh",
+    "SaaS development company",
+    "AI automation company",
+    "digital systems company",
+    "performance marketing agency bangladesh",
+    "ORBYT ONWARD",
+    "ORBYT",
+    "full-stack software engineering",
   ],
-  authors: [{ name: "ORBYT" }],
+  authors: [{ name: "ORBYT ONWARD", url: "https://orbytonward.tech" }],
+  creator: "ORBYT ONWARD",
+  publisher: "ORBYT ONWARD",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
   icons: {
     icon: "/orbyt-mark.png",
+    apple: "/orbyt-mark.png",
+  },
+  alternates: {
+    canonical: "/",
   },
   openGraph: {
-    title: "ORBYT: Digital systems built for growth",
+    title:
+      "ORBYT ONWARD | Software Development & AI Solutions Company in Bangladesh",
     description:
-      "Build the system behind your growth. AI, web, automation, marketing, tracking, connected.",
-    siteName: "ORBYT",
+      "ORBYT ONWARD builds connected digital systems by combining software engineering, AI, automation, marketing, and creative execution.",
+    url: "https://orbytonward.tech",
+    siteName: "ORBYT ONWARD",
+    locale: "en_US",
     type: "website",
+    images: [
+      {
+        url: "/images/art/sadias-ielts-showcase.png",
+        width: 2048,
+        height: 1536,
+        alt: "ORBYT ONWARD — Software Development & Digital Systems Company",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title:
+      "ORBYT ONWARD | Software Development & AI Solutions Company in Bangladesh",
+    description:
+      "ORBYT ONWARD builds connected digital systems by combining software engineering, AI, automation, marketing, and creative execution.",
+    images: ["/images/art/sadias-ielts-showcase.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
 };
 
@@ -56,6 +109,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
+      <head>
+        <RootJsonLd />
+      </head>
       <body
         className={`${inter.variable} ${spaceGrotesk.variable} ${geistMono.variable} antialiased bg-background text-foreground font-sans`}
       >

@@ -16,7 +16,12 @@ import { cn } from "@/lib/utils";
 
 /** Service → visual mapping (original ORBYT renders in /images/art). */
 const SERVICE_IMAGES: Record<string, string> = {
+  "custom-software-development": "/images/art/ops-assembly.png",
+  "web-development": "/images/art/design-grid.png",
+  "saas-development": "/images/art/layered-system.png",
   "ai-automation": "/images/art/ai-synapse.png",
+  "performance-marketing": "/images/art/growth-beam.png",
+  "video-editing": "/images/art/circuit-weave.png",
   "web-digital": "/images/art/design-grid.png",
   "growth-marketing": "/images/art/growth-beam.png",
   "data-tracking": "/images/art/data-pulse2.png",
@@ -66,7 +71,7 @@ export function ServicesWithPreview() {
         {SERVICES.map((service, i) => (
           <Link
             key={service.slug}
-            href={`/services#${service.slug}`}
+            href={`/services/${service.slug}`}
             className="group grid grid-cols-1 gap-2 border-t border-border py-6 md:grid-cols-12 md:items-baseline md:gap-6 md:py-7"
             onPointerEnter={() => setActive(i)}
             onPointerLeave={() =>

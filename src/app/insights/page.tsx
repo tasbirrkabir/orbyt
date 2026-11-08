@@ -4,12 +4,18 @@ import { SiteShell } from "@/components/orbyt/site-shell";
 import { InsightsView } from "@/components/orbyt/views/insights-view";
 
 export const metadata: Metadata = {
-  title: "ORBYT: Insights",
-  description: INSIGHTS_SECTION.lede,
+  title: "Insights & Technical Perspectives | ORBYT ONWARD",
+  description:
+    "Engineering essays and systems thinking from ORBYT ONWARD: custom software, web architecture, AI automation, and performance measurement in Bangladesh.",
+  alternates: {
+    canonical: "/insights",
+  },
   openGraph: {
-    title: "ORBYT: Insights",
-    description: INSIGHTS_SECTION.lede,
-    siteName: "ORBYT",
+    title: "Insights & Technical Perspectives | ORBYT ONWARD",
+    description:
+      "Engineering essays and systems thinking from ORBYT ONWARD: custom software, web architecture, AI automation, and performance measurement.",
+    url: "https://orbytonward.tech/insights",
+    siteName: "ORBYT ONWARD",
     type: "website",
   },
 };

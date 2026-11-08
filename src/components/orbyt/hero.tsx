@@ -53,16 +53,10 @@ export function Hero() {
         <div className="grid w-full grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-8">
           {/* Copy */}
           <div className="min-w-0 lg:col-span-7">
-            <FadeUp>
-              <p className="font-mono text-xs uppercase tracking-[0.18em] text-primary">
-                <Scramble text={HERO.eyebrow} speed={22} />
-              </p>
-            </FadeUp>
-
             {/* Masked line reveal */}
             <h1
               id="hero-heading"
-              className="mt-5 font-display text-5xl font-bold leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl"
+              className="font-display text-5xl font-bold leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl"
             >
               <span className="block overflow-hidden pb-1">
                 {reduced ? (

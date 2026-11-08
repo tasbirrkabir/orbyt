@@ -126,6 +126,15 @@ export function WorkView() {
 
                 <div className="mt-8 flex flex-wrap items-center gap-4">
                   <Button asChild className="h-11 px-6 font-semibold">
+                    <Link
+                      href="/work/sadias-ielts"
+                      className="inline-flex items-center gap-2"
+                    >
+                      Read In-Depth Case Study
+                      <ArrowRight className="size-4" />
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline" className="h-11 px-6 font-semibold">
                     <a
                       href={FEATURED_CASE_STUDY.url}
                       target="_blank"

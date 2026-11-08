@@ -19,9 +19,29 @@ import { cn } from "@/lib/utils";
 
 /* Original ORBYT renders (public/images/art) — one per pillar. */
 const SERVICE_IMAGES: Record<string, { src: string; caption: string }> = {
+  "custom-software-development": {
+    src: "/images/art/ops-assembly.png",
+    caption: "Modules moving through checkpoints, in order.",
+  },
+  "web-development": {
+    src: "/images/art/design-grid.png",
+    caption: "Surfaces drawn on the same grid, then shipped.",
+  },
+  "saas-development": {
+    src: "/images/art/layered-system.png",
+    caption: "Multi-tenant cloud layers built for horizontal scale.",
+  },
   "ai-automation": {
     src: "/images/art/ai-synapse.png",
-    caption: "A network that watches back.",
+    caption: "A network that watches back and routes intelligence.",
+  },
+  "performance-marketing": {
+    src: "/images/art/growth-beam.png",
+    caption: "One capture point, every channel fanning out.",
+  },
+  "video-editing": {
+    src: "/images/art/circuit-weave.png",
+    caption: "Creative assets woven into the performance pipeline.",
   },
   "web-digital": {
     src: "/images/art/design-grid.png",
@@ -189,6 +209,15 @@ function ServiceBlock({
               <p className="mt-2 text-sm leading-relaxed text-foreground/90">
                 {service.outcome}
               </p>
+            </div>
+
+            <div className="mt-6">
+              <Button asChild variant="outline" className="h-10 px-5 text-sm font-semibold">
+                <Link href={`/services/${service.slug}`} className="inline-flex items-center gap-2">
+                  Explore {service.title} In-Depth
+                  <ArrowRight className="size-4" />
+                </Link>
+              </Button>
             </div>
           </Reveal>
         </div>

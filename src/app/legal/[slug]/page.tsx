@@ -16,15 +16,19 @@ export async function generateMetadata({
   const { slug } = await params;
   const doc = getLegal(slug);
   if (!doc) {
-    return { title: "ORBYT" };
+    return { title: "Legal | ORBYT ONWARD" };
   }
   return {
-    title: `ORBYT: ${doc.title}`,
+    title: `${doc.title} | ORBYT ONWARD`,
     description: doc.intro,
+    alternates: {
+      canonical: `/legal/${doc.slug}`,
+    },
     openGraph: {
-      title: `ORBYT: ${doc.title}`,
+      title: `${doc.title} | ORBYT ONWARD`,
       description: doc.intro,
-      siteName: "ORBYT",
+      url: `https://orbytonward.tech/legal/${doc.slug}`,
+      siteName: "ORBYT ONWARD",
       type: "website",
     },
   };

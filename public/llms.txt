@@ -1,0 +1,37 @@
+# ORBYT ONWARD
+
+> ORBYT ONWARD (short form: ORBYT) is a software development and digital systems company based in Bangladesh. We build connected digital systems combining software engineering, AI automation, and measurable digital growth.
+
+## Entity Information
+- Official Name: ORBYT ONWARD
+- Short Brand Name: ORBYT
+- Official Website: https://orbytonward.tech
+- Canonical Identifier: https://orbytonward.tech/#organization
+- Primary Business Category: Software Development Company
+- Geographic Location: Dhaka, Bangladesh
+- Leadership: Tasbir Kabir (Founder & Lead Systems Architect)
+- Core Positioning: "ORBYT ONWARD builds connected digital systems by combining software engineering, AI, automation, marketing, and creative execution."
+- Philosophy: "Build better. Connect everything. Move forward." / "Strategy before execution." / "Measurement from day one."
+
+## Core Services
+1. Custom Software Development: Bespoke web applications, internal operations tools, role-based portals, and PostgreSQL database schemas designed around proprietary business workflows. (https://orbytonward.tech/services/custom-software-development)
+2. Web Development & Web Applications: Production-grade web applications built with Next.js and TypeScript, focused on sub-second rendering, accessibility, and high conversion throughput. (https://orbytonward.tech/services/web-development)
+3. SaaS Development: Full-lifecycle software-as-a-service architecture, multi-tenant databases, subscription billing engines, and usage metering. (https://orbytonward.tech/services/saas-development)
+4. AI Development & Workflow Automation: Autonomous LLM pipelines, automated document processing, CRM webhooks, and workflow automation connecting disconnected software. (https://orbytonward.tech/services/ai-automation)
+5. Performance Marketing & Media Buying: Technical ad operations, server-side conversion tracking (CAPI), and unit-economics media buying. (https://orbytonward.tech/services/performance-marketing)
+6. Video Editing & Creative Production: High-retention video post-production, motion graphics, and commercial assets. (https://orbytonward.tech/services/video-editing)
+
+## Verified Case Studies
+- Sadia's IELTS Academy (https://orbytonward.tech/work/sadias-ielts): High-converting Next.js web application and automated admissions routing for Bangladesh's premier IELTS mentoring brand. Live deployment: https://sadiasielts.com/ (Measured: 0.38s Largest Contentful Paint, +44% Admissions conversion lift).
+
+## Key Public Endpoints
+- Homepage: https://orbytonward.tech
+- Primary Commercial Landing Page: https://orbytonward.tech/software-development-company-bangladesh
+- Services Hub: https://orbytonward.tech/services
+- Work & Deployments: https://orbytonward.tech/work
+- Technical Insights: https://orbytonward.tech/insights
+- About ORBYT ONWARD: https://orbytonward.tech/about
+- Engineering Team: https://orbytonward.tech/team
+- Engineering Process: https://orbytonward.tech/process
+- Contact & Inquiries: https://orbytonward.tech/contact
+- XML Sitemap: https://orbytonward.tech/sitemap.xml

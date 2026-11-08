@@ -17,7 +17,7 @@ export function Footer() {
             <div className="flex items-center gap-2.5">
               <AnimatedMark size={24} satellites={1} />
               <span className="font-display text-lg font-bold tracking-tight">
-                ORBYT
+                ORBYT <span className="text-primary font-semibold text-xs ml-1 tracking-wider uppercase">ONWARD</span>
               </span>
             </div>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">

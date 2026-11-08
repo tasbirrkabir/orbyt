@@ -7,6 +7,8 @@
  *   no fake headshots. The crew is presented as roles, honestly.
  */
 
+import { DETAILED_SERVICES, type ServiceDetail } from "./services-data";
+
 export const NAV_LINKS = [
   { label: "Services", href: "/services" },
   { label: "Process", href: "/process" },
@@ -17,8 +19,17 @@ export const NAV_LINKS = [
 ] as const;
 
 export const SITE = {
+  officialName: "ORBYT ONWARD",
   wordmark: "ORBYT",
-  tagline: "Digital systems built for growth",
+  shortName: "ORBYT",
+  category: "Software Development & Digital Systems Company",
+  country: "Bangladesh",
+  tagline: "Software Development & Digital Systems",
+  fullTagline:
+    "Software Development & AI Solutions Company in Bangladesh",
+  positioning:
+    "ORBYT ONWARD builds connected digital systems by combining software engineering, AI, automation, marketing, and creative execution.",
+  url: "https://orbytonward.tech",
   cta: { label: "Start a project", href: "/contact" },
   secondaryCta: { label: "See how we work", href: "/process" },
 } as const;
@@ -106,141 +117,36 @@ export interface Service {
   outcome: string;
 }
 
-export const SERVICES: Service[] = [
-  {
-    index: "01",
-    slug: "ai-automation",
-    title: "AI & Automation",
-    short:
-      "Practical AI inside real workflows. Agents, integrations and internal tools that take repetitive work off your team's plate.",
-    what: "We find the work your team does twice, automate it carefully, and place AI where it genuinely helps. Support replies, lead qualification, reporting, handoffs. If a workflow doesn't need AI, we say so.",
-    why: "Because the goal was never 'use AI'. The goal is a team that spends its week on work that matters.",
-    signs: [
-      "Your team drowns in small repeated tasks",
-      "Replies to leads depend on who's free",
-      "Someone maintains a spreadsheet that runs the business",
-      "You've bought AI tools nobody opened twice",
-    ],
-    builds: [
-      "AI agents for support, ops and lead qualification",
-      "Workflow automation across the tools you already use",
-      "Internal tools and dashboards for your ops team",
-      "AI integrations into existing software",
-    ],
-    connects: "CRM · website · lead flow · notifications · reporting",
-    outcome: "Hours returned per week. Faster response times. The share of the workflow that runs without anyone touching it.",
-  },
-  {
-    index: "02",
-    slug: "web-digital",
-    title: "Web & Digital Experiences",
-    short:
-      "Websites, landing pages and web applications built to convert, not just to exist.",
-    what: "We build the pages your business runs on: fast, clear, and wired to everything behind them. Every screen answers one question for the visitor: what should I do next?",
-    why: "Your website is the one system every campaign, every lead and every customer passes through. It deserves more care than a brochure.",
-    signs: [
-      "Traffic is fine, sign-ups aren't",
-      "The site takes longer to change than to complain about",
-      "You can't tell which pages earn their keep",
-      "Mobile feels like an afterthought",
-    ],
-    builds: [
-      "Conversion-focused websites and landing page systems",
-      "eCommerce and web applications",
-      "Performance work, because speed is a feature",
-      "UX implementation that supports the next click",
-    ],
-    connects: "Tracking · ads · CRM · automation",
-    outcome: "Conversion rate. Load time. Qualified leads, not raw traffic.",
-  },
-  {
-    index: "03",
-    slug: "growth-marketing",
-    title: "Growth & Marketing",
-    short:
-      "Acquisition built as infrastructure: campaigns wired to pages, data and follow-up.",
-    what: "We run performance marketing as part of a system, not as a separate invoice. Campaigns, creative, landing pages and follow-up designed to work together, so spend turns into pipeline you can see.",
-    why: "Ads rarely fail on their own. They fail when the landing page, the tracking and the follow-up were never part of the plan.",
-    signs: [
-      "Ad spend grows, results don't",
-      "You can't say what a lead actually costs",
-      "Campaigns point at pages nobody optimized",
-      "Reporting is a deck, not a system",
-    ],
-    builds: [
-      "Performance campaigns, Meta and beyond",
-      "Creative and campaign strategy",
-      "Conversion optimization programs",
-      "Campaign infrastructure: structure, naming, feeds",
-    ],
-    connects: "Landing pages · tracking stack · CRM · automation",
-    outcome: "CAC. ROAS. A pipeline you can trace end to end.",
-  },
-  {
-    index: "04",
-    slug: "data-tracking",
-    title: "Data & Tracking",
-    short:
-      "Measurement you can act on: events, attribution and reporting that hold up under scrutiny.",
-    what: "We instrument your funnel properly. Clean events, server-side conversions where they matter, dashboards your team actually opens. When the numbers are trustworthy, decisions get faster.",
-    why: "Without clean data, every other decision is a guess wearing a dashboard.",
-    signs: [
-      "Two tools report different numbers for the same thing",
-      "You're not sure the pixel is firing",
-      "Attribution is a mystery everyone avoids",
-      "Reports exist, but nobody changes course because of them",
-    ],
-    builds: [
-      "GA4 and Google Tag Manager setup",
-      "Meta Pixel and Conversions API",
-      "Event architecture and attribution models",
-      "Reporting dashboards people actually use",
-    ],
-    connects: "Website · ads · CRM · reporting",
-    outcome: "Data quality. Decision speed. A CAC number you can defend in a meeting.",
-  },
-  {
-    index: "05",
-    slug: "digital-systems",
-    title: "Digital Systems",
-    short:
-      "The connective layer: lead management, onboarding, notifications, reporting. The business running as one machine.",
-    what: "This is where the other four meet. We design and build the layer that routes leads, triggers follow-ups, keeps records clean and shows you the state of the business on one screen.",
-    why: "Every disconnected tool adds a gap someone has to bridge by hand. This layer closes the gaps.",
-    signs: [
-      "Leads live in three places and die in all of them",
-      "Onboarding a client means remembering the steps",
-      "Nobody knows the current status without asking someone",
-      "Growth means hiring someone to do the copying",
-    ],
-    builds: [
-      "Lead management and CRM workflows",
-      "Client onboarding systems",
-      "Notification and escalation flows",
-      "Operational automation and reporting",
-    ],
-    connects: "Everything. This is the connection.",
-    outcome: "Speed-to-lead. Cycle time. Manual steps removed.",
-  },
-];
+export const SERVICES: Service[] = DETAILED_SERVICES.map((s) => ({
+  index: s.index,
+  slug: s.slug,
+  title: s.title,
+  short: s.short,
+  what: s.what,
+  why: s.why,
+  signs: s.signs,
+  builds: s.builds,
+  connects: s.connects,
+  outcome: s.outcome,
+}));
 
 export const CHAIN_NODES = [
-  "AD CAMPAIGN",
-  "LANDING PAGE",
-  "EVENT TRACKING",
-  "LEAD",
-  "AUTOMATION",
-  "CRM",
-  "FOLLOW-UP",
-  "CONVERSION",
+  "STRATEGY & ARCHITECTURE",
+  "CUSTOM SOFTWARE",
+  "WEB APPLICATION",
+  "AI & AUTOMATION",
+  "TRACKING & DATA",
+  "CRM PIPELINE",
+  "MEDIA INFRASTRUCTURE",
+  "BUSINESS GROWTH",
 ] as const;
 
 export const SERVICES_SECTION = {
   eyebrow: "CAPABILITIES",
-  title: "We don't sell services.",
-  titleAccent: "We build the system they live in.",
-  lede: "Five capability groups, one job: find the bottleneck, design the system, build it, connect it, improve it.",
-  chainCaption: "One system. Every step measured, every step connected.",
+  title: "We don't sell disconnected tasks.",
+  titleAccent: "We build the software systems they live in.",
+  lede: "Six core capabilities anchored in software engineering: custom software, web platforms, SaaS architectures, AI automation, performance marketing, and creative production.",
+  chainCaption: "One connected system. Software, automation, media, and data working in unison.",
   detailCta: { label: "Explore services", href: "/services" },
 } as const;
 
@@ -639,7 +545,8 @@ export const CTA_STRIP = ["BUILD", "CONNECT", "GROW"] as const;
 export const FOOTER = {
   philosophy: "Build better. Connect everything. Move forward.",
   onward: "Onward.",
-  legal: "© 2025 ORBYT. Digital growth systems.",
+  company: "ORBYT ONWARD (ORBYT)",
+  legal: "© 2026 ORBYT ONWARD. Software Development & Digital Systems Company in Bangladesh.",
   tag: "BUILD · CONNECT · GROW",
   legalLinks: [
     { label: "Privacy", href: "/legal/privacy" },

@@ -1,14 +1,60 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
+# https://www.robotstxt.org/robotstxt.html
+# ORBYT ONWARD (https://orbytonward.tech)
 
 User-agent: *
 Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /workspace/
+Disallow: /portal/
+Disallow: /onboarding
+Disallow: /login
+Disallow: /forgot-password
+Disallow: /reset-password
+
+# Search engine crawlers
+User-agent: Googlebot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /workspace/
+Disallow: /portal/
+
+User-agent: Bingbot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /workspace/
+Disallow: /portal/
+
+# AI Search Crawlers
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /workspace/
+Disallow: /portal/
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /workspace/
+Disallow: /portal/
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /workspace/
+Disallow: /portal/
+
+User-agent: Claude-Web
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /workspace/
+Disallow: /portal/
+
+# Canonical Sitemap
+Sitemap: https://orbytonward.tech/sitemap.xml

@@ -4,13 +4,27 @@ import { SiteShell } from "@/components/orbyt/site-shell";
 import { WorkView } from "@/components/orbyt/views/work-view";
 
 export const metadata: Metadata = {
-  title: "ORBYT: Work",
-  description: SYSTEMS_SECTION.lede,
+  title: "Work & Case Studies | ORBYT ONWARD — Software Systems in Production",
+  description:
+    "Explore real software deployments, web applications, and digital growth systems engineered by ORBYT ONWARD in Bangladesh. Featuring Sadia's IELTS Academy and client architectures.",
+  alternates: {
+    canonical: "/work",
+  },
   openGraph: {
-    title: "ORBYT: Work",
-    description: SYSTEMS_SECTION.lede,
-    siteName: "ORBYT",
+    title: "Work & Case Studies | ORBYT ONWARD — Software Systems in Production",
+    description:
+      "Explore real software deployments, web applications, and digital growth systems engineered by ORBYT ONWARD in Bangladesh. Featuring Sadia's IELTS Academy.",
+    url: "https://orbytonward.tech/work",
+    siteName: "ORBYT ONWARD",
     type: "website",
+    images: [
+      {
+        url: "https://orbytonward.tech/images/art/sadias-ielts-showcase.png",
+        width: 1200,
+        height: 630,
+        alt: "Sadia's IELTS Academy Case Study — ORBYT ONWARD",
+      },
+    ],
   },
 };
 
