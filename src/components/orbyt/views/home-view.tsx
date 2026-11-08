@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowRight, ExternalLink } from "lucide-react";
 import { ESSAYS } from "@/content/insights";
 import {
-  FEATURED_CASE_STUDY,
+  CASE_STUDIES,
   INSIGHTS_SECTION,
   PRINCIPLES,
   PROCESS_SECTION,
@@ -198,79 +198,83 @@ function SystemsTeaser() {
       eyebrow={SYSTEMS_SECTION.eyebrow}
       title={SYSTEMS_SECTION.title}
     >
-      {/* Featured Verified Client Case Study */}
-      <Reveal className="mt-14">
-        <div className="relative overflow-hidden border border-primary/40 bg-card shadow-pixel-orange">
-          <div className="grid grid-cols-1 items-center lg:grid-cols-12">
-            <div className="p-6 md:p-10 lg:col-span-5">
-              <div className="flex items-center gap-2">
-                <span className="size-2.5 animate-pulse rounded-full bg-emerald-500" />
-                <p className="font-mono text-xs font-bold uppercase tracking-[0.18em] text-primary">
-                  VERIFIED CLIENT CASE STUDY
-                </p>
-              </div>
-              <h3 className="mt-3 font-display text-2xl font-bold tracking-tight md:text-3xl">
-                {FEATURED_CASE_STUDY.client}
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                {FEATURED_CASE_STUDY.tagline}
-              </p>
-
-              {/* Delivered architecture badges */}
-              <div className="mt-5 space-y-2">
-                {FEATURED_CASE_STUDY.components.slice(0, 3).map((comp) => (
-                  <div key={comp} className="flex items-center gap-2 text-xs text-foreground/85">
-                    <span className="size-1.5 shrink-0 bg-primary" />
-                    <span>{comp}</span>
+      {/* Featured Verified Client Case Studies */}
+      <div className="mt-14 space-y-10">
+        {CASE_STUDIES.map((cs, idx) => (
+          <Reveal key={cs.id}>
+            <div className="relative overflow-hidden border border-primary/40 bg-card shadow-pixel-orange">
+              <div className="grid grid-cols-1 items-center lg:grid-cols-12">
+                <div className="p-6 md:p-10 lg:col-span-5">
+                  <div className="flex items-center gap-2">
+                    <span className="size-2.5 animate-pulse rounded-full bg-emerald-500" />
+                    <p className="font-mono text-xs font-bold uppercase tracking-[0.18em] text-primary">
+                      VERIFIED CLIENT CASE STUDY // 0{idx + 1}
+                    </p>
                   </div>
-                ))}
-              </div>
+                  <h3 className="mt-3 font-display text-2xl font-bold tracking-tight md:text-3xl">
+                    {cs.client}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    {cs.tagline}
+                  </p>
 
-              <div className="mt-5 flex flex-wrap gap-2">
-                {FEATURED_CASE_STUDY.measured.slice(0, 3).map((m) => (
-                  <span
-                    key={m}
-                    className="border border-border bg-background px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-foreground/90"
-                  >
-                    {m}
-                  </span>
-                ))}
-              </div>
+                  {/* Delivered architecture badges */}
+                  <div className="mt-5 space-y-2">
+                    {cs.components.slice(0, 3).map((comp) => (
+                      <div key={comp} className="flex items-center gap-2 text-xs text-foreground/85">
+                        <span className="size-1.5 shrink-0 bg-primary" />
+                        <span>{comp}</span>
+                      </div>
+                    ))}
+                  </div>
 
-              <div className="mt-6 flex flex-wrap items-center gap-4">
-                <Button asChild className="h-10 px-5 text-sm font-semibold">
-                  <Link href="/work">
-                    See Case Study
-                    <ArrowRight className="size-4" />
-                  </Link>
-                </Button>
-                <a
-                  href={FEATURED_CASE_STUDY.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-primary"
-                >
-                  Visit sadiasielts.com
-                  <ExternalLink className="size-3.5" />
-                </a>
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    {cs.measured.slice(0, 3).map((m) => (
+                      <span
+                        key={m}
+                        className="border border-border bg-background px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-foreground/90"
+                      >
+                        {m}
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className="mt-6 flex flex-wrap items-center gap-4">
+                    <Button asChild className="h-10 px-5 text-sm font-semibold">
+                      <Link href={`/work/${cs.id}`}>
+                        See Case Study
+                        <ArrowRight className="size-4" />
+                      </Link>
+                    </Button>
+                    <a
+                      href={cs.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-primary"
+                    >
+                      Visit {cs.url.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+                      <ExternalLink className="size-3.5" />
+                    </a>
+                  </div>
+                </div>
+
+                {/* 4:3 Studio/Billboard Mockup Poster Frame */}
+                <div className="relative aspect-[4/3] w-full overflow-hidden border-t border-border bg-stone-950 lg:col-span-7 lg:border-l lg:border-t-0">
+                  <Image
+                    src={cs.image}
+                    alt={`${cs.client} live platform mockup`}
+                    fill
+                    priority={idx === 0}
+                    unoptimized
+                    sizes="(min-width: 1024px) 720px, 100vw"
+                    className="object-cover"
+                  />
+                </div>
               </div>
             </div>
-
-            {/* 4:3 Studio Mockup Poster Frame - 0% Cropping, 100% Crisp */}
-            <div className="relative aspect-[4/3] w-full overflow-hidden border-t border-border bg-stone-950 lg:col-span-7 lg:border-l lg:border-t-0">
-              <Image
-                src={FEATURED_CASE_STUDY.image}
-                alt="Sadia's IELTS Academy live platform mockup"
-                fill
-                priority
-                unoptimized
-                sizes="(min-width: 1024px) 720px, 100vw"
-                className="object-cover"
-              />
-            </div>
-          </div>
-        </div>
-      </Reveal>
+          </Reveal>
+        ))}
+      </div>
 
       <div className="mt-8 flex flex-col items-center justify-between gap-4 border border-border bg-card/50 p-6 md:flex-row md:p-8">
         <div>

@@ -261,30 +261,129 @@ export interface CaseStudy {
   tagline: string;
   category: string;
   image: string;
+  screenImage?: string;
   story: string;
   components: string[];
   measured: string[];
+  challengeTitle?: string;
+  challengeAccent?: string;
+  challengeLede?: string;
+  bottlenecks?: string[];
+  objective?: string;
+  solutionTitle?: string;
+  solutionAccent?: string;
+  solutionLede?: string;
+  pillars?: Array<{ title: string; desc: string }>;
+  stackNote?: string;
 }
 
-export const FEATURED_CASE_STUDY: CaseStudy = {
-  id: "sadias-ielts",
-  client: "Sadia's IELTS Academy",
-  url: "https://sadiasielts.com/",
-  title: "Sadia's IELTS: EdTech Platform & Enrollment Architecture",
-  tagline: "High-converting web platform and admissions system for Bangladesh's premier IELTS mentoring academy.",
-  category: "CLIENT CASE STUDY · EDTECH CONVERSION SYSTEM",
-  image: "/images/art/sadias-ielts-showcase.png",
-  story:
-    "Sadia's IELTS required a web platform built for high-velocity student admissions across Bangladesh and international study abroad destinations (UK, Canada, Australia, USA, Sweden, Germany). ORBYT architected and delivered a conversion-first digital web experience with lightning-fast course discovery, automated lead routing, and streamlined enrollment flows.",
-  components: [
-    "High-converting Next.js web application",
-    "Structured course catalog and Cambridge preparation modules",
-    "One-click enrollment funnel & batch admissions flow",
-    "Performance architecture achieving 0.38s Largest Contentful Paint",
-    "Lead routing and automated WhatsApp/inquiry integration",
-  ],
-  measured: ["0.38s LCP Edge", "+44% Admissions Lift", "6 Study Destinations", "100% Live Deployment"],
-};
+export const CASE_STUDIES: CaseStudy[] = [
+  {
+    id: "sadias-ielts",
+    client: "Sadia's IELTS Academy",
+    url: "https://sadiasielts.com/",
+    title: "Sadia's IELTS: EdTech Platform & Enrollment Architecture",
+    tagline: "High-converting web platform and admissions system for Bangladesh's premier IELTS mentoring academy.",
+    category: "CLIENT CASE STUDY // 01 · EDTECH CONVERSION SYSTEM",
+    image: "/images/art/sadias-ielts-showcase.png",
+    story:
+      "Sadia's IELTS required a web platform built for high-velocity student admissions across Bangladesh and international study abroad destinations (UK, Canada, Australia, USA, Sweden, Germany). ORBYT architected and delivered a conversion-first digital web experience with lightning-fast course discovery, automated lead routing, and streamlined enrollment flows.",
+    components: [
+      "High-converting Next.js web application",
+      "Structured course catalog and Cambridge preparation modules",
+      "One-click enrollment funnel & batch admissions flow",
+      "Performance architecture achieving 0.38s Largest Contentful Paint",
+      "Lead routing and automated WhatsApp/inquiry integration",
+    ],
+    measured: ["0.38s LCP Edge", "+44% Admissions Lift", "6 Study Destinations", "100% Live Deployment"],
+    challengeTitle: "High student demand hindered by",
+    challengeAccent: "manual inquiry bottlenecks.",
+    challengeLede:
+      "Sadia's IELTS is one of Bangladesh's premier IELTS mentoring brands, preparing hundreds of students each year for overseas university admissions in the UK, Canada, Australia, USA, Sweden, and Germany.",
+    bottlenecks: [
+      "Fragmented Student Inquiries: Prospective students were messaging across personal WhatsApp, Facebook Messenger, and phone calls without centralized qualification.",
+      "Slow Mobile Experience: Mobile users on 4G networks experienced heavy latency when browsing course descriptions and fee schedules.",
+      "Unmeasured Ad Spend: Paid campaigns lacked accurate server-side event tracking, making it impossible to calculate true cost per admitted student.",
+    ],
+    objective:
+      "Objective: Sub-second load times + automated admissions routing + verified conversion tracking.",
+    solutionTitle: "Next.js App Router platform built for",
+    solutionAccent: "sub-second mobile conversions.",
+    solutionLede:
+      "ORBYT ONWARD designed and engineered a custom web architecture from the ground up, prioritizing mobile performance, clear course typography, and zero-friction lead capture.",
+    pillars: [
+      {
+        title: "Sub-Second Rendering",
+        desc: "Built on Next.js with edge caching, asset preloading, and responsive image compression. The platform achieves a 0.38s Largest Contentful Paint (LCP) even on cellular connections.",
+      },
+      {
+        title: "Automated Lead Routing",
+        desc: "Inquiry forms immediately qualify students by target IELTS score and destination country, routing verified contact records directly to the admissions team without manual copy-paste.",
+      },
+      {
+        title: "Measurement Architecture",
+        desc: "Integrated conversion tracking captures every course view, syllabus download, and enrollment application, providing transparent attribution across organic and paid channels.",
+      },
+    ],
+    stackNote: "STACK: Next.js · TypeScript · Tailwind CSS · Vercel Edge",
+  },
+  {
+    id: "your-tech-eye",
+    client: "Your Tech Eye",
+    url: "https://yourtecheye.com/",
+    title: "Your Tech Eye: Live Remote Video Monitoring & Security Operations Web Platform",
+    tagline: "Tactical web platform and operational command presence for Bangladesh's premier 24/7 live video surveillance agency.",
+    category: "CLIENT CASE STUDY // 02 · SECURITY & LIVE OPS SYSTEMS",
+    image: "/images/art/your-tech-eye-showcase.jpg",
+    screenImage: "/images/art/your-tech-eye-screen.png",
+    story:
+      "\"A camera is not a guard. Recording proves what happened. It does not stop it.\" Your Tech Eye places trained operators behind commercial and industrial cameras to detect threats live and intervene in real time. ORBYT architected and engineered a high-authority digital presence, tactical operational architecture, and instant direct consultation and emergency dispatch routing.",
+    components: [
+      "Tactical high-trust Next.js web application",
+      "Live monitoring operations floor identity (Dhaka, Bangladesh: 23.81N 90.41E)",
+      "Multi-channel commercial lead funnel (hotline, WhatsApp, consultation scheduler)",
+      "Comprehensive security service breakdown & interactive operational flow",
+      "Sub-second edge rendering and zero-lag mobile responsiveness",
+    ],
+    measured: ["100% Proactive Ops Focus", "Sub-second Edge Load", "Live Dhaka Command Floor", "Verified Production Deployment"],
+    challengeTitle: "Recording proves what happened.",
+    challengeAccent: "It does not stop it.",
+    challengeLede:
+      "Traditional security systems in Bangladesh rely on unmonitored CCTV cameras that only provide evidence after a break-in or intrusion has already occurred. Your Tech Eye needed an authoritative digital platform to educate commercial decision-makers and drive immediate proactive security adoption.",
+    bottlenecks: [
+      "The Passive Camera Trap: Businesses invest heavily in surveillance hardware only to realize that passive recordings cannot stop active intruders without live human intervention.",
+      "Complex Operational Education: Explaining live operator command floors, two-way audio talk-downs, and verified threat escalations required crisp visual architecture and clear service demonstration.",
+      "Commercial Inquiry Velocity: High-value industrial clients, factory owners, and residential communities needed instant, high-trust access to site audits and direct emergency hotline connections.",
+    ],
+    objective:
+      "Objective: Position Your Tech Eye as Dhaka's premier proactive surveillance partner with sub-second page loads and direct multi-channel consultation routing.",
+    solutionTitle: "Tactical digital platform engineered",
+    solutionAccent: "for high-trust commercial conversion.",
+    solutionLede:
+      "ORBYT ONWARD engineered a high-velocity web platform featuring tactical operational aesthetics, verified Dhaka command floor coordinates, and direct emergency routing.",
+    pillars: [
+      {
+        title: "Tactical Operations Identity",
+        desc: "Designed with operational discipline: live status indicators (23.81N 90.41E), real-time surveillance feed aesthetics, and typography that conveys mission-critical reliability.",
+      },
+      {
+        title: "Multi-Channel Rapid Inquiries",
+        desc: "Direct integration with dedicated telephone hotlines (+8801780145132), WhatsApp emergency routing, and automated site audit questionnaires qualifying commercial property owners.",
+      },
+      {
+        title: "Sub-Second Edge Rendering",
+        desc: "Engineered on Next.js with optimized image compression and edge caching, delivering instant responses on mobile and desktop devices across Bangladesh and global networks.",
+      },
+    ],
+    stackNote: "STACK: Next.js · TypeScript · Tailwind CSS · Vercel Edge",
+  },
+];
+
+export const FEATURED_CASE_STUDY: CaseStudy = CASE_STUDIES[0];
+
+export function getCaseStudy(id: string): CaseStudy | undefined {
+  return CASE_STUDIES.find((cs) => cs.id === id);
+}
 
 /* ── Why ORBYT ────────────────────────────────────────── */
 

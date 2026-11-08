@@ -252,19 +252,20 @@ export default function SoftwareDevelopmentCompanyBangladeshPage() {
         </div>
       </Section>
 
-      {/* Featured Real Case Study: Sadia's IELTS */}
+      {/* Featured Real Case Studies */}
       <Section
         id="case-study"
         eyebrow="PROVEN WORK IN BANGLADESH"
-        title="Featured Case Study:"
-        titleAccent="Sadia's IELTS Academy Web Platform."
-        lede="How ORBYT ONWARD engineered a high-converting, sub-second web platform and automated student enrollment system for Bangladesh's premier IELTS mentorship academy."
+        title="Verified Client Deployments:"
+        titleAccent="High-Impact Digital Systems in Production."
+        lede="Real systems engineered by ORBYT ONWARD for growing enterprises in Bangladesh — combining sub-second performance, automated workflows, and conversion architecture."
       >
+        {/* Case Study 1: Sadia's IELTS */}
         <div className="mt-12 overflow-hidden rounded-xl border border-border bg-card/40">
           <div className="grid grid-cols-1 lg:grid-cols-12">
             <div className="p-8 sm:p-10 lg:col-span-7">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 font-mono text-xs text-primary">
-                Live Production Case Study
+                Live Production Case Study // 01
               </span>
               <h3 className="mt-4 text-3xl font-bold">
                 Sadia&apos;s IELTS Digital Growth Platform
@@ -310,6 +311,65 @@ export default function SoftwareDevelopmentCompanyBangladeshPage() {
               <Image
                 src="/images/art/sadias-ielts-showcase.png"
                 alt="Sadia's IELTS Academy Showcase designed and developed by ORBYT ONWARD"
+                fill
+                className="object-cover object-top"
+                sizes="(max-width: 1024px) 100vw, 40vw"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Case Study 2: Your Tech Eye */}
+        <div className="mt-8 overflow-hidden rounded-xl border border-border bg-card/40">
+          <div className="grid grid-cols-1 lg:grid-cols-12">
+            <div className="p-8 sm:p-10 lg:col-span-7">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 font-mono text-xs text-primary">
+                Live Production Case Study // 02
+              </span>
+              <h3 className="mt-4 text-3xl font-bold">
+                Your Tech Eye Security & Live Operations Platform
+              </h3>
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                Your Tech Eye provides 24/7 proactive remote video surveillance with trained operators intervening live. ORBYT ONWARD designed and developed a tactical web platform, interactive security architecture catalog, and direct emergency consultation funnels.
+              </p>
+
+              <div className="mt-6 grid grid-cols-3 gap-4 border-y border-border py-4">
+                <div>
+                  <div className="font-mono text-2xl font-bold text-primary">100%</div>
+                  <div className="mt-1 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">Proactive Ops Focus</div>
+                </div>
+                <div>
+                  <div className="font-mono text-2xl font-bold text-primary">Sub-0.4s</div>
+                  <div className="mt-1 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">Edge Rendering</div>
+                </div>
+                <div>
+                  <div className="font-mono text-2xl font-bold text-primary">24/7</div>
+                  <div className="mt-1 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">Dhaka Operations</div>
+                </div>
+              </div>
+
+              <div className="mt-6 flex flex-wrap items-center gap-4">
+                <Button asChild className="h-10 px-5 text-sm font-semibold">
+                  <Link href="/work/your-tech-eye">
+                    Read Complete Case Study
+                    <ArrowRight className="size-3.5 ml-1.5" />
+                  </Link>
+                </Button>
+                <a
+                  href="https://yourtecheye.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 font-mono text-xs text-muted-foreground transition-colors hover:text-primary"
+                >
+                  Visit Live Website <ExternalLink className="size-3.5" />
+                </a>
+              </div>
+            </div>
+
+            <div className="relative min-h-[300px] border-t border-border lg:border-l lg:border-t-0 lg:col-span-5 bg-black/40">
+              <Image
+                src="/images/art/your-tech-eye-showcase.jpg"
+                alt="Your Tech Eye Live Monitoring Platform designed and developed by ORBYT ONWARD"
                 fill
                 className="object-cover object-top"
                 sizes="(max-width: 1024px) 100vw, 40vw"

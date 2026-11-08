@@ -20,26 +20,29 @@ import { Section } from "@/components/orbyt/section";
 import { SpotlightCard } from "@/components/orbyt/spotlight-card";
 import { Button } from "@/components/ui/button";
 import { BreadcrumbsJsonLd, CaseStudyJsonLd } from "@/components/seo/json-ld";
-import { FEATURED_CASE_STUDY, SITE } from "@/content/orbyt";
+import { CASE_STUDIES, getCaseStudy, SITE } from "@/content/orbyt";
 
 interface Props {
   params: Promise<{ slug: string }>;
 }
 
 export function generateStaticParams() {
-  return [{ slug: "sadias-ielts" }];
+  return CASE_STUDIES.map((cs) => ({ slug: cs.id }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  if (slug !== "sadias-ielts") {
+  const cs = getCaseStudy(slug);
+  if (!cs) {
     return { title: "Case Study Not Found | ORBYT ONWARD" };
   }
 
-  const title = "Sadia's IELTS Academy Case Study | ORBYT ONWARD";
-  const description =
-    "How ORBYT ONWARD engineered a high-converting Next.js web application, 0.38s LCP performance, and automated student enrollment system for Sadia's IELTS Academy in Bangladesh.";
-  const canonicalUrl = "/work/sadias-ielts";
+  const title = `${cs.client} Case Study | ORBYT ONWARD`;
+  const description = `How ORBYT ONWARD engineered a high-converting web platform and digital systems architecture for ${cs.client} in Bangladesh.`;
+  const canonicalUrl = `/work/${cs.id}`;
+  const imageUrl = cs.image.startsWith("http")
+    ? cs.image
+    : `https://orbytonward.tech${cs.image}`;
 
   return {
     title,
@@ -50,15 +53,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title,
       description,
-      url: `https://orbytonward.tech/work/sadias-ielts`,
+      url: `https://orbytonward.tech/work/${cs.id}`,
       siteName: "ORBYT ONWARD",
       type: "article",
       images: [
         {
-          url: "https://orbytonward.tech/images/art/sadias-ielts-showcase.png",
+          url: imageUrl,
           width: 1200,
           height: 630,
-          alt: "Sadia's IELTS Academy Case Study by ORBYT ONWARD",
+          alt: `${cs.client} Case Study by ORBYT ONWARD`,
         },
       ],
     },
@@ -66,31 +69,34 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       card: "summary_large_image",
       title,
       description,
-      images: ["https://orbytonward.tech/images/art/sadias-ielts-showcase.png"],
+      images: [imageUrl],
     },
   };
 }
 
 export default async function CaseStudyDetailPage({ params }: Props) {
   const { slug } = await params;
-  if (slug !== "sadias-ielts") {
+  const cs = getCaseStudy(slug);
+  if (!cs) {
     notFound();
   }
 
   const breadcrumbs = [
     { name: "Home", url: "/" },
     { name: "Work", url: "/work" },
-    { name: "Sadia's IELTS Academy", url: "/work/sadias-ielts" },
+    { name: cs.client, url: `/work/${cs.id}` },
   ];
+
+  const otherCaseStudies = CASE_STUDIES.filter((c) => c.id !== cs.id);
 
   return (
     <SiteShell>
       <CaseStudyJsonLd
-        title="Sadia's IELTS Academy: EdTech Web & Enrollment Architecture"
-        description="How ORBYT ONWARD engineered a high-converting web platform and automated student admissions pipeline for Sadia's IELTS Academy in Bangladesh."
-        url="https://orbytonward.tech/work/sadias-ielts"
-        client="Sadia's IELTS Academy"
-        imageUrl="https://orbytonward.tech/images/art/sadias-ielts-showcase.png"
+        title={cs.title}
+        description={cs.story}
+        url={`https://orbytonward.tech/work/${cs.id}`}
+        client={cs.client}
+        imageUrl={`https://orbytonward.tech${cs.image}`}
       />
       <BreadcrumbsJsonLd items={breadcrumbs} />
 
@@ -105,22 +111,22 @@ export default async function CaseStudyDetailPage({ params }: Props) {
             Work
           </Link>
           <ChevronRight className="size-3 text-muted-foreground/60" />
-          <span className="truncate text-primary">Sadia&apos;s IELTS Academy</span>
+          <span className="truncate text-primary">{cs.client}</span>
         </div>
       </div>
 
       {/* Hero */}
       <PageHero
         id="case-study-hero"
-        eyebrow="CLIENT CASE STUDY // EDTECH PLATFORM & CONVERSION ARCHITECTURE"
-        title="Sadia's IELTS Academy"
-        titleAccent="0.38s LCP, +44% Admissions Lift."
-        lede="How ORBYT ONWARD designed, engineered, and deployed a high-velocity web platform and automated student enrollment architecture for Bangladesh's premier IELTS mentoring academy."
+        eyebrow={cs.category}
+        title={cs.client}
+        titleAccent={cs.challengeAccent || "Engineered by ORBYT ONWARD"}
+        lede={cs.tagline}
       >
         <div className="mt-8 flex flex-wrap items-center gap-4">
           <Button asChild className="h-12 px-7 text-base font-semibold">
             <a
-              href="https://sadiasielts.com/"
+              href={cs.url}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2"
@@ -138,10 +144,10 @@ export default async function CaseStudyDetailPage({ params }: Props) {
       {/* Showcase Visual */}
       <div className="border-b border-border bg-black/60">
         <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
-          <div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl border border-border bg-stone-950 shadow-2xl">
+          <div className="relative aspect-[16/10] w-full overflow-hidden rounded-xl border border-border bg-stone-950 shadow-2xl">
             <Image
-              src="/images/art/sadias-ielts-showcase.png"
-              alt="Sadia's IELTS Academy website displayed in studio monitor mockup"
+              src={cs.image}
+              alt={`${cs.client} showcase designed and developed by ORBYT ONWARD`}
               fill
               priority
               unoptimized
@@ -150,9 +156,27 @@ export default async function CaseStudyDetailPage({ params }: Props) {
             />
           </div>
           <div className="mt-4 flex flex-wrap items-center justify-between gap-4 font-mono text-xs text-muted-foreground">
-            <span>CLIENT: Sadia&apos;s IELTS Academy (sadiasielts.com)</span>
-            <span>STACK: Next.js · TypeScript · Tailwind CSS · Vercel Edge</span>
+            <span>CLIENT: {cs.client} ({cs.url.replace(/^https?:\/\//, "").replace(/\/$/, "")})</span>
+            <span>{cs.stackNote || "STACK: Next.js · TypeScript · Tailwind CSS · Vercel Edge"}</span>
           </div>
+
+          {cs.screenImage && (
+            <div className="mt-8 border border-border bg-stone-950 p-4 rounded-lg">
+              <p className="font-mono text-[11px] uppercase tracking-wider text-primary mb-3">
+                DETAIL VIEW // HIGH-RESOLUTION SCREEN FRAME
+              </p>
+              <div className="relative aspect-[5/3] w-full overflow-hidden rounded border border-border/60">
+                <Image
+                  src={cs.screenImage}
+                  alt={`${cs.client} detailed screen view`}
+                  fill
+                  unoptimized
+                  className="object-cover"
+                  sizes="(min-width: 1200px) 1152px, 100vw"
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -160,30 +184,16 @@ export default async function CaseStudyDetailPage({ params }: Props) {
       <div className="border-b border-border bg-card/20">
         <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
-            <div className="border-l-2 border-primary pl-4">
-              <div className="font-mono text-3xl font-bold text-primary">0.38s</div>
-              <div className="mt-1 font-mono text-xs uppercase tracking-wider text-muted-foreground">
-                Largest Contentful Paint
+            {cs.measured.map((m, idx) => (
+              <div key={m} className="border-l-2 border-primary pl-4">
+                <div className="font-mono text-2xl sm:text-3xl font-bold text-primary">
+                  {m.split(" ")[0]}
+                </div>
+                <div className="mt-1 font-mono text-xs uppercase tracking-wider text-muted-foreground">
+                  {m.split(" ").slice(1).join(" ") || `Metric 0${idx + 1}`}
+                </div>
               </div>
-            </div>
-            <div className="border-l-2 border-primary pl-4">
-              <div className="font-mono text-3xl font-bold text-primary">+44%</div>
-              <div className="mt-1 font-mono text-xs uppercase tracking-wider text-muted-foreground">
-                Admissions Conversion Lift
-              </div>
-            </div>
-            <div className="border-l-2 border-primary pl-4">
-              <div className="font-mono text-3xl font-bold text-primary">6</div>
-              <div className="mt-1 font-mono text-xs uppercase tracking-wider text-muted-foreground">
-                Global Study Destinations
-              </div>
-            </div>
-            <div className="border-l-2 border-primary pl-4">
-              <div className="font-mono text-3xl font-bold text-primary">100%</div>
-              <div className="mt-1 font-mono text-xs uppercase tracking-wider text-muted-foreground">
-                Automated Lead Pipeline
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>
@@ -192,43 +202,37 @@ export default async function CaseStudyDetailPage({ params }: Props) {
       <Section
         id="context"
         eyebrow="THE CHALLENGE"
-        title="High student demand hindered by"
-        titleAccent="manual inquiry bottlenecks."
-        lede="Sadia's IELTS is one of Bangladesh's premier IELTS mentoring brands, preparing hundreds of students each year for overseas university admissions in the UK, Canada, Australia, USA, Sweden, and Germany."
+        title={cs.challengeTitle || "The Operational Context"}
+        titleAccent={cs.challengeAccent || "and Strategic Bottlenecks"}
+        lede={cs.challengeLede || cs.story}
       >
         <div className="mt-10 grid grid-cols-1 gap-8 md:grid-cols-2">
           <SpotlightCard className="p-8">
             <h3 className="text-xl font-bold">The Operational Bottlenecks</h3>
             <ul className="mt-4 space-y-3 text-sm leading-relaxed text-muted-foreground">
-              <li className="flex items-start gap-2.5">
-                <span className="mt-1 size-1.5 shrink-0 rounded-full bg-primary" />
-                <span>
-                  <strong>Fragmented Student Inquiries:</strong> Prospective students were messaging across personal WhatsApp, Facebook Messenger, and phone calls without centralized qualification.
-                </span>
-              </li>
-              <li className="flex items-start gap-2.5">
-                <span className="mt-1 size-1.5 shrink-0 rounded-full bg-primary" />
-                <span>
-                  <strong>Slow Mobile Experience:</strong> Mobile users on 4G networks experienced heavy latency when browsing course descriptions and fee schedules.
-                </span>
-              </li>
-              <li className="flex items-start gap-2.5">
-                <span className="mt-1 size-1.5 shrink-0 rounded-full bg-primary" />
-                <span>
-                  <strong>Unmeasured Ad Spend:</strong> Paid campaigns lacked accurate server-side event tracking, making it impossible to calculate true cost per admitted student.
-                </span>
-              </li>
+              {(cs.bottlenecks || [
+                "Fragmented communication channels and manual inquiry qualification.",
+                "High latency on mobile connections causing prospective customers to bounce.",
+                "Lack of unified tracking between ad channels and customer conversion touchpoints.",
+              ]).map((bn) => (
+                <li key={bn} className="flex items-start gap-2.5">
+                  <span className="mt-1 size-1.5 shrink-0 rounded-full bg-primary" />
+                  <span>{bn}</span>
+                </li>
+              ))}
             </ul>
           </SpotlightCard>
 
           <SpotlightCard className="p-8">
             <h3 className="text-xl font-bold">The Strategic Objective</h3>
             <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-              Sadia&apos;s IELTS needed more than a digital brochure. They required a connected conversion engine: an authoritative web presence that communicated academic excellence, loaded instantly on mobile devices, and funneled student applicants straight into automated admission queues.
+              {cs.story}
             </p>
-            <div className="mt-6 rounded-lg border border-border bg-card/60 p-4 font-mono text-xs text-primary">
-              Objective: Sub-second load times + automated admissions routing + verified conversion tracking.
-            </div>
+            {cs.objective && (
+              <div className="mt-6 rounded-lg border border-border bg-card/60 p-4 font-mono text-xs text-primary">
+                {cs.objective}
+              </div>
+            )}
           </SpotlightCard>
         </div>
       </Section>
@@ -237,40 +241,38 @@ export default async function CaseStudyDetailPage({ params }: Props) {
       <Section
         id="solution"
         eyebrow="ENGINEERED SOLUTION"
-        title="Next.js App Router platform built for"
-        titleAccent="sub-second mobile conversions."
-        lede="ORBYT ONWARD designed and engineered a custom web architecture from the ground up, prioritizing mobile performance, clear course typography, and zero-friction lead capture."
+        title={cs.solutionTitle || "Architected for Performance"}
+        titleAccent={cs.solutionAccent || "and Commercial Conversion."}
+        lede={cs.solutionLede || "ORBYT ONWARD designed and engineered a custom web architecture from the ground up, prioritizing mobile performance, clear typography, and zero-friction inquiry capture."}
       >
         <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
-          <SpotlightCard className="p-7">
-            <div className="flex size-10 items-center justify-center rounded-lg border border-primary/30 bg-primary/10 text-primary">
-              <Zap className="size-5" />
-            </div>
-            <h3 className="mt-5 text-xl font-bold">Sub-Second Rendering</h3>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              Built on Next.js with edge caching, asset preloading, and responsive image compression. The platform achieves a 0.38s Largest Contentful Paint (LCP) even on cellular connections.
-            </p>
-          </SpotlightCard>
-
-          <SpotlightCard className="p-7">
-            <div className="flex size-10 items-center justify-center rounded-lg border border-primary/30 bg-primary/10 text-primary">
-              <Workflow className="size-5" />
-            </div>
-            <h3 className="mt-5 text-xl font-bold">Automated Lead Routing</h3>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              Inquiry forms immediately qualify students by target IELTS score and destination country, routing verified contact records directly to the admissions team without manual copy-paste.
-            </p>
-          </SpotlightCard>
-
-          <SpotlightCard className="p-7">
-            <div className="flex size-10 items-center justify-center rounded-lg border border-primary/30 bg-primary/10 text-primary">
-              <Gauge className="size-5" />
-            </div>
-            <h3 className="mt-5 text-xl font-bold">Measurement Architecture</h3>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              Integrated conversion tracking captures every course view, syllabus download, and enrollment application, providing transparent attribution across organic and paid channels.
-            </p>
-          </SpotlightCard>
+          {(cs.pillars || [
+            {
+              title: "Sub-Second Rendering",
+              desc: "Built on Next.js with edge caching, asset preloading, and responsive image compression.",
+            },
+            {
+              title: "Automated Lead Routing",
+              desc: "Inquiry forms qualify customers and route records directly to operations without manual re-entry.",
+            },
+            {
+              title: "Measurement Architecture",
+              desc: "Integrated conversion tracking captures every meaningful user event across all channels.",
+            },
+          ]).map((p, i) => {
+            const Icon = i === 0 ? Zap : i === 1 ? Workflow : Gauge;
+            return (
+              <SpotlightCard key={p.title} className="p-7">
+                <div className="flex size-10 items-center justify-center rounded-lg border border-primary/30 bg-primary/10 text-primary">
+                  <Icon className="size-5" />
+                </div>
+                <h3 className="mt-5 text-xl font-bold">{p.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  {p.desc}
+                </p>
+              </SpotlightCard>
+            );
+          })}
         </div>
       </Section>
 
@@ -283,7 +285,7 @@ export default async function CaseStudyDetailPage({ params }: Props) {
       >
         <div className="mt-8 rounded-xl border border-border bg-card p-6 sm:p-8">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {FEATURED_CASE_STUDY.components.map((comp) => (
+            {cs.components.map((comp) => (
               <div key={comp} className="flex items-center gap-3 text-sm text-foreground/90">
                 <CheckCircle2 className="size-4 shrink-0 text-primary" />
                 <span>{comp}</span>
@@ -292,6 +294,37 @@ export default async function CaseStudyDetailPage({ params }: Props) {
           </div>
         </div>
       </Section>
+
+      {/* Other Case Studies */}
+      {otherCaseStudies.length > 0 && (
+        <Section
+          id="other-work"
+          eyebrow="MORE DEPLOYMENTS"
+          title="Explore More Verified Client Work."
+          lede="See how other businesses in Bangladesh and abroad scale using connected digital systems."
+        >
+          <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
+            {otherCaseStudies.map((other) => (
+              <SpotlightCard key={other.id} className="p-6 md:p-8">
+                <p className="font-mono text-xs uppercase tracking-wider text-primary">
+                  {other.category}
+                </p>
+                <h4 className="mt-2 text-2xl font-bold">{other.client}</h4>
+                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                  {other.tagline}
+                </p>
+                <div className="mt-6 flex items-center gap-4">
+                  <Button asChild size="sm" className="font-semibold">
+                    <Link href={`/work/${other.id}`}>
+                      View Case Study <ArrowRight className="size-3.5 ml-1.5" />
+                    </Link>
+                  </Button>
+                </div>
+              </SpotlightCard>
+            ))}
+          </div>
+        </Section>
+      )}
 
       {/* CTA */}
       <Section
@@ -309,7 +342,7 @@ export default async function CaseStudyDetailPage({ params }: Props) {
             </Link>
           </Button>
           <Button asChild variant="outline" size="lg" className="h-14 px-8 text-base font-semibold">
-            <Link href="/services">View All Services</Link>
+            <Link href="/work">View All Work</Link>
           </Button>
         </div>
       </Section>

@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { ESSAYS } from "@/content/insights";
 import { DETAILED_SERVICES } from "@/content/services-data";
+import { CASE_STUDIES } from "@/content/orbyt";
 import { LEGAL } from "@/content/legal";
 
 const BASE_URL = "https://orbytonward.tech";
@@ -35,12 +36,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.85,
     },
     {
-      url: `${BASE_URL}/work/sadias-ielts`,
-      lastModified: currentDate,
-      changeFrequency: "monthly",
-      priority: 0.85,
-    },
-    {
       url: `${BASE_URL}/insights`,
       lastModified: currentDate,
       changeFrequency: "weekly",
@@ -72,6 +67,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ];
 
+  // Case study routes
+  const caseStudyRoutes: MetadataRoute.Sitemap = CASE_STUDIES.map((cs) => ({
+    url: `${BASE_URL}/work/${cs.id}`,
+    lastModified: currentDate,
+    changeFrequency: "monthly",
+    priority: 0.85,
+  }));
+
   // Service landing pages
   const serviceRoutes: MetadataRoute.Sitemap = DETAILED_SERVICES.map((service) => ({
     url: `${BASE_URL}/services/${service.slug}`,
@@ -98,6 +101,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   return [
     ...staticRoutes,
+    ...caseStudyRoutes,
     ...serviceRoutes,
     ...insightRoutes,
     ...legalRoutes,

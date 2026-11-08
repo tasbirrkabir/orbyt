@@ -1,9 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, ExternalLink, CheckCircle2, Zap, Globe, Gauge, ShieldCheck } from "lucide-react";
+import { ArrowRight, ExternalLink, CheckCircle2, Zap, Globe, Gauge, ShieldCheck, ShieldAlert, Cpu } from "lucide-react";
 import {
+  CASE_STUDIES,
   CONTACT,
-  FEATURED_CASE_STUDY,
   SITE,
   SYSTEMS_SECTION,
 } from "@/content/orbyt";
@@ -52,122 +52,130 @@ export function WorkView() {
           </div>
         </Reveal>
 
-        {/* FEATURED CASE STUDY: SADIA'S IELTS ACADEMY */}
-        <div className="mt-14 space-y-12">
-          {/* Main Showcase Hero Card */}
-          <Reveal className="border border-primary/40 bg-card p-6 md:p-10 shadow-pixel-orange">
-            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-6">
-              <div className="flex items-center gap-2.5">
-                <span className="size-2.5 animate-pulse rounded-full bg-emerald-500" />
-                <span className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-primary">
-                  VERIFIED CLIENT CASE STUDY // 01
-                </span>
-                <span className="hidden text-muted-foreground sm:inline">·</span>
-                <span className="hidden font-mono text-xs text-muted-foreground sm:inline">
-                  EDTECH CONVERSION SYSTEM
-                </span>
-              </div>
-              <a
-                href={FEATURED_CASE_STUDY.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-[0.15em] text-primary transition-colors hover:underline"
-              >
-                sadiasielts.com
-                <ExternalLink className="size-3.5" />
-              </a>
-            </div>
-
-            <div className="mt-8 grid grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-12">
-              <div className="min-w-0 lg:col-span-5">
-                <h3 className="font-display text-3xl font-bold leading-[1.08] tracking-tight md:text-4xl">
-                  {FEATURED_CASE_STUDY.client}
-                </h3>
-                <p className="mt-3 text-base leading-relaxed text-foreground/90">
-                  {FEATURED_CASE_STUDY.tagline}
-                </p>
-                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                  {FEATURED_CASE_STUDY.story}
-                </p>
-
-                {/* Delivered Architecture Checklist */}
-                <div className="mt-8">
-                  <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-                    DELIVERED ARCHITECTURE
-                  </p>
-                  <ul className="mt-3 space-y-2.5">
-                    {FEATURED_CASE_STUDY.components.map((c) => (
-                      <li key={c} className="flex items-start gap-2.5 text-xs text-foreground/90 md:text-sm">
-                        <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" />
-                        <span>{c}</span>
-                      </li>
-                    ))}
-                  </ul>
+        {/* VERIFIED CLIENT CASE STUDIES */}
+        <div className="mt-14 space-y-16">
+          {CASE_STUDIES.map((cs, index) => (
+            <Reveal
+              key={cs.id}
+              className="border border-primary/40 bg-card p-6 md:p-10 shadow-pixel-orange"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-6">
+                <div className="flex items-center gap-2.5">
+                  <span className="size-2.5 animate-pulse rounded-full bg-emerald-500" />
+                  <span className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-primary">
+                    VERIFIED CLIENT CASE STUDY // 0{index + 1}
+                  </span>
+                  <span className="hidden text-muted-foreground sm:inline">·</span>
+                  <span className="hidden font-mono text-xs text-muted-foreground sm:inline">
+                    {cs.category.replace(/CLIENT CASE STUDY \/\/ \d+ · /, "")}
+                  </span>
                 </div>
+                <a
+                  href={cs.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-[0.15em] text-primary transition-colors hover:underline"
+                >
+                  {cs.url.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+                  <ExternalLink className="size-3.5" />
+                </a>
+              </div>
 
-                {/* Live Metrics */}
-                <div className="mt-8">
-                  <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-                    MEASURED OUTCOMES
+              <div className="mt-8 grid grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-12">
+                <div className="min-w-0 lg:col-span-5">
+                  <h3 className="font-display text-3xl font-bold leading-[1.08] tracking-tight md:text-4xl">
+                    {cs.client}
+                  </h3>
+                  <p className="mt-3 text-base leading-relaxed text-foreground/90">
+                    {cs.tagline}
                   </p>
-                  <div className="mt-3 grid grid-cols-2 gap-2.5">
-                    {FEATURED_CASE_STUDY.measured.map((m) => (
-                      <div
-                        key={m}
-                        className="border border-border bg-background/80 p-3"
+                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                    {cs.story}
+                  </p>
+
+                  {/* Delivered Architecture Checklist */}
+                  <div className="mt-8">
+                    <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                      DELIVERED ARCHITECTURE
+                    </p>
+                    <ul className="mt-3 space-y-2.5">
+                      {cs.components.map((c) => (
+                        <li key={c} className="flex items-start gap-2.5 text-xs text-foreground/90 md:text-sm">
+                          <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" />
+                          <span>{c}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Live Metrics */}
+                  <div className="mt-8">
+                    <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                      MEASURED OUTCOMES
+                    </p>
+                    <div className="mt-3 grid grid-cols-2 gap-2.5">
+                      {cs.measured.map((m) => (
+                        <div
+                          key={m}
+                          className="border border-border bg-background/80 p-3"
+                        >
+                          <p className="font-mono text-xs font-bold uppercase tracking-[0.14em] text-foreground">
+                            {m}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="mt-8 flex flex-wrap items-center gap-4">
+                    <Button asChild className="h-11 px-6 font-semibold">
+                      <Link
+                        href={`/work/${cs.id}`}
+                        className="inline-flex items-center gap-2"
                       >
-                        <p className="font-mono text-xs font-bold uppercase tracking-[0.14em] text-foreground">
-                          {m}
-                        </p>
-                      </div>
-                    ))}
+                        Read In-Depth Case Study
+                        <ArrowRight className="size-4" />
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline" className="h-11 px-6 font-semibold">
+                      <a
+                        href={cs.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2"
+                      >
+                        Visit Live Website
+                        <ExternalLink className="size-4" />
+                      </a>
+                    </Button>
                   </div>
                 </div>
 
-                <div className="mt-8 flex flex-wrap items-center gap-4">
-                  <Button asChild className="h-11 px-6 font-semibold">
-                    <Link
-                      href="/work/sadias-ielts"
-                      className="inline-flex items-center gap-2"
-                    >
-                      Read In-Depth Case Study
-                      <ArrowRight className="size-4" />
-                    </Link>
-                  </Button>
-                  <Button asChild variant="outline" className="h-11 px-6 font-semibold">
-                    <a
-                      href={FEATURED_CASE_STUDY.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2"
-                    >
-                      Visit Live Website
-                      <ExternalLink className="size-4" />
-                    </a>
-                  </Button>
+                {/* Mockup Frame */}
+                <div className="min-w-0 lg:col-span-7">
+                  <div className="relative aspect-[4/3] w-full overflow-hidden border border-border bg-stone-950 shadow-pixel-orange">
+                    <Image
+                      src={cs.image}
+                      alt={`${cs.client} live showcase mockup`}
+                      fill
+                      priority={index === 0}
+                      unoptimized
+                      sizes="(min-width: 1024px) 720px, 100vw"
+                      className="object-cover transition-transform duration-700 hover:scale-[1.02]"
+                    />
+                  </div>
+                  <div className="mt-3 flex items-center justify-between px-1 font-mono text-[11px] text-muted-foreground">
+                    <span>
+                      {cs.id === "sadias-ielts"
+                        ? "STUDIO DISPLAY // SADIA'S IELTS HOMEPAGE"
+                        : "OUTDOOR BILLBOARD // YOUR TECH EYE LIVE MONITORING"}
+                    </span>
+                    <span className="text-primary">BUILT BY ORBYT</span>
+                  </div>
                 </div>
               </div>
-
-              {/* Studio Mockup Poster Frame */}
-              <div className="min-w-0 lg:col-span-7">
-                <div className="relative aspect-[4/3] w-full overflow-hidden border border-border bg-stone-950 shadow-pixel-orange">
-                  <Image
-                    src={FEATURED_CASE_STUDY.image}
-                    alt="Sadia's IELTS Academy live homepage displayed inside a studio monitor mockup"
-                    fill
-                    priority
-                    unoptimized
-                    sizes="(min-width: 1024px) 720px, 100vw"
-                    className="object-cover transition-transform duration-700 hover:scale-[1.02]"
-                  />
-                </div>
-                <div className="mt-3 flex items-center justify-between px-1 font-mono text-[11px] text-muted-foreground">
-                  <span>STUDIO DISPLAY // SADIA'S IELTS HOMEPAGE</span>
-                  <span className="text-primary">BUILT BY ORBYT</span>
-                </div>
-              </div>
-            </div>
-          </Reveal>
+            </Reveal>
+          ))}
 
           {/* Deep Architectural Breakdown Grid */}
           <div className="grid grid-cols-1 gap-6 md:grid-cols-3">

@@ -23,6 +23,7 @@
 
 ## Verified Case Studies
 - Sadia's IELTS Academy (https://orbytonward.tech/work/sadias-ielts): High-converting Next.js web application and automated admissions routing for Bangladesh's premier IELTS mentoring brand. Live deployment: https://sadiasielts.com/ (Measured: 0.38s Largest Contentful Paint, +44% Admissions conversion lift).
+- Your Tech Eye (https://orbytonward.tech/work/your-tech-eye): Tactical web application, command floor identity, and live video surveillance consultation platform for Bangladesh's 24/7 proactive security monitoring agency. Live deployment: https://yourtecheye.com/ (Measured: 100% Proactive Ops Focus, Sub-second Edge Load, Live Dhaka Command Floor).
 
 ## Key Public Endpoints
 - Homepage: https://orbytonward.tech
